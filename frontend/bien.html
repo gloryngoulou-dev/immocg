@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ImmoCG — Détail du bien</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #F7F3EC;
+      color: #2C2C28;
+    }
+
+    nav {
+      background: #1A1A18;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo { font-size: 22px; font-weight: 700; color: #fff; }
+    .logo span { color: #C9963A; }
+    nav a { color: #aaa; text-decoration: none; font-size: 14px; margin-left: 1.5rem; }
+    nav a:hover { color: #C9963A; }
+
+    .breadcrumb {
+      max-width: 1000px;
+      margin: 1.5rem auto;
+      padding: 0 2rem;
+      font-size: 13px;
+      color: #888780;
+    }
+
+    .breadcrumb a { color: #C9963A; text-decoration: none; }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 0 2rem 4rem;
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 2rem;
+    }
+
+    /* GAUCHE */
+    .bien-img {
+      height: 300px;
+      background: #E8F0E4;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 100px;
+      margin-bottom: 1.5rem;
+    }
+
+    .bien-type {
+      font-size: 12px;
+      font-weight: 600;
+      color: #C9963A;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+
+    .bien-titre {
+      font-size: 28px;
+      font-weight: 700;
+      color: #1A1A18;
+      margin-bottom: 6px;
+    }
+
+    .bien-loc {
+      font-size: 14px;
+      color: #888780;
+      margin-bottom: 1.5rem;
+    }
+
+    .bien-prix {
+      font-size: 32px;
+      font-weight: 700;
+      color: #1A1A18;
+      margin-bottom: 1.5rem;
+    }
+
+    .bien-prix span {
+      font-size: 14px;
+      color: #888780;
+      font-weight: 400;
+    }
+
+    .feats {
+      display: flex;
+      gap: 2rem;
+      padding: 1.2rem 0;
+      border-top: 1px solid rgba(0,0,0,0.08);
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+      margin-bottom: 1.5rem;
+    }
+
+    .feat { text-align: center; }
+    .feat-icon { font-size: 22px; display: block; margin-bottom: 4px; }
+    .feat-val { font-size: 14px; font-weight: 600; color: #1A1A18; }
+    .feat-lbl { font-size: 11px; color: #888780; }
+
+    .section-titre {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1A1A18;
+      margin-bottom: 10px;
+      margin-top: 1.5rem;
+    }
+
+    .description {
+      font-size: 14px;
+      color: #888780;
+      line-height: 1.7;
+    }
+
+    .equipements {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .equip {
+      font-size: 13px;
+      color: #2C2C28;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* DROITE - CONTACT */
+    .contact-card {
+      background: #fff;
+      border-radius: 14px;
+      border: 1px solid rgba(0,0,0,0.08);
+      padding: 1.5rem;
+      position: sticky;
+      top: 20px;
+      height: fit-content;
+    }
+
+    .agent {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 1.2rem;
+      padding-bottom: 1.2rem;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+    }
+
+    .agent-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: #F0D9A8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 700;
+      color: #7A5A1A;
+    }
+
+    .agent-nom { font-size: 14px; font-weight: 600; color: #1A1A18; }
+    .agent-role { font-size: 12px; color: #888780; }
+
+    .prix-resume {
+      background: #F7F3EC;
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-bottom: 1.2rem;
+      font-size: 13px;
+    }
+
+    .prix-ligne {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      color: #888780;
+    }
+
+    .prix-ligne:last-child {
+      margin-bottom: 0;
+      font-weight: 600;
+      color: #1A1A18;
+      padding-top: 8px;
+      border-top: 1px solid rgba(0,0,0,0.08);
+      margin-top: 6px;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 13px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-bottom: 10px;
+      transition: background 0.2s;
+    }
+
+    .btn-primary { background: #1A1A18; color: #fff; }
+    .btn-primary:hover { background: #C9963A; }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid rgba(0,0,0,0.15);
+      color: #888780;
+    }
+    .btn-outline:hover { border-color: #C9963A; color: #C9963A; }
+
+    .loading {
+      text-align: center;
+      padding: 4rem;
+      color: #888780;
+      grid-column: 1 / -1;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      font-size: 13px;
+      color: #888780;
+      border-top: 1px solid rgba(0,0,0,0.08);
+    }
+
+    .galerie { margin-bottom: 1.5rem; }
+.galerie-main {
+  height: 320px;
+  border-radius: 14px;
+  margin-bottom: 8px;
+  transition: background-image 0.3s;
+  background-color: #E8F0E4;
+}
+.galerie-thumbs {
+  display: flex;
+  gap: 8px;
+}
+.galerie-thumbs .thumb {
+  width: 80px;
+  height: 60px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  flex-shrink: 0;
+  background-color: #E8F0E4;
+}
+.galerie-thumbs .thumb.active { border-color: #C9963A; }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="logo">Immo<span>CG</span></div>
+    <div>
+      <a href="index.html">← Retour aux biens</a>
+    </div>
+  </nav>
+
+  <div class="breadcrumb">
+    <a href="index.html">Accueil</a> › <span id="breadcrumb-type">Bien</span>
+  </div>
+
+  <div class="container" id="contenu">
+    <div class="loading">Chargement du bien...</div>
+  </div>
+
+  <footer>ImmoCG · Brazzaville, Congo · 2026</footer>
+
+  <script>
+    const icones = { 'Villa': '🏡', 'Appartement': '🏢', 'Studio': '🏠' }
+
+    // Récupérer l'ID dans l'URL (ex: bien.html?id=1)
+    const params = new URLSearchParams(window.location.search)
+    const id = params.get('id')
+
+    async function chargerBien() {
+      if (!id) {
+        document.getElementById('contenu').innerHTML =
+          '<div class="loading">Aucun bien sélectionné.</div>'
+        return
+      }
+
+      try {
+        const reponse = await fetch(`http://localhost:3000/biens/${id}`)
+        const data = await reponse.json()
+
+        if (!data.success) {
+          document.getElementById('contenu').innerHTML =
+            '<div class="loading">Bien introuvable.</div>'
+          return
+        }
+
+        afficherBien(data.bien)
+
+      } catch (erreur) {
+        document.getElementById('contenu').innerHTML =
+          '<div class="loading">Erreur de connexion au serveur.</div>'
+      }
+    }
+
+    function afficherBien(b) {
+      document.title = `ImmoCG — ${b.type} à ${b.quartier}`
+      document.getElementById('breadcrumb-type').textContent =
+        `${b.type} à ${b.quartier}`
+
+      const caution = b.prix * 2
+      const frais = Math.round(b.prix * 0.5)
+      const total = b.prix + caution + frais
+
+      document.getElementById('contenu').innerHTML = `
+        <div>
+<div class="galerie">
+  <div class="galerie-main" id="main-photo" style="background-image:url(${b.images && b.images[0] ? b.images[0] : b.image_url});background-size:cover;background-position:center;"></div>
+  ${b.images && b.images.length > 1 ? `
+  <div class="galerie-thumbs">
+    ${b.images.map((url, i) => `
+      <div class="thumb ${i===0?'active':''}" onclick="changePhoto('${url}', this)" style="background-image:url(${url});background-size:cover;background-position:center;"></div>
+    `).join('')}
+  </div>` : ''}
+</div>
+
+<div class="bien-type">${b.type} · À ${b.mode}</div>
+          <div class="bien-titre">${b.type} à ${b.quartier}</div>
+          <div class="bien-loc">📍 ${b.quartier}, ${b.ville} · Réf. IMC-00${b.id}</div>
+          <div class="bien-prix">
+            ${b.prix.toLocaleString('fr-FR')}
+            <span>${b.unite}</span>
+          </div>
+
+          <div class="feats">
+            <div class="feat">
+              <span class="feat-icon">🛏</span>
+              <div class="feat-val">${b.chambres}</div>
+              <div class="feat-lbl">Chambres</div>
+            </div>
+            <div class="feat">
+              <span class="feat-icon">🚿</span>
+              <div class="feat-val">${b.salles_bain}</div>
+              <div class="feat-lbl">Salles de bain</div>
+            </div>
+            <div class="feat">
+              <span class="feat-icon">📐</span>
+              <div class="feat-val">${b.surface}m²</div>
+              <div class="feat-lbl">Surface</div>
+            </div>
+          </div>
+
+          <div class="section-titre">Description</div>
+          <div class="description">${b.description}</div>
+
+          
+          ${b.video_url ? `
+<div class="section-titre">Vidéo</div>
+<div style="position:relative;padding-bottom:56.25%;height:0;border-radius:12px;overflow:hidden;margin-bottom:1.5rem;">
+  <iframe src="${b.video_url.includes('youtube') ? b.video_url.replace('watch?v=', 'embed/') : b.video_url}" 
+    style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;"
+    allowfullscreen></iframe>
+</div>` : ''}
+
+<div class="section-titre">Équipements</div>
+<div class="equipements">
+  ${b.equipements && b.equipements.length > 0 
+    ? b.equipements.map(e => `<div class="equip">✅ ${e}</div>`).join('') 
+    : '<div class="equip" style="color:#888780">Aucun équipement renseigné</div>'}
+</div>
+        </div>
+
+        <div class="contact-card">
+          <div class="agent">
+            <div class="agent-avatar">AG</div>
+            <div>
+              <div class="agent-nom">Agence ImmoCG</div>
+              <div class="agent-role">Agent certifié</div>
+            </div>
+          </div>
+
+          <div class="prix-resume">
+            <div class="prix-ligne">
+              <span>Loyer mensuel</span>
+              <span>${b.prix.toLocaleString('fr-FR')} FCFA</span>
+            </div>
+            <div class="prix-ligne">
+              <span>Caution (2 mois)</span>
+              <span>${caution.toLocaleString('fr-FR')} FCFA</span>
+            </div>
+            <div class="prix-ligne">
+              <span>Frais d'agence</span>
+              <span>${frais.toLocaleString('fr-FR')} FCFA</span>
+            </div>
+            <div class="prix-ligne">
+              <span>Total à prévoir</span>
+              <span>${total.toLocaleString('fr-FR')} FCFA</span>
+            </div>
+          </div>
+
+          <button class="btn btn-primary">📞 Contacter l'agence</button>
+          <button class="btn btn-outline">💬 Envoyer un message</button>
+          <button class="btn btn-outline">❤️ Sauvegarder</button>
+        </div>
+      `
+    }
+
+    function changePhoto(url, el) {
+  document.getElementById('main-photo').style.backgroundImage = `url(${url})`
+  document.querySelectorAll('.galerie-thumbs .thumb').forEach(t => t.classList.remove('active'))
+  el.classList.add('active')
+}
+
+    chargerBien()
+  </script>
+
+</body>
+</html>

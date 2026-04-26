@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ImmoCG — Publier un bien</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #F7F3EC; color: #2C2C28; }
+    nav { background: #1A1A18; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+    .logo { font-size: 22px; font-weight: 700; color: #fff; }
+    .logo span { color: #C9963A; }
+    nav a { color: #aaa; text-decoration: none; font-size: 14px; margin-left: 1.5rem; }
+
+    .container { max-width: 800px; margin: 2rem auto; padding: 0 2rem 4rem; }
+    h1 { font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+    .subtitle { font-size: 14px; color: #888780; margin-bottom: 2rem; }
+
+    .section-card {
+      background: #fff;
+      border-radius: 14px;
+      border: 1px solid rgba(0,0,0,0.08);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .section-card h2 {
+      font-size: 15px;
+      font-weight: 600;
+      color: #1A1A18;
+      margin-bottom: 1.2rem;
+      padding-bottom: 0.8rem;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+
+    /* PHOTOS */
+    .photos-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .photo-slot {
+      aspect-ratio: 1;
+      border: 2px dashed rgba(0,0,0,0.15);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+    .photo-slot:hover { border-color: #C9963A; }
+    .photo-slot input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+    .photo-slot img { width: 100%; height: 100%; object-fit: cover; display: none; }
+    .photo-slot.has-photo { border-style: solid; border-color: #C9963A; }
+    .photo-slot.has-photo img { display: block; }
+    .photo-slot.has-photo .slot-icon { display: none; }
+    .remove-photo {
+      position: absolute;
+      top: 4px; right: 4px;
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 20px; height: 20px;
+      font-size: 12px;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .photo-slot.has-photo .remove-photo { display: flex; }
+    .photo-hint { font-size: 12px; color: #888780; }
+    .photo-hint strong { color: #C9963A; }
+
+    /* FORM */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+    .form-group.full { grid-column: 1 / -1; }
+    .form-group.third { grid-column: span 1; }
+    label { font-size: 11px; font-weight: 600; color: #888780; text-transform: uppercase; letter-spacing: 0.3px; }
+    input, select, textarea {
+      border: 1px solid rgba(0,0,0,0.12);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-family: 'Segoe UI', sans-serif;
+      font-size: 14px;
+      color: #2C2C28;
+      background: #F7F3EC;
+      outline: none;
+      width: 100%;
+    }
+    input:focus, select:focus, textarea:focus { border-color: #C9963A; background: #fff; }
+    textarea { resize: vertical; min-height: 120px; }
+
+    /* EQUIPEMENTS */
+    .equip-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .equip-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: #2C2C28;
+      cursor: pointer;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid rgba(0,0,0,0.08);
+      transition: all 0.2s;
+    }
+    .equip-item:hover { border-color: #C9963A; }
+    .equip-item input[type="checkbox"] { accent-color: #C9963A; width: 16px; height: 16px; }
+
+    .submit-btn {
+      width: 100%;
+      padding: 15px;
+      background: #C9963A;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-top: 0.5rem;
+    }
+    .submit-btn:hover { background: #b8842e; }
+    .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .progress-bar {
+      height: 4px;
+      background: rgba(0,0,0,0.08);
+      border-radius: 4px;
+      margin-bottom: 1rem;
+      overflow: hidden;
+      display: none;
+    }
+    .progress-fill {
+      height: 100%;
+      background: #C9963A;
+      border-radius: 4px;
+      transition: width 0.3s;
+    }
+
+    .message { text-align: center; margin-top: 1rem; font-size: 14px; padding: 12px; border-radius: 8px; display: none; }
+    .message.success { background: #e8f4e8; color: #2d6e2d; display: block; }
+    .message.error { background: #f4e8e8; color: #6e2d2d; display: block; }
+
+    .upload-video-zone {
+  border: 2px dashed rgba(0,0,0,0.15);
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  position: relative;
+  transition: border-color 0.2s;
+  margin-bottom: 8px;
+}
+.upload-video-zone:hover { border-color: #C9963A; }
+.upload-video-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="logo">Immo<span>CG</span></div>
+    <div><a href="index.html">← Retour aux biens</a></div>
+  </nav>
+
+  <div class="container">
+    <h1>Publier un bien</h1>
+    <p class="subtitle">Remplissez toutes les informations pour maximiser vos chances de trouver un locataire ou acheteur.</p>
+
+    <!-- PHOTOS -->
+    <div class="section-card">
+      <h2>📸 Photos du bien <span style="color:#888780;font-weight:400;font-size:13px;">(jusqu'à 5 photos)</span></h2>
+      <div class="photos-grid" id="photos-grid">
+        <!-- générées par JS -->
+      </div>
+      <div class="photo-hint">La <strong>première photo</strong> sera la photo principale de l'annonce.</div>
+    </div>
+
+    <!-- INFOS GENERALES -->
+    <div class="section-card">
+      <h2>🏠 Informations générales</h2>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Type de bien *</label>
+          <select id="type">
+            <option value="Villa">Villa</option>
+            <option value="Appartement">Appartement</option>
+            <option value="Studio">Studio</option>
+            <option value="Maison">Maison</option>
+            <option value="Duplex">Duplex</option>
+            <option value="Bureau">Bureau</option>
+            <option value="Commerce">Local commercial</option>
+            <option value="Terrain">Terrain</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Transaction *</label>
+          <select id="mode">
+            <option value="louer">À louer</option>
+            <option value="acheter">À vendre</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Prix (FCFA) *</label>
+          <input type="number" id="prix" placeholder="ex: 250000">
+        </div>
+        <div class="form-group">
+          <label>Unité</label>
+          <select id="unite">
+            <option value="FCFA/mois">FCFA / mois</option>
+            <option value="FCFA/an">FCFA / an</option>
+            <option value="FCFA">FCFA (vente)</option>
+          </select>
+        </div>
+        <div class="form-group full">
+          <label>Titre de l'annonce *</label>
+          <input type="text" id="titre" placeholder="ex: Belle villa meublée avec jardin à Bacongo">
+        </div>
+        <div class="form-group full">
+          <label>Description détaillée *</label>
+          <textarea id="description" placeholder="Décrivez le bien en détail : état général, environnement, accès, points forts..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOCALISATION -->
+    <div class="section-card">
+      <h2>📍 Localisation</h2>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Ville *</label>
+          <select id="ville">
+            <option>Brazzaville</option>
+            <option>Pointe-Noire</option>
+            <option>Dolisie</option>
+            <option>Nkayi</option>
+            <option>Ouesso</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Quartier *</label>
+          <select id="quartier">
+            <option>Bacongo</option>
+            <option>Poto-Poto</option>
+            <option>Moungali</option>
+            <option>Ouenzé</option>
+            <option>Makélékélé</option>
+            <option>Centre-ville</option>
+            <option>Talangaï</option>
+            <option>Mfilou</option>
+            <option>Madibou</option>
+            <option>Djiri</option>
+          </select>
+        </div>
+        <div class="form-group full">
+          <label>Adresse précise</label>
+          <input type="text" id="adresse" placeholder="ex: Rue Makotipoko, après le marché Total">
+        </div>
+      </div>
+    </div>
+
+    <!-- CARACTERISTIQUES -->
+    <div class="section-card">
+      <h2>📐 Caractéristiques</h2>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Chambres</label>
+          <input type="number" id="chambres" placeholder="ex: 3" min="0">
+        </div>
+        <div class="form-group">
+          <label>Salles de bain</label>
+          <input type="number" id="salles_bain" placeholder="ex: 2" min="0">
+        </div>
+        <div class="form-group">
+          <label>Surface habitable (m²)</label>
+          <input type="number" id="surface" placeholder="ex: 120">
+        </div>
+        <div class="form-group">
+          <label>Surface terrain (m²)</label>
+          <input type="number" id="surface_terrain" placeholder="ex: 300">
+        </div>
+        <div class="form-group">
+          <label>Étage</label>
+          <select id="etage">
+            <option value="">Non applicable</option>
+            <option value="RDC">Rez-de-chaussée</option>
+            <option value="1">1er étage</option>
+            <option value="2">2ème étage</option>
+            <option value="3">3ème étage</option>
+            <option value="4+">4ème étage et +</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Parking</label>
+          <select id="parking">
+            <option value="0">Pas de parking</option>
+            <option value="1">1 place</option>
+            <option value="2">2 places</option>
+            <option value="3+">3 places et +</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>État du bien</label>
+          <select id="etat">
+            <option value="Neuf">Neuf</option>
+            <option value="Très bon état">Très bon état</option>
+            <option value="Bon état">Bon état</option>
+            <option value="À rénover">À rénover</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Meublé</label>
+          <select id="meuble">
+            <option value="Non meublé">Non meublé</option>
+            <option value="Meublé">Meublé</option>
+            <option value="Semi-meublé">Semi-meublé</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- EQUIPEMENTS -->
+    <div class="section-card">
+      <h2>✅ Équipements & commodités</h2>
+      <div class="equip-grid">
+        <label class="equip-item"><input type="checkbox" value="Climatisation"> Climatisation</label>
+        <label class="equip-item"><input type="checkbox" value="Groupe électrogène"> Groupe électrogène</label>
+        <label class="equip-item"><input type="checkbox" value="Eau courante"> Eau courante</label>
+        <label class="equip-item"><input type="checkbox" value="Puits/citerne"> Puits / citerne</label>
+        <label class="equip-item"><input type="checkbox" value="Internet/WiFi"> Internet / WiFi</label>
+        <label class="equip-item"><input type="checkbox" value="Télévision câblée"> TV câblée</label>
+        <label class="equip-item"><input type="checkbox" value="Gardien"> Gardien</label>
+        <label class="equip-item"><input type="checkbox" value="Clôture"> Clôture</label>
+        <label class="equip-item"><input type="checkbox" value="Jardin"> Jardin</label>
+        <label class="equip-item"><input type="checkbox" value="Piscine"> Piscine</label>
+        <label class="equip-item"><input type="checkbox" value="Cuisine équipée"> Cuisine équipée</label>
+        <label class="equip-item"><input type="checkbox" value="Ascenseur"> Ascenseur</label>
+      </div>
+    </div>
+
+    <!-- CONTACT -->
+    <div class="section-card">
+      <h2>📞 Contact</h2>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Nom / Agence *</label>
+          <input type="text" id="contact_nom" placeholder="ex: Agence Horizon Immo">
+        </div>
+        <div class="form-group">
+          <label>Téléphone *</label>
+          <input type="tel" id="contact_tel" placeholder="ex: +242 06 000 0000">
+        </div>
+        <div class="form-group">
+          <label>WhatsApp</label>
+          <input type="tel" id="contact_whatsapp" placeholder="ex: +242 06 000 0000">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="contact_email" placeholder="ex: agence@gmail.com">
+        </div>
+        <div class="form-group full">
+  <label>Vidéo du bien</label>
+  <div class="upload-video-zone" id="upload-video-zone">
+    <input type="file" id="video" accept="video/*" onchange="verifierVideo(this)">
+    <div class="upload-icon">🎥</div>
+    <div class="upload-text">
+      <strong>Cliquez pour ajouter une vidéo</strong><br>
+      MP4, MOV — Max 50MB
+    </div>
+    <video id="video-preview" style="display:none;width:100%;border-radius:8px;margin-top:10px;" controls></video>
+    <div id="video-error" style="display:none;color:#c0392b;font-size:13px;margin-top:8px;"></div>
+</div>
+  <p style="font-size:12px;color:#888780;margin-top:6px;">Ou collez un lien YouTube :</p>
+  <input type="url" id="video_url" placeholder="https://youtube.com/watch?v=...">
+</div>
+      </div>
+    </div>
+
+    <div class="progress-bar" id="progress-bar">
+      <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+
+    <button class="submit-btn" id="submit-btn" onclick="publierBien()">
+      Publier mon annonce
+    </button>
+    <div class="message" id="message"></div>
+  </div>
+
+  <script>
+const photosAUploader = [] // tableau global
+const files = new Array(5).fill(null)
+
+const grid = document.getElementById('photos-grid')
+
+for (let i = 0; i < 5; i++) {
+  const slot = document.createElement('div')
+  slot.className = 'photo-slot'
+  slot.id = `slot-${i}`
+  slot.innerHTML = `
+    <input type="file" accept="image/*" onchange="selectPhoto(this, ${i})">
+    <span class="slot-icon">${i === 0 ? '📷' : '+'}</span>
+    <img id="img-${i}" alt="">
+    <button class="remove-photo" onclick="removePhoto(event, ${i})">✕</button>
+  `
+  grid.appendChild(slot)
+}
+
+function selectPhoto(input, index) {
+  const file = input.files[0]
+  if (!file) return
+  files[index] = file
+  const img = document.getElementById(`img-${index}`)
+  img.src = URL.createObjectURL(file)
+  document.getElementById(`slot-${index}`).classList.add('has-photo')
+  console.log('Photo sélectionnée slot', index, file.name)
+}
+
+function removePhoto(e, index) {
+  e.preventDefault()
+  e.stopPropagation()
+  files[index] = null
+  document.getElementById(`img-${index}`).src = ''
+  document.getElementById(`slot-${index}`).classList.remove('has-photo')
+}
+
+async function uploaderPhoto(file) {
+  const formData = new FormData()
+  formData.append('image', file)
+  const r = await fetch('http://localhost:3000/upload', { method: 'POST', body: formData })
+  const d = await r.json()
+  return d.success ? d.url : null
+}
+
+function setProgress(p) {
+  document.getElementById('progress-bar').style.display = 'block'
+  document.getElementById('progress-fill').style.width = p + '%'
+}
+
+async function publierBien() {
+  const btn = document.getElementById('submit-btn')
+
+  if (!document.getElementById('prix').value) return afficherMessage('Le prix est obligatoire.', 'error')
+  if (!document.getElementById('description').value) return afficherMessage('La description est obligatoire.', 'error')
+  if (!document.getElementById('contact_tel').value) return afficherMessage('Le téléphone est obligatoire.', 'error')
+
+  btn.disabled = true
+  btn.textContent = 'Publication en cours...'
+
+  try {
+    const photosSelectionnees = files.filter(f => f !== null)
+    console.log('Nombre de photos à uploader:', photosSelectionnees.length)
+
+    const urls = []
+    for (let i = 0; i < photosSelectionnees.length; i++) {
+      setProgress(Math.round((i / photosSelectionnees.length) * 60))
+      const url = await uploaderPhoto(photosSelectionnees[i])
+      console.log('URL uploadée:', url)
+      if (url) urls.push(url)
+    }
+
+    setProgress(70)
+    console.log('Toutes les URLs:', urls)
+
+    const equipements = [...document.querySelectorAll('.equip-item input:checked')].map(e => e.value)
+
+    const bien = {
+  type: document.getElementById('type').value,
+  mode: document.getElementById('mode').value,
+  prix: parseInt(document.getElementById('prix').value),
+  unite: document.getElementById('unite').value,
+  quartier: document.getElementById('quartier').value,
+  ville: document.getElementById('ville').value,
+  titre: document.getElementById('titre').value,
+  adresse: document.getElementById('adresse').value,
+  chambres: parseInt(document.getElementById('chambres').value) || 0,
+  salles_bain: parseInt(document.getElementById('salles_bain').value) || 0,
+  surface: parseInt(document.getElementById('surface').value) || 0,
+  surface_terrain: parseInt(document.getElementById('surface_terrain').value) || 0,
+  etat: document.getElementById('etat').value,
+  meuble: document.getElementById('meuble').value,
+  etage: document.getElementById('etage').value,
+  parking: document.getElementById('parking').value,
+  contact_nom: document.getElementById('contact_nom').value,
+  contact_tel: document.getElementById('contact_tel').value,
+  contact_whatsapp: document.getElementById('contact_whatsapp').value,
+  contact_email: document.getElementById('contact_email').value,
+  description: document.getElementById('description').value,
+  image_url: urls[0] || null,
+  images: urls,
+  equipements: equipements,
+  video_url: await uploaderVideo()
+}
+
+    setProgress(85)
+
+    const r = await fetch('http://localhost:3000/biens', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(bien)
+    })
+    const data = await r.json()
+    setProgress(100)
+
+    if (data.success) {
+      afficherMessage('✅ Annonce publiée avec succès ! Redirection...', 'success')
+      setTimeout(() => { window.location.href = 'index.html' }, 9000)
+    } else {
+      afficherMessage('Erreur : ' + data.message, 'error')
+      btn.disabled = false
+      btn.textContent = 'Publier mon annonce'
+    }
+  } catch (err) {
+    console.error('Erreur:', err)
+    afficherMessage('Erreur de connexion au serveur.', 'error')
+    btn.disabled = false
+    btn.textContent = 'Publier mon annonce'
+  }
+}
+
+function afficherMessage(msg, type) {
+  const el = document.getElementById('message')
+  el.textContent = msg
+  el.className = 'message ' + type
+}
+
+function verifierVideo(input) {
+  const file = input.files[0]
+  if (!file) return
+  
+  const maxSize = 50 * 1024 * 1024 // 50MB
+  const errEl = document.getElementById('video-error')
+  
+  if (file.size > maxSize) {
+    errEl.textContent = `⚠️ Vidéo trop lourde (${(file.size/1024/1024).toFixed(1)}MB). Maximum 50MB. Utilisez plutôt un lien YouTube.`
+    errEl.style.display = 'block'
+    input.value = ''
+    return
+  }
+  
+  errEl.style.display = 'none'
+  const preview = document.getElementById('video-preview')
+  preview.src = URL.createObjectURL(file)
+  preview.style.display = 'block'
+  document.getElementById('video_url').value = ''
+}
+
+async function uploaderVideo() {
+  const input = document.getElementById('video')
+  if (!input.files[0]) return document.getElementById('video_url').value || null
+
+  const formData = new FormData()
+  formData.append('video', input.files[0])
+
+  const r = await fetch('http://localhost:3000/upload-video', {
+    method: 'POST',
+    body: formData
+  })
+  const d = await r.json()
+  return d.success ? d.url : null
+}
+</script>
+</body>
+</html>
