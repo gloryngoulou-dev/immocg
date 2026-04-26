@@ -260,7 +260,7 @@
     // Fonction pour récupérer les biens depuis notre API
     async function chargerBiens() {
       try {
-        const reponse = await fetch('http://localhost:3000/biens')
+       const reponse = await fetch('/biens')
         const data = await reponse.json()
         tousLesBiens = data.biens
         afficherBiens(tousLesBiens)

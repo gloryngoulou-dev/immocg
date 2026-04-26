@@ -435,7 +435,7 @@ function removePhoto(e, index) {
 async function uploaderPhoto(file) {
   const formData = new FormData()
   formData.append('image', file)
-  const r = await fetch('http://localhost:3000/upload', { method: 'POST', body: formData })
+  const r = await fetch('/upload', { method: 'POST', body: formData })
   const d = await r.json()
   return d.success ? d.url : null
 }
@@ -502,7 +502,7 @@ async function publierBien() {
 
     setProgress(85)
 
-    const r = await fetch('http://localhost:3000/biens', {
+    const r = await fetch('/biens', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(bien)
@@ -560,7 +560,7 @@ async function uploaderVideo() {
   const formData = new FormData()
   formData.append('video', input.files[0])
 
-  const r = await fetch('http://localhost:3000/upload-video', {
+  const r = await fetch('/upload-video', {
     method: 'POST',
     body: formData
   })

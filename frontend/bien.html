@@ -289,7 +289,7 @@
       }
 
       try {
-        const reponse = await fetch(`http://localhost:3000/biens/${id}`)
+        const reponse = await fetch(`/biens/${id}`)
         const data = await reponse.json()
 
         if (!data.success) {
