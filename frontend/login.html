@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ImmoCG — Connexion</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #F7F3EC; color: #2C2C28; min-height: 100vh; display: flex; flex-direction: column; }
+    nav { background: #1A1A18; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+    .logo { font-size: 22px; font-weight: 700; color: #fff; text-decoration: none; }
+    .logo span { color: #C9963A; }
+
+    .page { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2rem; }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      border: 1px solid rgba(0,0,0,0.08);
+      padding: 2.5rem;
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .card-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #1A1A18;
+      margin-bottom: 6px;
+    }
+
+    .card-sub {
+      font-size: 14px;
+      color: #888780;
+      margin-bottom: 2rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 1.2rem;
+    }
+
+    label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #888780;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    input {
+      border: 1px solid rgba(0,0,0,0.12);
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 14px;
+      color: #2C2C28;
+      background: #F7F3EC;
+      outline: none;
+      width: 100%;
+    }
+
+    input:focus { border-color: #C9963A; background: #fff; }
+
+    .btn-login {
+      width: 100%;
+      padding: 14px;
+      background: #C9963A;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 0.5rem;
+      transition: background 0.2s;
+    }
+
+    .btn-login:hover { background: #b8842e; }
+    .btn-login:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .message {
+      text-align: center;
+      margin-top: 1rem;
+      font-size: 14px;
+      padding: 10px;
+      border-radius: 8px;
+      display: none;
+    }
+    .message.error { background: #f4e8e8; color: #6e2d2d; display: block; }
+    .message.success { background: #e8f4e8; color: #2d6e2d; display: block; }
+
+    .register-link {
+      text-align: center;
+      margin-top: 1.5rem;
+      font-size: 13px;
+      color: #888780;
+    }
+
+    .register-link a { color: #C9963A; text-decoration: none; }
+
+    footer { text-align: center; padding: 1.5rem; font-size: 13px; color: #888780; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html" class="logo">Immo<span>CG</span></a>
+  </nav>
+
+  <div class="page">
+    <div class="card">
+      <div class="card-title">Connexion</div>
+      <div class="card-sub">Accédez à votre espace ImmoCG</div>
+
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="email" placeholder="votre@email.com">
+      </div>
+
+      <div class="form-group">
+        <label>Mot de passe</label>
+        <input type="password" id="password" placeholder="••••••••">
+      </div>
+
+      <button class="btn-login" id="btn-login" onclick="seConnecter()">
+        Se connecter
+      </button>
+
+      <div class="message" id="message"></div>
+
+      <div class="register-link">
+        Vous êtes une agence ? <a href="register.html">Créer un compte</a>
+      </div>
+    </div>
+  </div>
+
+  <footer>ImmoCG · Brazzaville, Congo · 2026</footer>
+
+  <script>
+    // Si déjà connecté, rediriger
+    const token = localStorage.getItem('immocg_token')
+    const user = JSON.parse(localStorage.getItem('immocg_user') || 'null')
+    if (token && user) {
+      if (user.role === 'admin') window.location.href = 'admin.html'
+      else window.location.href = 'dashboard.html'
+    }
+
+    async function seConnecter() {
+      const email = document.getElementById('email').value
+      const password = document.getElementById('password').value
+      const btn = document.getElementById('btn-login')
+
+      if (!email || !password) {
+        afficherMessage('Veuillez remplir tous les champs.', 'error')
+        return
+      }
+
+      btn.disabled = true
+      btn.textContent = 'Connexion...'
+
+      try {
+        const r = await fetch('/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, mot_de_passe: password })
+        })
+        const data = await r.json()
+
+        if (data.success) {
+          localStorage.setItem('immocg_token', data.token)
+          localStorage.setItem('immocg_user', JSON.stringify(data.user))
+          afficherMessage('✅ Connexion réussie ! Redirection...', 'success')
+          setTimeout(() => {
+            if (data.user.role === 'admin') window.location.href = 'admin.html'
+            else window.location.href = 'dashboard.html'
+          }, 1000)
+        } else {
+          afficherMessage(data.message, 'error')
+          btn.disabled = false
+          btn.textContent = 'Se connecter'
+        }
+      } catch (err) {
+        afficherMessage('Erreur de connexion au serveur.', 'error')
+        btn.disabled = false
+        btn.textContent = 'Se connecter'
+      }
+    }
+
+    function afficherMessage(msg, type) {
+      const el = document.getElementById('message')
+      el.textContent = msg
+      el.className = 'message ' + type
+    }
+
+    // Connexion avec Entrée
+    document.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') seConnecter()
+    })
+  </script>
+</body>
+</html>

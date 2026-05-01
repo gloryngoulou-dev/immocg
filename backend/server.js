@@ -16,17 +16,17 @@ app.get('/bien', (req, res) => {
 
 const biensRoutes = require('./routes/biens')
 const uploadRoutes = require('./routes/upload')
+const uploadVideoRoutes = require('./routes/upload-video')
+const { router: authRoutes } = require('./routes/auth')
 
 app.use('/biens', biensRoutes)
 app.use('/upload', uploadRoutes)
+app.use('/upload-video', uploadVideoRoutes)
+app.use('/auth', authRoutes)
 
 app.get('/api', (req, res) => {
   res.json({ message: 'Serveur ImmoCG fonctionne !' })
 })
-
-const uploadVideoRoutes = require('./routes/upload-video')
-app.use('/upload-video', uploadVideoRoutes)
-
 const PORT = process.env.PORT || 3000
 app.listen(PORT, () => {
   console.log(`Serveur démarré sur http://localhost:${PORT}`)
