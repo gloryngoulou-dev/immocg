@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ImmoCG — Inscription Agence</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #F7F3EC; color: #2C2C28; min-height: 100vh; display: flex; flex-direction: column; }
+    nav { background: #1A1A18; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+    .logo { font-size: 22px; font-weight: 700; color: #fff; text-decoration: none; }
+    .logo span { color: #C9963A; }
+    nav a { color: #aaa; text-decoration: none; font-size: 14px; }
+
+    .page { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2rem; }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      border: 1px solid rgba(0,0,0,0.08);
+      padding: 2.5rem;
+      width: 100%;
+      max-width: 500px;
+    }
+
+    .card-title { font-size: 24px; font-weight: 700; color: #1A1A18; margin-bottom: 6px; }
+    .card-sub { font-size: 14px; color: #888780; margin-bottom: 2rem; line-height: 1.5; }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group.full { grid-column: 1 / -1; }
+
+    label { font-size: 12px; font-weight: 600; color: #888780; text-transform: uppercase; letter-spacing: 0.3px; }
+
+    input {
+      border: 1px solid rgba(0,0,0,0.12);
+      border-radius: 8px;
+      padding: 11px 14px;
+      font-size: 14px;
+      color: #2C2C28;
+      background: #F7F3EC;
+      outline: none;
+      width: 100%;
+    }
+    input:focus { border-color: #C9963A; background: #fff; }
+
+    .info-box {
+      background: #fffdf5;
+      border: 1px solid #C9963A;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 13px;
+      color: #7A5A1A;
+      line-height: 1.6;
+      margin-bottom: 1.5rem;
+    }
+
+    .btn-register {
+      width: 100%;
+      padding: 14px;
+      background: #C9963A;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 1.2rem;
+      transition: background 0.2s;
+    }
+    .btn-register:hover { background: #b8842e; }
+    .btn-register:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .message { text-align: center; margin-top: 1rem; font-size: 14px; padding: 12px; border-radius: 8px; display: none; }
+    .message.error { background: #f4e8e8; color: #6e2d2d; display: block; }
+    .message.success { background: #e8f4e8; color: #2d6e2d; display: block; }
+
+    .login-link { text-align: center; margin-top: 1.5rem; font-size: 13px; color: #888780; }
+    .login-link a { color: #C9963A; text-decoration: none; }
+
+    footer { text-align: center; padding: 1.5rem; font-size: 13px; color: #888780; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html" class="logo">Immo<span>CG</span></a>
+    <a href="login.html">Déjà inscrit ? Se connecter</a>
+  </nav>
+
+  <div class="page">
+    <div class="card">
+      <div class="card-title">Devenir partenaire</div>
+      <div class="card-sub">Créez votre compte agence pour publier vos biens sur ImmoCG.</div>
+
+      <div class="info-box">
+        ⏳ Votre compte sera vérifié par notre équipe avant activation. Vous recevrez une confirmation sous 24h.
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Nom de l'agence *</label>
+          <input type="text" id="nom_agence" placeholder="ex: Agence Horizon Immo">
+        </div>
+        <div class="form-group">
+          <label>Votre nom *</label>
+          <input type="text" id="nom" placeholder="ex: Jean Moukala">
+        </div>
+        <div class="form-group">
+          <label>Téléphone *</label>
+          <input type="tel" id="telephone" placeholder="+242 06 000 0000">
+        </div>
+        <div class="form-group full">
+          <label>Email *</label>
+          <input type="email" id="email" placeholder="agence@email.com">
+        </div>
+        <div class="form-group full">
+          <label>Mot de passe *</label>
+          <input type="password" id="mot_de_passe" placeholder="Minimum 6 caractères">
+        </div>
+      </div>
+
+      <button class="btn-register" id="btn-register" onclick="sInscrire()">
+        Envoyer ma demande
+      </button>
+      <div class="message" id="message"></div>
+
+      <div class="login-link">
+        Déjà un compte ? <a href="login.html">Se connecter</a>
+      </div>
+    </div>
+  </div>
+
+  <footer>ImmoCG · Brazzaville, Congo · 2026</footer>
+
+  <script>
+    async function sInscrire() {
+      const nom_agence = document.getElementById('nom_agence').value
+      const nom = document.getElementById('nom').value
+      const telephone = document.getElementById('telephone').value
+      const email = document.getElementById('email').value
+      const mot_de_passe = document.getElementById('mot_de_passe').value
+      const btn = document.getElementById('btn-register')
+
+      if (!nom_agence || !nom || !email || !mot_de_passe || !telephone) {
+        afficherMessage('Veuillez remplir tous les champs.', 'error')
+        return
+      }
+
+      if (mot_de_passe.length < 6) {
+        afficherMessage('Le mot de passe doit faire au moins 6 caractères.', 'error')
+        return
+      }
+
+      btn.disabled = true
+      btn.textContent = 'Envoi en cours...'
+
+      try {
+        const r = await fetch('/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nom_agence, nom, telephone, email, mot_de_passe })
+        })
+        const data = await r.json()
+
+        if (data.success) {
+          afficherMessage('✅ Demande envoyée ! Notre équipe va examiner votre dossier sous 24h.', 'success')
+          btn.textContent = 'Demande envoyée'
+        } else {
+          afficherMessage(data.message, 'error')
+          btn.disabled = false
+          btn.textContent = 'Envoyer ma demande'
+        }
+      } catch (err) {
+        afficherMessage('Erreur de connexion au serveur.', 'error')
+        btn.disabled = false
+        btn.textContent = 'Envoyer ma demande'
+      }
+    }
+
+    function afficherMessage(msg, type) {
+      const el = document.getElementById('message')
+      el.textContent = msg
+      el.className = 'message ' + type
+    }
+  </script>
+</body>
+</html>

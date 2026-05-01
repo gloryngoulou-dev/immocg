@@ -215,8 +215,10 @@
       <a href="#">Acheter</a>
       <a href="#">Louer</a>
       <a href="publier.html">Publier une annonce</a>
+      <a href="login.html" id="nav-login" style="background:#C9963A;color:#fff;padding:6px 16px;border-radius:6px;margin-left:1rem;">Connexion</a>
+      <a href="admin.html" id="nav-admin" style="display:none;background:#1A1A18;color:#C9963A;padding:6px 16px;border-radius:6px;margin-left:1rem;"></a>
     </div>
-  </nav>
+</nav>
 
   <!-- HERO -->
   <section class="hero">
@@ -327,6 +329,16 @@
     // Aller vers la page détail
     function voirBien(id) {
   window.location.href = `/bien.html?id=` + id
+}
+
+// Gérer l'affichage selon connexion
+const userConnecte = JSON.parse(localStorage.getItem('immocg_user') || 'null')
+if (userConnecte) {
+  document.getElementById('nav-login').style.display = 'none'
+  const navAdmin = document.getElementById('nav-admin')
+  navAdmin.style.display = 'inline-block'
+  navAdmin.textContent = userConnecte.nom
+  navAdmin.href = userConnecte.role === 'admin' ? 'admin.html' : 'dashboard.html'
 }
 
     // On charge les biens au démarrage
