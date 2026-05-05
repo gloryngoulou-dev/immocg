@@ -124,6 +124,13 @@
       </button>
       <div class="message" id="message"></div>
 
+      <div class="form-group full" style="margin-top:0.5rem;">
+  <label style="display:flex;align-items:flex-start;gap:10px;text-transform:none;font-size:13px;color:#2C2C28;cursor:pointer;">
+    <input type="checkbox" id="conditions" style="width:18px;height:18px;margin-top:2px;accent-color:#C9963A;">
+    <span>J'ai lu et j'accepte les <a href="conditions.html" target="_blank" style="color:#C9963A;">conditions du partenariat ImmoCG</a> incluant l'abonnement de 10 000 FCFA/mois et la commission de 10%.</span>
+  </label>
+</div>
+
       <div class="login-link">
         Déjà un compte ? <a href="login.html">Se connecter</a>
       </div>
@@ -175,6 +182,13 @@
         btn.disabled = false
         btn.textContent = 'Envoyer ma demande'
       }
+
+      const conditions = document.getElementById('conditions').checked
+if (!conditions) {
+  afficherMessage('Veuillez accepter les conditions du partenariat.', 'error')
+  return
+}
+
     }
 
     function afficherMessage(msg, type) {

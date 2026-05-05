@@ -11,6 +11,8 @@ const supabase = createClient(
 
 const JWT_SECRET = process.env.JWT_SECRET || 'immocg_secret_2026'
 
+const { envoyerEmailActivation, envoyerEmailRefus } = require('./email')
+
 // POST /auth/login
 router.post('/login', async (req, res) => {
   const { email, mot_de_passe } = req.body
@@ -117,6 +119,49 @@ router.get('/me', verifierToken, async (req, res) => {
     .single()
 
   res.json({ success: true, user })
+})
+
+// GET /auth/users — liste tous les utilisateurs (admin seulement)
+router.get('/users', verifierToken, async (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ success: false, message: 'Accès refusé' })
+  }
+  const { data, error } = await supabase
+    .from('users')
+    .select('id, nom, email, role, nom_agence, telephone, actif, created_at')
+    .order('created_at', { ascending: false })
+  if (error) return res.status(500).json({ success: false, message: error.message })
+  res.json({ success: true, users: data })
+})
+
+// PATCH /auth/users/:id — activer/désactiver
+router.patch('/users/:id', verifierToken, async (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ success: false, message: 'Accès refusé' })
+  }
+  const { actif } = req.body
+
+  // Récupérer les infos de l'agence
+  const { data: agence } = await supabase
+    .from('users')
+    .select('*')
+    .eq('id', req.params.id)
+    .single()
+
+  const { error } = await supabase
+    .from('users')
+    .update({ actif })
+    .eq('id', req.params.id)
+
+  if (error) return res.status(500).json({ success: false, message: error.message })
+
+  // Envoyer email selon l'action
+  if (agence) {
+    if (actif) await envoyerEmailActivation(agence)
+    else await envoyerEmailRefus(agence)
+  }
+
+  res.json({ success: true })
 })
 
 module.exports = { router, verifierToken }

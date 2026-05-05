@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ImmoCG — Conditions de partenariat</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #F7F3EC; color: #2C2C28; }
+    nav { background: #1A1A18; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+    .logo { font-size: 22px; font-weight: 700; color: #fff; text-decoration: none; }
+    .logo span { color: #C9963A; }
+    nav a { color: #aaa; text-decoration: none; font-size: 14px; }
+
+    .container { max-width: 760px; margin: 3rem auto; padding: 0 2rem 4rem; }
+
+    .header { text-align: center; margin-bottom: 3rem; }
+    .header h1 { font-size: 30px; font-weight: 700; color: #1A1A18; margin-bottom: 8px; }
+    .header p { font-size: 15px; color: #888780; }
+
+    .card {
+      background: #fff;
+      border-radius: 14px;
+      border: 1px solid rgba(0,0,0,0.08);
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .card h2 {
+      font-size: 16px;
+      font-weight: 700;
+      color: #1A1A18;
+      margin-bottom: 1rem;
+      padding-bottom: 0.8rem;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card p {
+      font-size: 14px;
+      color: #444;
+      line-height: 1.8;
+      margin-bottom: 0.8rem;
+    }
+
+    .card p:last-child { margin-bottom: 0; }
+
+    .highlight {
+      background: #fffdf5;
+      border: 1px solid #C9963A;
+      border-radius: 10px;
+      padding: 1.2rem 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .highlight h3 { font-size: 15px; font-weight: 700; color: #7A5A1A; margin-bottom: 0.8rem; }
+
+    .tarif-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 1rem;
+    }
+
+    .tarif-item {
+      background: #F7F3EC;
+      border-radius: 10px;
+      padding: 1rem 1.2rem;
+      text-align: center;
+    }
+
+    .tarif-num {
+      font-size: 24px;
+      font-weight: 700;
+      color: #C9963A;
+      margin-bottom: 4px;
+    }
+
+    .tarif-lbl { font-size: 12px; color: #888780; }
+
+    ul { padding-left: 1.2rem; margin-top: 0.5rem; }
+    ul li {
+      font-size: 14px;
+      color: #444;
+      line-height: 1.8;
+      margin-bottom: 4px;
+    }
+
+    .check { color: #2d6e2d; }
+    .cross { color: #c0392b; }
+
+    .cta {
+      text-align: center;
+      margin-top: 2rem;
+    }
+
+    .btn-sinscrire {
+      display: inline-block;
+      background: #C9963A;
+      color: #fff;
+      padding: 14px 40px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+    .btn-sinscrire:hover { background: #b8842e; }
+
+    .btn-retour {
+      display: inline-block;
+      background: transparent;
+      color: #888780;
+      padding: 14px 30px;
+      border-radius: 8px;
+      font-size: 14px;
+      text-decoration: none;
+      margin-right: 10px;
+      border: 1px solid rgba(0,0,0,0.12);
+    }
+
+    footer { text-align: center; padding: 2rem; font-size: 13px; color: #888780; border-top: 1px solid rgba(0,0,0,0.08); }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html" class="logo">Immo<span>CG</span></a>
+    <a href="register.html">← Retour à l'inscription</a>
+  </nav>
+
+  <div class="container">
+    <div class="header">
+      <h1>Contrat de partenariat</h1>
+      <p>Conditions générales pour les agences et propriétaires partenaires ImmoCG</p>
+    </div>
+
+    <!-- TARIFS -->
+    <div class="highlight">
+      <h3>💰 Offre de lancement — Tarifs partenaire</h3>
+      <div class="tarif-grid">
+        <div class="tarif-item">
+          <div class="tarif-num">10 000</div>
+          <div class="tarif-lbl">FCFA / mois<br>Abonnement mensuel</div>
+        </div>
+        <div class="tarif-item">
+          <div class="tarif-num">10%</div>
+          <div class="tarif-lbl">Commission sur chaque<br>transaction réalisée</div>
+        </div>
+        <div class="tarif-item">
+          <div class="tarif-num">3 mois</div>
+          <div class="tarif-lbl">Durée minimale<br>d'engagement</div>
+        </div>
+        <div class="tarif-item">
+          <div class="tarif-num">Gratuit</div>
+          <div class="tarif-lbl">1er mois offert<br>pour tester</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ARTICLE 1 -->
+    <div class="card">
+      <h2>📋 Article 1 — Objet du contrat</h2>
+      <p>Le présent contrat établit les conditions dans lesquelles <strong>ImmoCG</strong> met à disposition sa plateforme immobilière aux agences et propriétaires partenaires pour la publication et la promotion de biens immobiliers sur le territoire congolais.</p>
+      <p>ImmoCG agit en tant qu'intermédiaire numérique entre les propriétaires/agences et les chercheurs de logement. ImmoCG ne participe pas directement aux transactions immobilières.</p>
+    </div>
+
+    <!-- ARTICLE 2 -->
+    <div class="card">
+      <h2>💳 Article 2 — Abonnement et paiement</h2>
+      <p><strong>Abonnement mensuel :</strong> 10 000 FCFA par mois, payable en début de mois.</p>
+      <p><strong>Commission :</strong> 10% sur chaque location ou vente réalisée grâce à ImmoCG, payable dans les 7 jours suivant la transaction.</p>
+      <p><strong>Durée minimale :</strong> 3 mois d'engagement à partir de la date d'activation du compte.</p>
+      <p><strong>Premier mois gratuit :</strong> Dans le cadre de l'offre de lancement, le premier mois est offert sans engagement.</p>
+      <p><strong>Résiliation :</strong> Après la période minimale de 3 mois, le contrat peut être résilié avec un préavis de 15 jours.</p>
+    </div>
+
+    <!-- ARTICLE 3 -->
+    <div class="card">
+      <h2>📸 Article 3 — Obligations de l'agence partenaire</h2>
+      <p>En devenant partenaire ImmoCG, l'agence s'engage à :</p>
+      <ul>
+        <li>✅ Fournir des <strong>photos réelles et récentes</strong> pour chaque bien publié (minimum 3 photos par annonce)</li>
+        <li>✅ Garantir l'<strong>exactitude des informations</strong> : prix, superficie, localisation, équipements</li>
+        <li>✅ Mettre à jour les annonces dans les <strong>48h</strong> en cas de changement (bien loué, vendu, prix modifié)</li>
+        <li>✅ Répondre aux demandes des clients dans un <strong>délai maximum de 24h</strong></li>
+        <li>✅ Respecter les prix affichés sur la plateforme</li>
+        <li>✅ Signaler à ImmoCG toute transaction réalisée via la plateforme</li>
+        <li>❌ Ne pas publier de biens fictifs ou inexistants</li>
+        <li>❌ Ne pas contacter les clients en dehors du cadre de la transaction immobilière</li>
+        <li>❌ Ne pas proposer des biens appartenant à d'autres agences sans autorisation</li>
+      </ul>
+    </div>
+
+    <!-- ARTICLE 4 -->
+    <div class="card">
+      <h2>🏠 Article 4 — Ce qu'ImmoCG s'engage à faire</h2>
+      <ul>
+        <li>✅ Publier les annonces de l'agence sur la plateforme ImmoCG</li>
+        <li>✅ Transmettre les contacts des clients intéressés directement à l'agence</li>
+        <li>✅ Assurer la visibilité des annonces auprès des chercheurs de logement</li>
+        <li>✅ Fournir un tableau de bord pour gérer les annonces et suivre les contacts</li>
+        <li>✅ Valider chaque annonce avant publication pour garantir la qualité</li>
+        <li>✅ Protéger les données personnelles des agences et clients</li>
+      </ul>
+    </div>
+
+    <!-- ARTICLE 5 -->
+    <div class="card">
+      <h2>⚠️ Article 5 — Sanctions et résiliation</h2>
+      <p>ImmoCG se réserve le droit de <strong>suspendre ou supprimer</strong> le compte d'une agence en cas de :</p>
+      <ul>
+        <li>Publication d'informations fausses ou trompeuses</li>
+        <li>Non-paiement de l'abonnement mensuel</li>
+        <li>Non-déclaration d'une transaction réalisée via ImmoCG</li>
+        <li>Comportement nuisant à la réputation de la plateforme</li>
+        <li>Non-respect des obligations définies à l'article 3</li>
+      </ul>
+      <p style="margin-top:0.8rem;">En cas de résiliation pour faute, l'abonnement du mois en cours reste dû.</p>
+    </div>
+
+    <!-- ARTICLE 6 -->
+    <div class="card">
+      <h2>🔒 Article 6 — Confidentialité des données</h2>
+      <p>ImmoCG s'engage à ne jamais vendre ou partager les données personnelles des agences partenaires à des tiers. Les informations collectées sont utilisées uniquement dans le cadre du fonctionnement de la plateforme.</p>
+      <p>Les coordonnées des clients transmises aux agences ne doivent être utilisées qu'à des fins de transactions immobilières.</p>
+    </div>
+
+    <!-- ARTICLE 7 -->
+    <div class="card">
+      <h2>📍 Article 7 — Juridiction</h2>
+      <p>Le présent contrat est régi par la loi congolaise. En cas de litige, les parties s'engagent à rechercher une solution amiable avant tout recours judiciaire. À défaut, le tribunal compétent de Brazzaville sera saisi.</p>
+      <p>Pour toute question : <strong>contact@immocg.com</strong> | <strong>+242 06 000 0000</strong></p>
+    </div>
+
+    <div class="cta">
+      <a href="register.html" class="btn-retour">← Retour</a>
+      <a href="register.html" class="btn-sinscrire">J'accepte et je m'inscris →</a>
+    </div>
+  </div>
+
+  <footer>ImmoCG · Brazzaville, Congo · 2026 · Tous droits réservés</footer>
+</body>
+</html>
