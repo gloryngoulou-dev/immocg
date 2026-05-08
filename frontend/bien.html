@@ -45,7 +45,12 @@
       gap: 2rem;
     }
 
-    /* GAUCHE */
+    @media (max-width: 768px) {
+      .container {
+        grid-template-columns: 1fr;
+      }
+    }
+
     .bien-img {
       height: 300px;
       background: #E8F0E4;
@@ -94,6 +99,7 @@
 
     .feats {
       display: flex;
+      flex-wrap: wrap;
       gap: 2rem;
       padding: 1.2rem 0;
       border-top: 1px solid rgba(0,0,0,0.08);
@@ -116,7 +122,7 @@
 
     .description {
       font-size: 14px;
-      color: #888780;
+      color: #444;
       line-height: 1.7;
     }
 
@@ -135,7 +141,6 @@
       gap: 6px;
     }
 
-    /* DROITE - CONTACT */
     .contact-card {
       background: #fff;
       border-radius: 14px;
@@ -169,7 +174,9 @@
     }
 
     .agent-nom { font-size: 14px; font-weight: 600; color: #1A1A18; }
-    .agent-role { font-size: 12px; color: #888780; }
+    .agent-role { font-size: 12px; color: #888780; margin-top: 2px; }
+    .agent-phone { font-size: 12px; color: #C9963A; margin-top: 4px; text-decoration: none; display: inline-block; }
+    .agent-email { font-size: 11px; color: #888780; text-decoration: none; display: block; margin-top: 2px; }
 
     .prix-resume {
       background: #F7F3EC;
@@ -182,18 +189,23 @@
     .prix-ligne {
       display: flex;
       justify-content: space-between;
-      margin-bottom: 6px;
-      color: #888780;
+      margin-bottom: 8px;
+      color: #555;
+      padding: 4px 0;
     }
 
-    .prix-ligne:last-child {
+    .prix-ligne.total {
       margin-bottom: 0;
-      font-weight: 600;
+      font-weight: 700;
       color: #1A1A18;
-      padding-top: 8px;
-      border-top: 1px solid rgba(0,0,0,0.08);
+      padding-top: 10px;
+      border-top: 2px solid #C9963A;
       margin-top: 6px;
+      font-size: 15px;
     }
+
+    .prix-ligne span:first-child { font-weight: 500; }
+    .prix-ligne span:last-child { font-weight: 600; }
 
     .btn {
       width: 100%;
@@ -212,7 +224,7 @@
     .btn-outline {
       background: transparent;
       border: 1px solid rgba(0,0,0,0.15);
-      color: #888780;
+      color: #555;
     }
     .btn-outline:hover { border-color: #C9963A; color: #C9963A; }
 
@@ -232,27 +244,76 @@
     }
 
     .galerie { margin-bottom: 1.5rem; }
-.galerie-main {
-  height: 320px;
-  border-radius: 14px;
-  margin-bottom: 8px;
-  transition: background-image 0.3s;
-  background-color: #E8F0E4;
-}
-.galerie-thumbs {
-  display: flex;
-  gap: 8px;
-}
-.galerie-thumbs .thumb {
-  width: 80px;
-  height: 60px;
-  border-radius: 8px;
-  cursor: pointer;
-  border: 2px solid transparent;
-  flex-shrink: 0;
-  background-color: #E8F0E4;
-}
-.galerie-thumbs .thumb.active { border-color: #C9963A; }
+    .galerie-main {
+      height: 320px;
+      border-radius: 14px;
+      margin-bottom: 8px;
+      transition: background-image 0.3s;
+      background-color: #E8F0E4;
+      background-size: cover;
+      background-position: center;
+    }
+    .galerie-thumbs {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+    }
+    .galerie-thumbs .thumb {
+      width: 80px;
+      height: 60px;
+      border-radius: 8px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      flex-shrink: 0;
+      background-color: #E8F0E4;
+      background-size: cover;
+      background-position: center;
+    }
+    .galerie-thumbs .thumb.active { border-color: #C9963A; }
+    
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #1A1A18;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      z-index: 1000;
+      animation: slideIn 0.3s ease;
+    }
+    
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-right: 8px;
+      margin-bottom: 8px;
+    }
+
+    .badge-meuble { background: #E8F0E4; color: #4A7C2E; }
+    .badge-etat { background: #F0E6D9; color: #C9963A; }
+    .badge-stationnement { background: #E3E8F0; color: #2C5F8A; }
+
+    .frais-section {
+      margin-top: 8px;
+    }
+
+    .info-frais {
+      font-size: 10px;
+      color: #888;
+      text-align: center;
+      margin-top: 8px;
+      font-style: italic;
+    }
   </style>
 </head>
 <body>
@@ -275,147 +336,323 @@
   <footer>ImmoCG · Brazzaville, Congo · 2026</footer>
 
   <script>
-    const icones = { 'Villa': '🏡', 'Appartement': '🏢', 'Studio': '🏠' }
+    // Configuration des taux - À MODIFIER SELON VOS TAUX RÉELS
+    const TAUX_CAUTION_MOIS = 2;      // 2 mois de caution (location uniquement)
+    const TAUX_FRAIS_AGENCE = 0.30;   // 30% du loyer ou prix de vente
+    const TAUX_FRAIS_ETAT = 0;     // 10% timbre/enregistrement
+    const TAUX_FRAIS_NOTAIRE = 0.08;  // 8% frais de notaire (pour vente)
 
-    // Récupérer l'ID dans l'URL (ex: bien.html?id=1)
-    const params = new URLSearchParams(window.location.search)
-    const id = params.get('id')
+    // Récupérer l'ID dans l'URL
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+
+    function showToast(message) {
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
 
     async function chargerBien() {
       if (!id) {
         document.getElementById('contenu').innerHTML =
-          '<div class="loading">Aucun bien sélectionné.</div>'
-        return
+          '<div class="loading">Aucun bien sélectionné.</div>';
+        return;
       }
 
       try {
-        const reponse = await fetch(`/biens/${id}`)
-        const data = await reponse.json()
+        const reponse = await fetch(`/biens/${id}`);
+        const data = await reponse.json();
 
         if (!data.success) {
           document.getElementById('contenu').innerHTML =
-            '<div class="loading">Bien introuvable.</div>'
-          return
+            '<div class="loading">Bien introuvable.</div>';
+          return;
         }
 
-        afficherBien(data.bien)
+        afficherBien(data.bien);
 
       } catch (erreur) {
-        document.getElementById('contenu').innerHTML =
-          '<div class="loading">Erreur de connexion au serveur.</div>'
+        console.error('Erreur:', erreur);
+        document.getElementById('contenu').innerHTML = `
+          <div class="loading">
+            ⚠️ Erreur de connexion au serveur.<br>
+            <small>Vérifiez que l'API /biens/${id} est accessible.</small>
+          </div>`;
       }
     }
 
     function afficherBien(b) {
-      document.title = `ImmoCG — ${b.type} à ${b.quartier}`
-      document.getElementById('breadcrumb-type').textContent =
-        `${b.type} à ${b.quartier}`
+      // Récupération des champs
+      const titre = b.titre || b.Titre || `${b.Type || b.type || 'Bien'} à ${b.Quartier || b.quartier || ''}`;
+      const type = b.Type || b.type || 'Bien';
+      const quartier = b.Quartier || b.quartier || '';
+      const ville = b.ville || 'Brazzaville';
+      const adresse = b.adresse || '';
+      const prix = b.Prix || b.prix || 0;
+      const unite = b.Unissez_vous || 'FCFA';
+      const mode = (b.Mode || b.mode || 'location').toLowerCase();
+      const chambres = b.Chambres || b.chambres || 0;
+      const sallesBain = b.salles_bain || 0;
+      const surface = b.Surface || b.surface || 0;
+      const surfaceTerrain = b.surface_terrain || 0;
+      const description = b.Description || b.description || 'Aucune description disponible.';
+      const etat = b.ETAT || b.etat || '';
+      const meuble = b.meuble || '';
+      const etage = b.Etage || b.etage || '';
+      const stationnement = b.Stationnement || b.stationnement || '';
+      
+      // Images
+      let images = [];
+      if (b.Images && Array.isArray(b.Images)) {
+        images = b.Images;
+      } else if (b.images && Array.isArray(b.images)) {
+        images = b.images;
+      } else if (b.image_url) {
+        images = [b.image_url];
+      }
+      
+      const imagePrincipale = images.length > 0 ? images[0] : 'https://placehold.co/800x400?text=Image+non+disponible';
 
-      const caution = b.prix * 2
-      const frais = Math.round(b.prix * 0.5)
-      const total = b.prix + caution + frais
+      // Équipements
+      let equipements = [];
+      if (b.Équipements && Array.isArray(b.Équipements)) {
+        equipements = b.Équipements;
+      } else if (b.equipements && Array.isArray(b.equipements)) {
+        equipements = b.equipements;
+      }
+
+      // Contact
+      const contactNom = b.contact_nom || 'Agence ImmoCG';
+      const contactTel = b.contact_tel || b.Téléphone || '+242 05 123 4567';
+      const contactWhatsapp = b.contact_whatsapp || '';
+      const contactEmail = b.contact_email || 'contact@immocg.com';
+      const contactInitiales = contactNom !== 'Agence ImmoCG' 
+        ? contactNom.split(' ').map(n => n[0]).join('').substring(0, 2) 
+        : 'AG';
+
+      // ========== CALCUL DES FRAIS (TOUJOURS AFFICHÉS) ==========
+      const fraisAgence = Math.round(prix * TAUX_FRAIS_AGENCE);
+      const fraisEtat = Math.round(prix * TAUX_FRAIS_ETAT);
+      
+      let caution = 0;
+      let fraisNotaire = 0;
+      let total = prix;
+      let detailsHTML = '';
+
+      if (mode === 'location') {
+        // Pour une location
+        caution = prix * TAUX_CAUTION_MOIS;
+        total = prix + caution + fraisAgence + fraisEtat;
+        
+        detailsHTML = `
+          <div class="prix-ligne">
+            <span>🏠 Loyer mensuel</span>
+            <span>${prix.toLocaleString('fr-FR')} FCFA</span>
+          </div>
+          <div class="prix-ligne">
+            <span>🔒 Caution (${TAUX_CAUTION_MOIS} mois)</span>
+            <span>${caution.toLocaleString('fr-FR')} FCFA</span>
+          </div>
+          <div class="prix-ligne">
+            <span>🏢 Frais d'agence (${Math.round(TAUX_FRAIS_AGENCE * 100)}%)</span>
+            <span>${fraisAgence.toLocaleString('fr-FR')} FCFA</span>
+          </div>
+          <div class="prix-ligne">
+            <span>📜 Timbre/Enregistrement (${Math.round(TAUX_FRAIS_ETAT * 100)}%)</span>
+            <span>${fraisEtat.toLocaleString('fr-FR')} FCFA</span>
+          </div>
+          <div class="prix-ligne total">
+            <span>💰 TOTAL ENTRÉE</span>
+            <span>${total.toLocaleString('fr-FR')} FCFA</span>
+          </div>
+          <div class="info-frais">
+            ⓘ Loyer mensuel hors charges. Caution remboursable sous conditions.
+          </div>
+        `;
+      } else {
+        // Pour une vente
+        fraisNotaire = Math.round(prix * TAUX_FRAIS_NOTAIRE);
+        total = prix + fraisAgence + fraisNotaire + fraisEtat;
+        
+        detailsHTML = `
+          <div class="prix-ligne">
+            <span>🏠 Prix de vente</span>
+            <span>${prix.toLocaleString('fr-FR')} FCFA</span>
+          </div>
+          <div class="prix-ligne">
+            <span>🏢 Frais d'agence (${Math.round(TAUX_FRAIS_AGENCE * 100)}%)</span>
+            <span>${fraisAgence.toLocaleString('fr-FR')} FCFA</span>
+          </div>
+          <div class="prix-ligne">
+            <span>⚖️ Frais de notaire (${Math.round(TAUX_FRAIS_NOTAIRE * 100)}%)</span>
+            <span>${fraisNotaire.toLocaleString('fr-FR')} FCFA</span>
+          </div>
+          <div class="prix-ligne">
+            <span>📜 Frais d'enregistrement (${Math.round(TAUX_FRAIS_ETAT * 100)}%)</span>
+            <span>${fraisEtat.toLocaleString('fr-FR')} FCFA</span>
+          </div>
+          <div class="prix-ligne total">
+            <span>💰 TOTAL FRAIS D'ACQUISITION</span>
+            <span>${total.toLocaleString('fr-FR')} FCFA</span>
+          </div>
+          <div class="info-frais">
+            ⓘ Prix net vendeur + frais. Sous réserve de modifications légales.
+          </div>
+        `;
+      }
+
+      // Badges
+      const badges = [];
+      if (meuble) badges.push(`<span class="badge badge-meuble">${meuble === 'oui' ? '🏠 Meublé' : '🔑 Non meublé'}</span>`);
+      if (etat) badges.push(`<span class="badge badge-etat">🔧 ${etat}</span>`);
+      if (stationnement) badges.push(`<span class="badge badge-stationnement">🅿️ ${stationnement}</span>`);
+      if (etage && etage !== '0') badges.push(`<span class="badge">📌 Étage: ${etage}</span>`);
+
+      const adresseComplete = [adresse, quartier, ville].filter(a => a && a.trim()).join(', ');
 
       document.getElementById('contenu').innerHTML = `
         <div>
-<div class="galerie">
-  <div class="galerie-main" id="main-photo" style="background-image:url(${b.images && b.images[0] ? b.images[0] : b.image_url});background-size:cover;background-position:center;"></div>
-  ${b.images && b.images.length > 1 ? `
-  <div class="galerie-thumbs">
-    ${b.images.map((url, i) => `
-      <div class="thumb ${i===0?'active':''}" onclick="changePhoto('${url}', this)" style="background-image:url(${url});background-size:cover;background-position:center;"></div>
-    `).join('')}
-  </div>` : ''}
-</div>
+          <div class="galerie">
+            <div class="galerie-main" id="main-photo" style="background-image:url(${imagePrincipale});"></div>
+            ${images.length > 1 ? `
+            <div class="galerie-thumbs">
+              ${images.map((url, i) => `
+                <div class="thumb ${i===0?'active':''}" style="background-image:url(${url});" 
+                     onclick="changePhoto('${url}', this)"></div>
+              `).join('')}
+            </div>` : ''}
+          </div>
 
-<div class="bien-type">${b.type} · À ${b.mode}</div>
-          <div class="bien-titre">${b.type} à ${b.quartier}</div>
-          <div class="bien-loc">📍 ${b.quartier}, ${b.ville} · Réf. IMC-00${b.id}</div>
+          <div class="bien-type">${type} · ${mode === 'location' ? '📍 À LOUER' : '💰 À VENDRE'}</div>
+          <div class="bien-titre">${titre}</div>
+          <div class="bien-loc">
+            📍 ${adresseComplete || quartier} · Réf. IMC-${String(b.id).padStart(4, '0')}
+          </div>
+          
           <div class="bien-prix">
-            ${b.prix.toLocaleString('fr-FR')}
-            <span>${b.unite}</span>
+            ${prix.toLocaleString('fr-FR')}
+            <span>${unite}${mode === 'location' ? '/mois' : ''}</span>
           </div>
 
           <div class="feats">
             <div class="feat">
               <span class="feat-icon">🛏</span>
-              <div class="feat-val">${b.chambres}</div>
+              <div class="feat-val">${chambres}</div>
               <div class="feat-lbl">Chambres</div>
             </div>
             <div class="feat">
               <span class="feat-icon">🚿</span>
-              <div class="feat-val">${b.salles_bain}</div>
+              <div class="feat-val">${sallesBain}</div>
               <div class="feat-lbl">Salles de bain</div>
             </div>
             <div class="feat">
               <span class="feat-icon">📐</span>
-              <div class="feat-val">${b.surface}m²</div>
-              <div class="feat-lbl">Surface</div>
+              <div class="feat-val">${surface}m²</div>
+              <div class="feat-lbl">Surface habitable</div>
             </div>
+            ${surfaceTerrain > 0 ? `
+            <div class="feat">
+              <span class="feat-icon">🌳</span>
+              <div class="feat-val">${surfaceTerrain}m²</div>
+              <div class="feat-lbl">Terrain</div>
+            </div>` : ''}
           </div>
 
+          ${badges.length > 0 ? `
+          <div class="section-titre">Caractéristiques</div>
+          <div>${badges.join('')}</div>` : ''}
+
           <div class="section-titre">Description</div>
-          <div class="description">${b.description}</div>
+          <div class="description">${description.replace(/\n/g, '<br>')}</div>
 
-          
           ${b.video_url ? `
-<div class="section-titre">Vidéo</div>
-<div style="position:relative;padding-bottom:56.25%;height:0;border-radius:12px;overflow:hidden;margin-bottom:1.5rem;">
-  <iframe src="${b.video_url.includes('youtube') ? b.video_url.replace('watch?v=', 'embed/') : b.video_url}" 
-    style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;"
-    allowfullscreen></iframe>
-</div>` : ''}
+          <div class="section-titre">Visite virtuelle</div>
+          <div style="position:relative;padding-bottom:56.25%;height:0;border-radius:12px;overflow:hidden;margin-bottom:1.5rem;">
+            <iframe src="${b.video_url.includes('youtube') ? b.video_url.replace('watch?v=', 'embed/') : b.video_url}" 
+              style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;"
+              allowfullscreen></iframe>
+          </div>` : ''}
 
-<div class="section-titre">Équipements</div>
-<div class="equipements">
-  ${b.equipements && b.equipements.length > 0 
-    ? b.equipements.map(e => `<div class="equip">✅ ${e}</div>`).join('') 
-    : '<div class="equip" style="color:#888780">Aucun équipement renseigné</div>'}
-</div>
+          <div class="section-titre">Équipements & services</div>
+          <div class="equipements">
+            ${equipements.length > 0 
+              ? equipements.map(e => `<div class="equip">✅ ${typeof e === 'string' ? e : e.nom || e}</div>`).join('') 
+              : '<div class="equip" style="color:#888780">Aucun équipement renseigné</div>'}
+          </div>
         </div>
 
         <div class="contact-card">
           <div class="agent">
-            <div class="agent-avatar">AG</div>
+            <div class="agent-avatar">${contactInitiales}</div>
             <div>
-              <div class="agent-nom">Agence ImmoCG</div>
-              <div class="agent-role">Agent certifié</div>
+              <div class="agent-nom">${contactNom}</div>
+              <div class="agent-role">Agent immobilier</div>
+              ${contactTel && contactTel !== '+242 05 123 4567' ? `<a href="tel:${contactTel}" class="agent-phone">📞 ${contactTel}</a>` : ''}
+              ${contactWhatsapp ? `<a href="https://wa.me/${contactWhatsapp.replace(/[^0-9]/g, '')}" class="agent-phone" target="_blank">💬 WhatsApp</a>` : ''}
+              ${contactEmail ? `<a href="mailto:${contactEmail}" class="agent-email">✉️ ${contactEmail}</a>` : ''}
             </div>
           </div>
 
           <div class="prix-resume">
-            <div class="prix-ligne">
-              <span>Loyer mensuel</span>
-              <span>${b.prix.toLocaleString('fr-FR')} FCFA</span>
-            </div>
-            <div class="prix-ligne">
-              <span>Caution (2 mois)</span>
-              <span>${caution.toLocaleString('fr-FR')} FCFA</span>
-            </div>
-            <div class="prix-ligne">
-              <span>Frais d'agence</span>
-              <span>${frais.toLocaleString('fr-FR')} FCFA</span>
-            </div>
-            <div class="prix-ligne">
-              <span>Total à prévoir</span>
-              <span>${total.toLocaleString('fr-FR')} FCFA</span>
-            </div>
+            ${detailsHTML}
           </div>
 
-          <button class="btn btn-primary">📞 Contacter l'agence</button>
-          <button class="btn btn-outline">💬 Envoyer un message</button>
-          <button class="btn btn-outline">❤️ Sauvegarder</button>
+          <button class="btn btn-primary" onclick="contacterAgence('${contactNom.replace(/'/g, "\\'")}', '${contactTel}')">📞 Contacter ${contactNom.split(' ')[0]}</button>
+          <button class="btn btn-outline" onclick="envoyerMessage(${b.id}, '${contactWhatsapp || contactTel}')">💬 Envoyer un message</button>
+          <button class="btn btn-outline" onclick="sauvegarderBien(${b.id})">❤️ Sauvegarder</button>
         </div>
-      `
+      `;
+    }
+
+    // Fonctions interactives
+    function contacterAgence(nom, phone) {
+      if (!phone || phone === '+242 05 123 4567') {
+        showToast(`📞 Contactez ${nom} via le formulaire de contact`);
+        return;
+      }
+      if (confirm(`Voulez-vous appeler ${nom} au ${phone} ?`)) {
+        window.location.href = `tel:${phone}`;
+      }
+    }
+
+    function envoyerMessage(bienId, whatsapp) {
+      const message = prompt("Votre message :\n\nExprimez votre intérêt pour ce bien :");
+      if (message && message.trim()) {
+        if (whatsapp && whatsapp !== '+242 05 123 4567') {
+          const numClean = whatsapp.replace(/[^0-9]/g, '');
+          if (numClean && numClean.length > 8) {
+            const url = `https://wa.me/${numClean}?text=${encodeURIComponent(message + '\n\nBien #' + bienId)}`;
+            window.open(url, '_blank');
+            return;
+          }
+        }
+        showToast(`✓ Message envoyé à l'agence. Nous vous répondrons sous 24h.`);
+        console.log(`Message pour bien #${bienId}:`, message);
+      }
+    }
+
+    function sauvegarderBien(bienId) {
+      let favoris = JSON.parse(localStorage.getItem('favoris_immocg') || '[]');
+      if (!favoris.includes(bienId)) {
+        favoris.push(bienId);
+        localStorage.setItem('favoris_immocg', JSON.stringify(favoris));
+        showToast(`✓ Bien ajouté à vos favoris (${favoris.length} bien(s))`);
+      } else {
+        favoris = favoris.filter(id => id !== bienId);
+        localStorage.setItem('favoris_immocg', JSON.stringify(favoris));
+        showToast(`❤️ Bien retiré de vos favoris`);
+      }
     }
 
     function changePhoto(url, el) {
-  document.getElementById('main-photo').style.backgroundImage = `url(${url})`
-  document.querySelectorAll('.galerie-thumbs .thumb').forEach(t => t.classList.remove('active'))
-  el.classList.add('active')
-}
+      document.getElementById('main-photo').style.backgroundImage = `url(${url})`;
+      document.querySelectorAll('.galerie-thumbs .thumb').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+    }
 
-    chargerBien()
+    chargerBien();
   </script>
-
 </body>
 </html>

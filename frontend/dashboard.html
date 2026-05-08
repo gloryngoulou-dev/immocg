@@ -158,11 +158,7 @@
       const tousLesBiens = data.biens || []
 
       // Filtrer par agence (contact_nom ou contact_email)
-      const mesBiens = tousLesBiens.filter(b =>
-        b.contact_email === user.email ||
-        b.contact_nom === user.nom_agence ||
-        b.contact_nom === user.nom
-      )
+      const mesBiens = tousLesBiens.filter(b => b.user_id === user.id)
 
       document.getElementById('nb-total').textContent = mesBiens.length
       document.getElementById('nb-disponible').textContent = mesBiens.filter(b => b.statut === 'disponible').length

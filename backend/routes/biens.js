@@ -27,10 +27,10 @@ router.get('/:id', async (req, res) => {
 })
 
 router.post('/', async (req, res) => {
-  const { type, quartier, ville, prix, unite, mode, chambres, salles_bain, surface, surface_terrain, description, titre, adresse, etat, meuble, etage, parking, contact_nom, contact_tel, contact_whatsapp, contact_email, image_url, images, video_url, equipements } = req.body
+  const { type, quartier, ville, prix, unite, mode, chambres, salles_bain, surface, surface_terrain, description, titre, adresse, etat, meuble, etage, parking, contact_nom, contact_tel, contact_whatsapp, contact_email, image_url, images, video_url, equipements, user_id } = req.body
   const { data, error } = await supabase
     .from('biens')
-    .insert([{ type, quartier, ville, prix, unite, mode, chambres, salles_bain, surface, surface_terrain, description, titre, adresse, etat, meuble, etage, parking, contact_nom, contact_tel, contact_whatsapp, contact_email, image_url, images, video_url, equipements }])
+    .insert([{ type, quartier, ville, prix, unite, mode, chambres, salles_bain, surface, surface_terrain, description, titre, adresse, etat, meuble, etage, parking, contact_nom, contact_tel, contact_whatsapp, contact_email, image_url, images, video_url, equipements, user_id }])
     .select()
   if (error) return res.status(500).json({ success: false, message: error.message })
   res.json({ success: true, bien: data[0] })

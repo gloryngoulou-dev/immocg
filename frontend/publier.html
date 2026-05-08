@@ -495,6 +495,7 @@ async function publierBien() {
   contact_email: document.getElementById('contact_email').value,
   description: document.getElementById('description').value,
   image_url: urls[0] || null,
+  user_id: JSON.parse(localStorage.getItem('immocg_user') || 'null')?.id || null,
   images: urls,
   equipements: equipements,
   video_url: await uploaderVideo()
