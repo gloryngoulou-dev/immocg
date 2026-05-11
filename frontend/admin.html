@@ -278,44 +278,57 @@
 
   // Charger les biens
   async function chargerBiens() {
-    const r = await fetch('/biens')
-    const data = await r.json()
-    const biens = data.biens || []
+  const r = await fetch('/biens?admin=true')
+  const data = await r.json()
+  const biens = data.biens || []
 
-    document.getElementById('nb-biens').textContent = biens.filter(b => b.statut === 'disponible').length
-    document.getElementById('nb-attente').textContent = biens.filter(b => b.statut === 'attente').length
+  document.getElementById('nb-biens').textContent = biens.filter(b => b.statut === 'disponible').length
+  document.getElementById('nb-attente').textContent = biens.filter(b => b.statut === 'attente').length
 
-    const tbody = document.getElementById('tbody-biens')
-    if (biens.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="6" class="empty">Aucune annonce pour le moment</td></tr>'
-      return
-    }
-
-    tbody.innerHTML = biens.map(b => `
-      <tr>
-        <td>
-          <div class="bien-img-mini" style="${b.image_url ? `background-image:url(${b.image_url});background-size:cover;background-position:center;font-size:0;` : ''}">
-            ${b.image_url ? '' : '🏠'}
-          </div>
-        </td>
-        <td>
-          <div style="font-weight:500;">${b.type}</div>
-          <div style="font-size:12px;color:#888780;">${b.titre || ''}</div>
-        </td>
-        <td>${parseInt(b.prix).toLocaleString('fr-FR')} ${b.unite}</td>
-        <td>${b.quartier}, ${b.ville}</td>
-        <td>
-          <span class="badge ${b.statut === 'disponible' ? 'valide' : b.statut === 'attente' ? 'attente' : 'refuse'}">
-            ${b.statut === 'disponible' ? 'Publié' : b.statut === 'attente' ? 'En attente' : b.statut}
-          </span>
-        </td>
-        <td>
-          <button class="btn-sm btn-voir" onclick="window.open('bien.html?id=${b.id}')">Voir</button>
-          <button class="btn-sm btn-supprimer" onclick="supprimerBien(${b.id})">Supprimer</button>
-        </td>
-      </tr>
-    `).join('')
+  const tbody = document.getElementById('tbody-biens')
+  if (biens.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">Aucune annonce pour le moment</td></tr>'
+    return
   }
+
+  tbody.innerHTML = biens.map(b => `
+    <tr>
+      <td>
+        <div class="bien-img-mini" style="${b.image_url ? `background-image:url(${b.image_url});background-size:cover;background-position:center;font-size:0;` : ''}">
+          ${b.image_url ? '' : '🏠'}
+        </div>
+      </td>
+      <td>
+        <div style="font-weight:500;">${b.type}</div>
+        <div style="font-size:12px;color:#888780;">${b.titre || ''}</div>
+      </td>
+      <td>${parseInt(b.prix).toLocaleString('fr-FR')} ${b.unite}</td>
+      <td>${b.quartier}, ${b.ville}</td>
+      <td>
+        <span class="badge ${b.statut === 'disponible' ? 'valide' : b.statut === 'attente' ? 'attente' : 'refuse'}">
+          ${b.statut === 'disponible' ? 'Publié' : b.statut === 'attente' ? 'En attente' : b.statut}
+        </span>
+      </td>
+      <td>
+        ${b.statut === 'attente' ? `
+          <button class="btn-sm btn-valider" onclick="changerStatutBien(${b.id}, 'disponible')">✅ Valider</button>
+          <button class="btn-sm btn-refuser" onclick="changerStatutBien(${b.id}, 'refuse')">❌ Refuser</button>
+        ` : ''}
+        <button class="btn-sm btn-voir" onclick="window.open('bien.html?id=${b.id}')">Voir</button>
+        <button class="btn-sm btn-supprimer" onclick="supprimerBien(${b.id})">Supprimer</button>
+      </td>
+    </tr>
+  `).join('')
+}
+
+async function changerStatutBien(id, statut) {
+  await fetch('/biens/' + id + '/statut', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ statut })
+  })
+  chargerBiens()
+}
 
   // Charger les agences
   async function chargerAgences() {

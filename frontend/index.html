@@ -3,347 +3,430 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ImmoCG — Trouvez votre logement</title>
+  <title>ImmoCG — Trouvez votre logement au Congo</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #F7F3EC; color: #2C2C28; }
 
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #F7F3EC;
-      color: #2C2C28;
-    }
-
-    /* NAVBAR */
-    nav {
-      background: #1A1A18;
-      padding: 1rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .logo {
-      font-size: 22px;
-      font-weight: 700;
-      color: #fff;
-    }
-
+    /* NAV */
+    nav { background: #1A1A18; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+    .logo { font-size: 22px; font-weight: 700; color: #fff; }
     .logo span { color: #C9963A; }
-
-    nav a {
-      color: #aaa;
-      text-decoration: none;
-      font-size: 14px;
-      margin-left: 1.5rem;
-    }
-
-    nav a:hover { color: #C9963A; }
+    .nav-links { display: flex; align-items: center; gap: 1.5rem; }
+    .nav-links a { color: #aaa; text-decoration: none; font-size: 14px; transition: color 0.2s; }
+    .nav-links a:hover { color: #C9963A; }
+    .nav-btn { background: #C9963A; color: #fff !important; padding: 7px 18px; border-radius: 6px; }
+    .nav-btn:hover { background: #b8842e; }
+    .nav-user-btn { background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #aaa !important; padding: 7px 18px; border-radius: 6px; }
 
     /* HERO */
     .hero {
+      background: linear-gradient(135deg, #1A1A18 0%, #2C2C28 100%);
+      padding: 5rem 2rem 4rem;
       text-align: center;
-      padding: 4rem 2rem 2rem;
+      position: relative;
+      overflow: hidden;
     }
-
-    .hero h1 {
-      font-size: 42px;
-      font-weight: 700;
-      color: #1A1A18;
-      margin-bottom: 1rem;
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(ellipse at 50% 0%, rgba(201,150,58,0.15) 0%, transparent 70%);
     }
-
+    .hero-badge {
+      display: inline-block;
+      background: rgba(201,150,58,0.2);
+      color: #C9963A;
+      border: 1px solid rgba(201,150,58,0.3);
+      padding: 5px 16px;
+      border-radius: 40px;
+      font-size: 12px;
+      font-weight: 500;
+      margin-bottom: 1.5rem;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .hero h1 { font-size: clamp(28px, 5vw, 52px); font-weight: 700; color: #fff; line-height: 1.15; margin-bottom: 1rem; }
     .hero h1 span { color: #C9963A; }
+    .hero p { font-size: 16px; color: rgba(255,255,255,0.6); margin-bottom: 2.5rem; max-width: 520px; margin-left: auto; margin-right: auto; }
 
-    .hero p {
-      font-size: 16px;
-      color: #888780;
-      margin-bottom: 2rem;
-    }
-
-    /* BARRE DE RECHERCHE */
-    .search-bar {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-bottom: 1rem;
-    }
-
-    .search-bar input,
-    .search-bar select {
-      padding: 12px 16px;
-      border: 1px solid rgba(0,0,0,0.12);
-      border-radius: 8px;
-      font-size: 14px;
+    .search-box {
       background: #fff;
-      outline: none;
+      border-radius: 12px;
+      padding: 8px;
+      display: flex;
+      gap: 8px;
+      max-width: 680px;
+      margin: 0 auto 1.5rem;
+      flex-wrap: wrap;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
     }
-
-    .search-bar button {
-      padding: 12px 28px;
+    .search-box input, .search-box select {
+      flex: 1;
+      min-width: 140px;
+      border: none;
+      outline: none;
+      padding: 10px 14px;
+      font-size: 14px;
+      font-family: 'Segoe UI', sans-serif;
+      background: #F7F3EC;
+      border-radius: 8px;
+      color: #2C2C28;
+    }
+    .search-box button {
       background: #C9963A;
       color: #fff;
       border: none;
       border-radius: 8px;
+      padding: 10px 24px;
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
+      white-space: nowrap;
     }
+    .search-box button:hover { background: #b8842e; }
 
-    .search-bar button:hover { background: #b8842e; }
-
-    /* SECTION BIENS */
-    .section {
-      max-width: 1000px;
-      margin: 3rem auto;
-      padding: 0 2rem;
-    }
-
-    .section h2 {
-      font-size: 24px;
-      font-weight: 700;
-      margin-bottom: 1.5rem;
-      color: #1A1A18;
-    }
-
-    /* GRILLE DE CARDS */
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 20px;
-    }
-
-    .card {
-      background: #fff;
-      border-radius: 14px;
-      overflow: hidden;
-      border: 1px solid rgba(0,0,0,0.08);
-      transition: transform 0.2s;
+    .hero-tags { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+    .hero-tag {
+      background: rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.7);
+      border: 1px solid rgba(255,255,255,0.12);
+      padding: 5px 14px;
+      border-radius: 40px;
+      font-size: 12px;
       cursor: pointer;
+      transition: all 0.2s;
     }
+    .hero-tag:hover { background: rgba(201,150,58,0.2); border-color: #C9963A; color: #C9963A; }
 
-    .card:hover { transform: translateY(-4px); }
+    /* STATS */
+    .stats {
+      background: #fff;
+      padding: 2rem;
+      display: flex;
+      justify-content: center;
+      gap: 4rem;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+      flex-wrap: wrap;
+    }
+    .stat { text-align: center; }
+    .stat-num { font-size: 28px; font-weight: 700; color: #C9963A; }
+    .stat-lbl { font-size: 13px; color: #888780; margin-top: 2px; }
 
-    .card-img {
-      height: 160px;
+    /* SECTION */
+    .section { max-width: 1080px; margin: 3rem auto; padding: 0 2rem; }
+    .section-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.5rem; }
+    .section-header h2 { font-size: 22px; font-weight: 700; }
+    .section-header a { font-size: 13px; color: #C9963A; text-decoration: none; }
+
+    /* CARDS */
+    .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 20px; }
+    .card { background: #fff; border-radius: 14px; overflow: hidden; border: 1px solid rgba(0,0,0,0.08); transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; }
+    .card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.1); }
+    .card-img { height: 180px; background: #E8F0E4; display: flex; align-items: center; justify-content: center; font-size: 56px; background-size: cover; background-position: center; position: relative; }
+    .card-badge { position: absolute; top: 10px; left: 10px; background: #1A1A18; color: #fff; font-size: 10px; font-weight: 600; padding: 4px 10px; border-radius: 40px; text-transform: uppercase; }
+    .card-badge.louer { background: #C9963A; }
+    .card-body { padding: 16px; }
+    .card-type { font-size: 11px; font-weight: 600; color: #C9963A; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .card-titre { font-size: 14px; font-weight: 600; color: #1A1A18; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .card-prix { font-size: 20px; font-weight: 700; color: #1A1A18; margin-bottom: 4px; }
+    .card-prix span { font-size: 12px; color: #888780; font-weight: 400; }
+    .card-loc { font-size: 13px; color: #888780; margin-bottom: 10px; }
+    .card-feats { display: flex; gap: 12px; font-size: 12px; color: #888780; margin-bottom: 12px; }
+    .card-btn { display: block; width: 100%; padding: 10px; background: #1A1A18; color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-family: 'Segoe UI', sans-serif; }
+    .card-btn:hover { background: #C9963A; }
+
+    /* COMMENT CA MARCHE */
+    .how-section { background: #1A1A18; padding: 4rem 2rem; margin: 3rem 0; }
+    .how-inner { max-width: 1080px; margin: 0 auto; }
+    .how-inner h2 { font-size: 26px; font-weight: 700; color: #fff; text-align: center; margin-bottom: 0.5rem; }
+    .how-inner p { text-align: center; color: rgba(255,255,255,0.5); font-size: 14px; margin-bottom: 3rem; }
+    .how-tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 2.5rem; }
+    .how-tab { padding: 8px 20px; border-radius: 40px; font-size: 13px; cursor: pointer; border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.5); background: transparent; font-family: 'Segoe UI', sans-serif; transition: all 0.2s; }
+    .how-tab.active { background: #C9963A; border-color: #C9963A; color: #fff; }
+    .how-steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+    .how-step { text-align: center; padding: 1.5rem; }
+    .how-icon { font-size: 36px; margin-bottom: 1rem; }
+    .how-num { width: 28px; height: 28px; background: #C9963A; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; margin: 0 auto 0.8rem; }
+    .how-title { font-size: 15px; font-weight: 600; color: #fff; margin-bottom: 6px; }
+    .how-desc { font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.6; }
+
+    /* CTA PARTENAIRE */
+    .cta-section { max-width: 1080px; margin: 3rem auto; padding: 0 2rem; }
+    .cta-card {
+      background: linear-gradient(135deg, #C9963A, #b8842e);
+      border-radius: 16px;
+      padding: 2.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+    .cta-text h2 { font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+    .cta-text p { font-size: 14px; color: rgba(255,255,255,0.8); }
+    .cta-btn { background: #fff; color: #C9963A; border: none; border-radius: 8px; padding: 12px 28px; font-size: 14px; font-weight: 700; cursor: pointer; white-space: nowrap; font-family: 'Segoe UI', sans-serif; transition: transform 0.2s; }
+    .cta-btn:hover { transform: scale(1.02); }
+
+    /* LOADING */
+    .loading { text-align: center; padding: 3rem; color: #888780; }
+    .empty-state { text-align: center; padding: 3rem; color: #888780; grid-column: 1/-1; }
+
+    /* WHATSAPP FLOAT */
+    .whatsapp-float {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 56px;
+      height: 56px;
+      background: #25D366;
+      border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 56px;
-      background: #E8F0E4;
-    }
-
-    .card-body { padding: 16px; }
-
-    .card-type {
-      font-size: 11px;
-      font-weight: 600;
-      color: #C9963A;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 4px;
-    }
-
-    .card-prix {
-      font-size: 20px;
-      font-weight: 700;
-      color: #1A1A18;
-      margin-bottom: 4px;
-    }
-
-    .card-prix span {
-      font-size: 12px;
-      color: #888780;
-      font-weight: 400;
-    }
-
-    .card-loc {
-      font-size: 13px;
-      color: #888780;
-      margin-bottom: 10px;
-    }
-
-    .card-feats {
-      display: flex;
-      gap: 12px;
-      font-size: 12px;
-      color: #888780;
-    }
-
-    .card-btn {
-      display: block;
-      width: 100%;
-      margin-top: 14px;
-      padding: 10px;
-      background: #1A1A18;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 600;
+      font-size: 28px;
       cursor: pointer;
-      transition: background 0.2s;
+      box-shadow: 0 4px 16px rgba(37,211,102,0.4);
+      z-index: 999;
+      transition: transform 0.2s;
+      text-decoration: none;
     }
+    .whatsapp-float:hover { transform: scale(1.1); }
 
-    .card-btn:hover { background: #C9963A; }
-
-    /* LOADING */
-    .loading {
-      text-align: center;
-      padding: 3rem;
-      color: #888780;
-      font-size: 15px;
-    }
-
-    /* FOOTER */
-    footer {
-      text-align: center;
-      padding: 2rem;
-      font-size: 13px;
-      color: #888780;
-      border-top: 1px solid rgba(0,0,0,0.08);
-      margin-top: 4rem;
-    }
+    footer { text-align: center; padding: 3rem 2rem; font-size: 13px; color: #888780; border-top: 1px solid rgba(0,0,0,0.08); }
+    .footer-links { display: flex; justify-content: center; gap: 2rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .footer-links a { color: #888780; text-decoration: none; font-size: 13px; }
+    .footer-links a:hover { color: #C9963A; }
   </style>
 </head>
 <body>
 
-  <!-- NAVBAR -->
+  <!-- NAV -->
   <nav>
     <div class="logo">Immo<span>CG</span></div>
-    <div>
-      <a href="#">Acheter</a>
-      <a href="#">Louer</a>
-      <a href="publier.html">Publier une annonce</a>
-      <a href="login.html" id="nav-login" style="background:#C9963A;color:#fff;padding:6px 16px;border-radius:6px;margin-left:1rem;">Connexion</a>
-      <a href="admin.html" id="nav-admin" style="display:none;background:#1A1A18;color:#C9963A;padding:6px 16px;border-radius:6px;margin-left:1rem;"></a>
+    <div class="nav-links">
+      <a href="#biens">Biens</a>
+      <a href="#comment">Comment ça marche</a>
+      <a href="conditions.html">Partenariat</a>
+      <a href="login.html" id="nav-login" class="nav-btn">Connexion</a>
+      <a href="#" id="nav-user-btn" class="nav-user-btn" style="display:none;"></a>
     </div>
-</nav>
+  </nav>
 
   <!-- HERO -->
   <section class="hero">
+    <div class="hero-badge">🇨🇬 Brazzaville & Pointe-Noire</div>
     <h1>Trouvez le logement<br><span>fait pour vous</span></h1>
-    <p>Appartements, villas, studios à Brazzaville et Pointe-Noire</p>
+    <p>La première plateforme immobilière du Congo — appartements, villas, studios vérifiés par notre équipe.</p>
 
-    <div class="search-bar">
+    <div class="search-box">
       <input type="text" id="search-quartier" placeholder="Quartier, ville...">
       <select id="search-type">
         <option value="">Tous les types</option>
         <option value="Villa">Villa</option>
         <option value="Appartement">Appartement</option>
         <option value="Studio">Studio</option>
+        <option value="Maison">Maison</option>
+        <option value="Bureau">Bureau</option>
+        <option value="Terrain">Terrain</option>
       </select>
       <select id="search-mode">
         <option value="">Louer ou Acheter</option>
         <option value="louer">Louer</option>
         <option value="acheter">Acheter</option>
       </select>
-      <button onclick="filtrerBiens()">Rechercher</button>
+      <button onclick="filtrerBiens()">🔍 Rechercher</button>
+    </div>
+
+    <div class="hero-tags">
+      <div class="hero-tag" onclick="filtrerParQuartier('Bacongo')">Bacongo</div>
+      <div class="hero-tag" onclick="filtrerParQuartier('Poto-Poto')">Poto-Poto</div>
+      <div class="hero-tag" onclick="filtrerParQuartier('Moungali')">Moungali</div>
+      <div class="hero-tag" onclick="filtrerParQuartier('Ouenzé')">Ouenzé</div>
+      <div class="hero-tag" onclick="filtrerParQuartier('Makélékélé')">Makélékélé</div>
+      <div class="hero-tag" onclick="filtrerParQuartier('Centre-ville')">Centre-ville</div>
     </div>
   </section>
 
-  <!-- LISTE DES BIENS -->
-  <section class="section">
-    <h2>Biens disponibles</h2>
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat"><div class="stat-num" id="stat-biens">—</div><div class="stat-lbl">Biens disponibles</div></div>
+    <div class="stat"><div class="stat-num" id="stat-agences">—</div><div class="stat-lbl">Agences partenaires</div></div>
+    <div class="stat"><div class="stat-num">100%</div><div class="stat-lbl">Biens vérifiés</div></div>
+    <div class="stat"><div class="stat-num">24h</div><div class="stat-lbl">Délai de réponse</div></div>
+  </div>
+
+  <!-- BIENS -->
+  <section class="section" id="biens">
+    <div class="section-header">
+      <h2>Biens disponibles</h2>
+      <a href="#" onclick="afficherTout()">Voir tout →</a>
+    </div>
     <div class="cards" id="liste-biens">
       <div class="loading">Chargement des biens...</div>
     </div>
   </section>
 
+  <!-- COMMENT CA MARCHE -->
+  <section class="how-section" id="comment">
+    <div class="how-inner">
+      <h2>Comment ça marche ?</h2>
+      <p>Simple, rapide et sécurisé</p>
+      <div class="how-tabs">
+        <button class="how-tab active" onclick="afficherSteps('chercheur', this)">Je cherche un logement</button>
+        <button class="how-tab" onclick="afficherSteps('agence', this)">Je suis une agence</button>
+      </div>
+      <div class="how-steps" id="how-steps"></div>
+    </div>
+  </section>
+
+  <!-- CTA PARTENAIRE -->
+  <section class="cta-section">
+    <div class="cta-card">
+      <div class="cta-text">
+        <h2>Vous êtes une agence ou propriétaire ?</h2>
+        <p>Rejoignez ImmoCG et publiez vos biens devant des milliers de chercheurs de logement au Congo.</p>
+      </div>
+      <button class="cta-btn" onclick="window.location.href='conditions.html'">Devenir partenaire →</button>
+    </div>
+  </section>
+
+  <!-- WHATSAPP FLOTTANT -->
+  <a href="https://wa.me/242060000000?text=Bonjour ImmoCG, je cherche un logement" 
+     class="whatsapp-float" target="_blank" title="Contactez-nous sur WhatsApp">
+    💬
+  </a>
+
   <!-- FOOTER -->
   <footer>
-    ImmoCG · Brazzaville, Congo · 2026
+    <div class="footer-links">
+      <a href="#">À propos</a>
+      <a href="conditions.html">Partenariat</a>
+      <a href="register.html">Devenir partenaire</a>
+      <a href="login.html">Connexion</a>
+    </div>
+    ImmoCG · Brazzaville, Congo · 2026 · Tous droits réservés
   </footer>
 
   <script>
-    // On stocke tous les biens récupérés depuis le serveur
     let tousLesBiens = []
 
-    // Fonction pour récupérer les biens depuis notre API
+    // Gestion connexion
+    const userConnecte = JSON.parse(localStorage.getItem('immocg_user') || 'null')
+    if (userConnecte) {
+      document.getElementById('nav-login').style.display = 'none'
+      const navBtn = document.getElementById('nav-user-btn')
+      navBtn.style.display = 'inline-block'
+      navBtn.textContent = userConnecte.nom_agence || userConnecte.nom
+      navBtn.href = userConnecte.role === 'admin' ? 'admin.html' : 'dashboard.html'
+    }
+
+    // Comment ça marche
+    const steps = {
+      chercheur: [
+        { icon: '🔍', num: '1', title: 'Recherchez', desc: 'Filtrez par quartier, budget, type de bien' },
+        { icon: '📸', num: '2', title: 'Consultez', desc: 'Photos, vidéos, équipements, localisation exacte' },
+        { icon: '📞', num: '3', title: 'Contactez', desc: 'Appelez ou WhatsApp directement l\'agence' },
+        { icon: '🏠', num: '4', title: 'Emménagez', desc: 'Visitez, signez et emménagez dans votre nouveau logement' }
+      ],
+      agence: [
+        { icon: '📝', num: '1', title: 'Inscrivez-vous', desc: 'Créez votre compte agence en 2 minutes' },
+        { icon: '✅', num: '2', title: 'Validation', desc: 'Notre équipe valide votre partenariat sous 24h' },
+        { icon: '📸', num: '3', title: 'Publiez', desc: 'Ajoutez vos biens avec photos et détails' },
+        { icon: '💰', num: '4', title: 'Encaissez', desc: 'Recevez des contacts qualifiés et concluez vos transactions' }
+      ]
+    }
+
+    function afficherSteps(type, btn) {
+      document.querySelectorAll('.how-tab').forEach(t => t.classList.remove('active'))
+      btn.classList.add('active')
+      document.getElementById('how-steps').innerHTML = steps[type].map(s => `
+        <div class="how-step">
+          <div class="how-icon">${s.icon}</div>
+          <div class="how-num">${s.num}</div>
+          <div class="how-title">${s.title}</div>
+          <div class="how-desc">${s.desc}</div>
+        </div>
+      `).join('')
+    }
+    afficherSteps('chercheur', document.querySelector('.how-tab'))
+
+    // Charger les biens
     async function chargerBiens() {
       try {
-       const reponse = await fetch('/biens')
-        const data = await reponse.json()
-        tousLesBiens = data.biens
+        const r = await fetch('/biens')
+        const data = await r.json()
+        tousLesBiens = data.biens || []
+        document.getElementById('stat-biens').textContent = tousLesBiens.length
         afficherBiens(tousLesBiens)
-      } catch (erreur) {
-        document.getElementById('liste-biens').innerHTML =
-          '<div class="loading">Erreur de connexion au serveur.</div>'
+      } catch {
+        document.getElementById('liste-biens').innerHTML = '<div class="loading">Erreur de connexion.</div>'
       }
     }
 
-    // Fonction pour afficher les biens dans la page
+    async function chargerStats() {
+      try {
+        const r = await fetch('/auth/users')
+        // pas de token donc 401, on ignore
+      } catch {}
+    }
+
     function afficherBiens(biens) {
       const container = document.getElementById('liste-biens')
-
       if (biens.length === 0) {
-        container.innerHTML = '<div class="loading">Aucun bien trouvé.</div>'
+        container.innerHTML = '<div class="empty-state">Aucun bien trouvé.</div>'
         return
       }
-
-      const icones = { 'Villa': '🏡', 'Appartement': '🏢', 'Studio': '🏠' }
-
-      container.innerHTML = biens.map(bien => `
-        <div class="card">
-          <div class="card-img" style="${bien.image_url ? `background-image:url(${bien.image_url});background-size:cover;background-position:center;` : ''}">
-  ${bien.image_url ? '' : (icones[bien.type] || '🏠')}
-</div>
+      const icones = { 'Villa': '🏡', 'Appartement': '🏢', 'Studio': '🏠', 'Maison': '🏘️', 'Bureau': '🏗️', 'Terrain': '🌳' }
+      container.innerHTML = biens.map(b => `
+        <div class="card" onclick="window.location.href='bien.html?id=${b.id}'">
+          <div class="card-img" style="${b.image_url ? `background-image:url(${b.image_url});` : ''}">
+            ${b.image_url ? '' : (icones[b.type] || '🏠')}
+            <div class="card-badge ${b.mode === 'louer' ? 'louer' : ''}">${b.mode === 'louer' ? 'À louer' : 'À vendre'}</div>
+          </div>
           <div class="card-body">
-            <div class="card-type">${bien.type} · ${bien.mode}</div>
-            <div class="card-prix">
-              ${bien.prix.toLocaleString('fr-FR')}
-              <span>${bien.unite}</span>
-            </div>
-            <div class="card-loc">📍 ${bien.quartier}, ${bien.ville}</div>
+            <div class="card-type">${b.type}</div>
+            <div class="card-titre">${b.titre || b.type + ' à ' + b.quartier}</div>
+            <div class="card-prix">${parseInt(b.prix).toLocaleString('fr-FR')} <span>${b.unite}</span></div>
+            <div class="card-loc">📍 ${b.quartier}, ${b.ville}</div>
             <div class="card-feats">
-              <span>🛏 ${bien.chambres} ch.</span>
-              <span>🚿 ${bien.salles_bain} sdb.</span>
-              <span>📐 ${bien.surface}m²</span>
+              <span>🛏 ${b.chambres} ch.</span>
+              <span>🚿 ${b.salles_bain} sdb.</span>
+              <span>📐 ${b.surface}m²</span>
             </div>
-            <button class="card-btn" onclick="voirBien(${bien.id})">
-              Voir le détail
-            </button>
+            <button class="card-btn">Voir le détail</button>
           </div>
         </div>
       `).join('')
     }
 
-    // Fonction de filtre
     function filtrerBiens() {
-      const quartier = document.getElementById('search-quartier').value.toLowerCase()
+      const q = document.getElementById('search-quartier').value.toLowerCase()
       const type = document.getElementById('search-type').value
       const mode = document.getElementById('search-mode').value
-
-      const resultats = tousLesBiens.filter(bien => {
-        const matchQuartier = quartier === '' ||
-          bien.quartier.toLowerCase().includes(quartier) ||
-          bien.ville.toLowerCase().includes(quartier)
-        const matchType = type === '' || bien.type === type
-        const matchMode = mode === '' || bien.mode === mode
-        return matchQuartier && matchType && matchMode
+      const res = tousLesBiens.filter(b => {
+        const mq = !q || b.quartier?.toLowerCase().includes(q) || b.ville?.toLowerCase().includes(q) || b.titre?.toLowerCase().includes(q)
+        const mt = !type || b.type === type
+        const mm = !mode || b.mode === mode
+        return mq && mt && mm
       })
-
-      afficherBiens(resultats)
+      afficherBiens(res)
+      document.getElementById('biens').scrollIntoView({ behavior: 'smooth' })
     }
 
-    // Aller vers la page détail
-    function voirBien(id) {
-  window.location.href = `/bien.html?id=` + id
-}
+    function filtrerParQuartier(q) {
+      document.getElementById('search-quartier').value = q
+      filtrerBiens()
+    }
 
-// Gérer l'affichage selon connexion
-const userConnecte = JSON.parse(localStorage.getItem('immocg_user') || 'null')
-if (userConnecte) {
-  document.getElementById('nav-login').style.display = 'none'
-  const navAdmin = document.getElementById('nav-admin')
-  navAdmin.style.display = 'inline-block'
-  navAdmin.textContent = userConnecte.nom
-  navAdmin.href = userConnecte.role === 'admin' ? 'admin.html' : 'dashboard.html'
-}
+    function afficherTout() {
+      document.getElementById('search-quartier').value = ''
+      document.getElementById('search-type').value = ''
+      document.getElementById('search-mode').value = ''
+      afficherBiens(tousLesBiens)
+    }
 
-    // On charge les biens au démarrage
     chargerBiens()
   </script>
-
 </body>
 </html>
