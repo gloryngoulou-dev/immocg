@@ -164,4 +164,18 @@ router.patch('/users/:id', verifierToken, async (req, res) => {
   res.json({ success: true })
 })
 
+// GET /auth/stats — stats publiques
+router.get('/stats', async (req, res) => {
+  const { data, error } = await supabase
+    .from('users')
+    .select('id, actif')
+    .eq('role', 'agence')
+  if (error) return res.status(500).json({ success: false })
+  res.json({
+    success: true,
+    total: data.length,
+    actives: data.filter(u => u.actif).length
+  })
+})
+
 module.exports = { router, verifierToken }

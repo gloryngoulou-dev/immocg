@@ -366,10 +366,14 @@
 
     async function chargerStats() {
       try {
-        const r = await fetch('/auth/users')
-        // pas de token donc 401, on ignore
+        const r = await fetch('/auth/stats')
+        const data = await r.json()
+        if (data.success) {
+          document.getElementById('stat-agences').textContent = data.actives
+        }
       } catch {}
     }
+    chargerStats()
 
     function afficherBiens(biens) {
       const container = document.getElementById('liste-biens')

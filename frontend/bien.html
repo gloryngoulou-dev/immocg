@@ -337,10 +337,11 @@
 
   <script>
     // Configuration des taux - À MODIFIER SELON VOS TAUX RÉELS
-    const TAUX_CAUTION_MOIS = 2;      // 2 mois de caution (location uniquement)
-    const TAUX_FRAIS_AGENCE = 0.30;   // 30% du loyer ou prix de vente
-    const TAUX_FRAIS_ETAT = 0;     // 10% timbre/enregistrement
-    const TAUX_FRAIS_NOTAIRE = 0.08;  // 8% frais de notaire (pour vente)
+    const TAUX_CAUTION_MOIS = 3
+    const TAUX_FRAIS_AGENCE_LOCATION = 1.0
+    const TAUX_FRAIS_AGENCE_VENTE = 0.10
+    const TAUX_FRAIS_NOTAIRE_VENTE = 0.05
+    const FRAIS_VISITE = 5000
 
     // Récupérer l'ID dans l'URL
     const params = new URLSearchParams(window.location.search);
@@ -392,7 +393,9 @@
       const adresse = b.adresse || '';
       const prix = b.Prix || b.prix || 0;
       const unite = b.Unissez_vous || 'FCFA';
-      const mode = (b.Mode || b.mode || 'location').toLowerCase();
+      const mode = (b.mode || b.Mode || '').toLowerCase();
+      const estLocation = mode === 'louer' || mode === 'location';
+      const modeLabel = estLocation ? '📍 À LOUER' : '💰 À VENDRE';
       const chambres = b.Chambres || b.chambres || 0;
       const sallesBain = b.salles_bain || 0;
       const surface = b.Surface || b.surface || 0;
@@ -439,69 +442,65 @@
       let caution = 0;
       let fraisNotaire = 0;
       let total = prix;
-      let detailsHTML = '';
+      let detailsHTML = ''
 
-      if (mode === 'location') {
-        // Pour une location
-        caution = prix * TAUX_CAUTION_MOIS;
-        total = prix + caution + fraisAgence + fraisEtat;
-        
-        detailsHTML = `
-          <div class="prix-ligne">
-            <span>🏠 Loyer mensuel</span>
-            <span>${prix.toLocaleString('fr-FR')} FCFA</span>
-          </div>
-          <div class="prix-ligne">
-            <span>🔒 Caution (${TAUX_CAUTION_MOIS} mois)</span>
-            <span>${caution.toLocaleString('fr-FR')} FCFA</span>
-          </div>
-          <div class="prix-ligne">
-            <span>🏢 Frais d'agence (${Math.round(TAUX_FRAIS_AGENCE * 100)}%)</span>
-            <span>${fraisAgence.toLocaleString('fr-FR')} FCFA</span>
-          </div>
-          <div class="prix-ligne">
-            <span>📜 Timbre/Enregistrement (${Math.round(TAUX_FRAIS_ETAT * 100)}%)</span>
-            <span>${fraisEtat.toLocaleString('fr-FR')} FCFA</span>
-          </div>
-          <div class="prix-ligne total">
-            <span>💰 TOTAL ENTRÉE</span>
-            <span>${total.toLocaleString('fr-FR')} FCFA</span>
-          </div>
-          <div class="info-frais">
-            ⓘ Loyer mensuel hors charges. Caution remboursable sous conditions.
-          </div>
-        `;
-      } else {
-        // Pour une vente
-        fraisNotaire = Math.round(prix * TAUX_FRAIS_NOTAIRE);
-        total = prix + fraisAgence + fraisNotaire + fraisEtat;
-        
-        detailsHTML = `
-          <div class="prix-ligne">
-            <span>🏠 Prix de vente</span>
-            <span>${prix.toLocaleString('fr-FR')} FCFA</span>
-          </div>
-          <div class="prix-ligne">
-            <span>🏢 Frais d'agence (${Math.round(TAUX_FRAIS_AGENCE * 100)}%)</span>
-            <span>${fraisAgence.toLocaleString('fr-FR')} FCFA</span>
-          </div>
-          <div class="prix-ligne">
-            <span>⚖️ Frais de notaire (${Math.round(TAUX_FRAIS_NOTAIRE * 100)}%)</span>
-            <span>${fraisNotaire.toLocaleString('fr-FR')} FCFA</span>
-          </div>
-          <div class="prix-ligne">
-            <span>📜 Frais d'enregistrement (${Math.round(TAUX_FRAIS_ETAT * 100)}%)</span>
-            <span>${fraisEtat.toLocaleString('fr-FR')} FCFA</span>
-          </div>
-          <div class="prix-ligne total">
-            <span>💰 TOTAL FRAIS D'ACQUISITION</span>
-            <span>${total.toLocaleString('fr-FR')} FCFA</span>
-          </div>
-          <div class="info-frais">
-            ⓘ Prix net vendeur + frais. Sous réserve de modifications légales.
-          </div>
-        `;
-      }
+if (mode === 'louer' || mode === 'location') {
+  const caution = prix * TAUX_CAUTION_MOIS
+  const fraisAgence = prix * TAUX_FRAIS_AGENCE_LOCATION
+  const total = prix + caution + fraisAgence + FRAIS_VISITE
+
+  detailsHTML = `
+    <div class="prix-ligne">
+      <span>🏠 Loyer mensuel</span>
+      <span>${prix.toLocaleString('fr-FR')} FCFA</span>
+    </div>
+    <div class="prix-ligne">
+      <span>🔒 Caution (3 mois)</span>
+      <span>${caution.toLocaleString('fr-FR')} FCFA</span>
+    </div>
+    <div class="prix-ligne">
+      <span>🏢 Frais d'agence (1 mois)</span>
+      <span>${fraisAgence.toLocaleString('fr-FR')} FCFA</span>
+    </div>
+    <div class="prix-ligne">
+      <span>👁️ Frais de visite</span>
+      <span>${FRAIS_VISITE.toLocaleString('fr-FR')} FCFA</span>
+    </div>
+    <div class="prix-ligne total">
+      <span>💰 TOTAL À PRÉVOIR</span>
+      <span>${total.toLocaleString('fr-FR')} FCFA</span>
+    </div>
+    <div class="info-frais">
+      ⓘ Caution remboursable. Loyer mensuel hors charges.
+    </div>
+  `
+} else {
+  const fraisAgence = Math.round(prix * TAUX_FRAIS_AGENCE_VENTE)
+  const fraisNotaire = Math.round(prix * TAUX_FRAIS_NOTAIRE_VENTE)
+  const total = prix + fraisAgence + fraisNotaire
+
+  detailsHTML = `
+    <div class="prix-ligne">
+      <span>🏠 Prix de vente</span>
+      <span>${prix.toLocaleString('fr-FR')} FCFA</span>
+    </div>
+    <div class="prix-ligne">
+      <span>🏢 Commission agence (10%)</span>
+      <span>${fraisAgence.toLocaleString('fr-FR')} FCFA</span>
+    </div>
+    <div class="prix-ligne">
+      <span>⚖️ Frais de notaire (5%)</span>
+      <span>${fraisNotaire.toLocaleString('fr-FR')} FCFA</span>
+    </div>
+    <div class="prix-ligne total">
+      <span>💰 TOTAL ACQUISITION</span>
+      <span>${total.toLocaleString('fr-FR')} FCFA</span>
+    </div>
+    <div class="info-frais">
+      ⓘ Commission agence payée par le vendeur.
+    </div>
+  `
+}
 
       // Badges
       const badges = [];
@@ -525,7 +524,7 @@
             </div>` : ''}
           </div>
 
-          <div class="bien-type">${type} · ${mode === 'location' ? '📍 À LOUER' : '💰 À VENDRE'}</div>
+          <div class="bien-type">${type} · ${modeLabel}</div>
           <div class="bien-titre">${titre}</div>
           <div class="bien-loc">
             📍 ${adresseComplete || quartier} · Réf. IMC-${String(b.id).padStart(4, '0')}
