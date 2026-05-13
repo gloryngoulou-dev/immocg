@@ -392,7 +392,7 @@
       const ville = b.ville || 'Brazzaville';
       const adresse = b.adresse || '';
       const prix = b.Prix || b.prix || 0;
-      const unite = b.Unissez_vous || 'FCFA';
+      const unite = b.unite || 'FCFA';
       const mode = (b.mode || b.Mode || '').toLowerCase();
       const estLocation = mode === 'louer' || mode === 'location';
       const modeLabel = estLocation ? '📍 À LOUER' : '💰 À VENDRE';
@@ -436,8 +436,7 @@
         : 'AG';
 
       // ========== CALCUL DES FRAIS (TOUJOURS AFFICHÉS) ==========
-      const fraisAgence = Math.round(prix * TAUX_FRAIS_AGENCE);
-      const fraisEtat = Math.round(prix * TAUX_FRAIS_ETAT);
+      
       
       let caution = 0;
       let fraisNotaire = 0;

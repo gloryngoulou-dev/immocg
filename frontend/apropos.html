@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ImmoCG — À propos</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #F7F3EC; color: #2C2C28; }
+    nav { background: #1A1A18; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+    .logo { font-size: 22px; font-weight: 700; color: #fff; text-decoration: none; }
+    .logo span { color: #C9963A; }
+    nav a { color: #aaa; text-decoration: none; font-size: 14px; margin-left: 1.5rem; }
+    nav a:hover { color: #C9963A; }
+
+    .hero { background: linear-gradient(135deg, #1A1A18, #2C2C28); padding: 4rem 2rem; text-align: center; }
+    .hero h1 { font-size: 36px; font-weight: 700; color: #fff; margin-bottom: 10px; }
+    .hero h1 span { color: #C9963A; }
+    .hero p { color: rgba(255,255,255,0.6); font-size: 16px; max-width: 540px; margin: 0 auto; line-height: 1.6; }
+
+    .container { max-width: 900px; margin: 3rem auto; padding: 0 2rem 4rem; }
+
+    .card { background: #fff; border-radius: 14px; border: 1px solid rgba(0,0,0,0.08); padding: 2rem; margin-bottom: 1.5rem; }
+    .card h2 { font-size: 18px; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: 10px; }
+    .card p { font-size: 14px; color: #444; line-height: 1.8; margin-bottom: 0.8rem; }
+
+    .values { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 1rem; }
+    .value { background: #F7F3EC; border-radius: 10px; padding: 1.2rem; text-align: center; }
+    .value-icon { font-size: 28px; margin-bottom: 8px; }
+    .value-title { font-size: 14px; font-weight: 600; color: #1A1A18; margin-bottom: 4px; }
+    .value-desc { font-size: 12px; color: #888780; line-height: 1.5; }
+
+    .team { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 1rem; }
+    .member { display: flex; gap: 14px; align-items: center; }
+    .member-avatar { width: 52px; height: 52px; border-radius: 50%; background: #F0D9A8; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; color: #7A5A1A; flex-shrink: 0; }
+    .member-name { font-size: 14px; font-weight: 600; color: #1A1A18; }
+    .member-role { font-size: 12px; color: #888780; }
+
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 1rem; }
+    .stat { text-align: center; background: #F7F3EC; border-radius: 10px; padding: 1.2rem; }
+    .stat-num { font-size: 26px; font-weight: 700; color: #C9963A; }
+    .stat-lbl { font-size: 12px; color: #888780; margin-top: 4px; }
+
+    .cta { background: linear-gradient(135deg, #C9963A, #b8842e); border-radius: 14px; padding: 2.5rem; text-align: center; margin-top: 2rem; }
+    .cta h2 { font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+    .cta p { color: rgba(255,255,255,0.8); font-size: 14px; margin-bottom: 1.5rem; }
+    .cta-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .btn-white { background: #fff; color: #C9963A; border: none; border-radius: 8px; padding: 12px 28px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: 'Segoe UI', sans-serif; text-decoration: none; display: inline-block; }
+    .btn-dark { background: #1A1A18; color: #fff; border: none; border-radius: 8px; padding: 12px 28px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'Segoe UI', sans-serif; text-decoration: none; display: inline-block; }
+
+    footer { text-align: center; padding: 2rem; font-size: 13px; color: #888780; border-top: 1px solid rgba(0,0,0,0.08); }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html" class="logo">Immo<span>CG</span></a>
+    <div>
+      <a href="index.html">Accueil</a>
+      <a href="contact.html">Contact</a>
+      <a href="conditions.html">Partenariat</a>
+      <a href="login.html">Connexion</a>
+    </div>
+  </nav>
+
+  <div class="hero">
+    <h1>À propos d'<span>ImmoCG</span></h1>
+    <p>La première plateforme immobilière digitale du Congo — née à Brazzaville pour faciliter l'accès au logement.</p>
+  </div>
+
+  <div class="container">
+
+    <!-- MISSION -->
+    <div class="card">
+      <h2>🎯 Notre mission</h2>
+      <p>ImmoCG est née d'un constat simple : trouver un logement au Congo est encore trop difficile. Les annonces sont dispersées, non vérifiées, et le contact entre locataires et propriétaires est souvent compliqué.</p>
+      <p>Notre mission est de <strong>digitaliser l'immobilier congolais</strong> en créant une plateforme de confiance où chaque bien est vérifié, chaque agence est certifiée, et chaque chercheur de logement trouve ce dont il a besoin rapidement.</p>
+    </div>
+
+    <!-- VALEURS -->
+    <div class="card">
+      <h2>💎 Nos valeurs</h2>
+      <div class="values">
+        <div class="value">
+          <div class="value-icon">✅</div>
+          <div class="value-title">Transparence</div>
+          <div class="value-desc">Prix réels, photos authentiques, informations vérifiées avant publication</div>
+        </div>
+        <div class="value">
+          <div class="value-icon">🤝</div>
+          <div class="value-title">Confiance</div>
+          <div class="value-desc">Toutes nos agences partenaires sont sélectionnées et approuvées par notre équipe</div>
+        </div>
+        <div class="value">
+          <div class="value-icon">🇨🇬</div>
+          <div class="value-title">Local</div>
+          <div class="value-desc">Conçu pour le marché congolais avec une connaissance profonde des réalités locales</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="card">
+      <h2>📊 ImmoCG en chiffres</h2>
+      <div class="stats-grid">
+        <div class="stat"><div class="stat-num" id="nb-biens">—</div><div class="stat-lbl">Biens disponibles</div></div>
+        <div class="stat"><div class="stat-num" id="nb-agences">—</div><div class="stat-lbl">Agences partenaires</div></div>
+        <div class="stat"><div class="stat-num">100%</div><div class="stat-lbl">Biens vérifiés</div></div>
+        <div class="stat"><div class="stat-num">2026</div><div class="stat-lbl">Année de création</div></div>
+      </div>
+    </div>
+
+    <!-- HISTOIRE -->
+    <div class="card">
+      <h2>📖 Notre histoire</h2>
+      <p>ImmoCG a été fondée en 2026 à Brazzaville avec l'ambition de moderniser le secteur immobilier congolais. Face à un marché peu digitalisé et à l'absence de plateforme de référence, nous avons décidé de créer l'outil qui manquait.</p>
+      <p>Aujourd'hui, nous travaillons main dans la main avec les agences immobilières de Brazzaville et Pointe-Noire pour offrir à chaque congolais la possibilité de trouver son logement en ligne, en toute confiance.</p>
+    </div>
+
+    <!-- CTA -->
+    <div class="cta">
+      <h2>Rejoignez l'aventure ImmoCG</h2>
+      <p>Que vous cherchiez un logement ou que vous soyez une agence, ImmoCG est fait pour vous.</p>
+      <div class="cta-btns">
+        <a href="index.html" class="btn-white">Chercher un logement</a>
+        <a href="register.html" class="btn-dark">Devenir partenaire</a>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>ImmoCG · Brazzaville, Congo · 2026 · Tous droits réservés</footer>
+
+  <script>
+    async function chargerStats() {
+      try {
+        const r1 = await fetch('/biens')
+        const d1 = await r1.json()
+        document.getElementById('nb-biens').textContent = (d1.biens || []).length
+
+        const r2 = await fetch('/auth/stats')
+        const d2 = await r2.json()
+        if (d2.success) document.getElementById('nb-agences').textContent = d2.actives
+      } catch {}
+    }
+    chargerStats()
+  </script>
+</body>
+</html>
