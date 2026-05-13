@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ImmoCG — Détail du bien</title>
+  <meta name="description" id="meta-desc" content="Bien immobilier à louer ou à vendre au Congo sur ImmoCG.">
+  <meta property="og:title" id="og-title" content="ImmoCG — Bien immobilier">
+  <meta property="og:image" id="og-image" content="">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -603,6 +607,15 @@ if (mode === 'louer' || mode === 'location') {
           <button class="btn btn-outline" onclick="sauvegarderBien(${b.id})">❤️ Sauvegarder</button>
         </div>
       `;
+
+      // SEO dynamique
+        document.title = `${titre} — ${quartier}, ${ville} | ImmoCG`
+        const metaDesc = document.getElementById('meta-desc')
+        if (metaDesc) metaDesc.content = `${type} à ${mode === 'louer' ? 'louer' : 'vendre'} à ${quartier}, ${ville}. ${parseInt(prix).toLocaleString('fr-FR')} FCFA. ${description.substring(0, 100)}...`
+        const ogTitle = document.getElementById('og-title')
+        if (ogTitle) ogTitle.content = `${titre} — ImmoCG`
+        const ogImage = document.getElementById('og-image')
+        if (ogImage && images[0]) ogImage.content = images[0]
     }
 
     // Fonctions interactives

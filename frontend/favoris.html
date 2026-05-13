@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mes favoris — ImmoCG</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #F7F3EC; color: #2C2C28; }
+    nav { background: #1A1A18; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+    .logo { font-size: 22px; font-weight: 700; color: #fff; text-decoration: none; }
+    .logo span { color: #C9963A; }
+    nav a { color: #aaa; text-decoration: none; font-size: 14px; margin-left: 1.5rem; }
+    nav a:hover { color: #C9963A; }
+
+    .hero { background: #1A1A18; padding: 2.5rem 2rem; text-align: center; }
+    .hero h1 { font-size: 28px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+    .hero p { color: rgba(255,255,255,0.5); font-size: 14px; }
+
+    .container { max-width: 1080px; margin: 2rem auto; padding: 0 2rem 4rem; }
+
+    .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 20px; }
+    .card { background: #fff; border-radius: 14px; overflow: hidden; border: 1px solid rgba(0,0,0,0.08); transition: transform 0.2s; cursor: pointer; }
+    .card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.1); }
+    .card-img { height: 180px; background: #E8F0E4; display: flex; align-items: center; justify-content: center; font-size: 56px; background-size: cover; background-position: center; position: relative; }
+    .card-badge { position: absolute; top: 10px; left: 10px; background: #C9963A; color: #fff; font-size: 10px; font-weight: 600; padding: 4px 10px; border-radius: 40px; }
+    .card-remove { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); color: #fff; border: none; border-radius: 50%; width: 28px; height: 28px; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .card-body { padding: 16px; }
+    .card-type { font-size: 11px; font-weight: 600; color: #C9963A; text-transform: uppercase; margin-bottom: 4px; }
+    .card-titre { font-size: 14px; font-weight: 600; color: #1A1A18; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .card-prix { font-size: 20px; font-weight: 700; color: #1A1A18; margin-bottom: 4px; }
+    .card-prix span { font-size: 12px; color: #888780; font-weight: 400; }
+    .card-loc { font-size: 13px; color: #888780; margin-bottom: 12px; }
+    .card-btn { display: block; width: 100%; padding: 10px; background: #1A1A18; color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'Segoe UI', sans-serif; }
+    .card-btn:hover { background: #C9963A; }
+
+    .empty-state { text-align: center; padding: 4rem; color: #888780; }
+    .empty-state h2 { font-size: 20px; margin-bottom: 8px; color: #2C2C28; }
+    .empty-state p { font-size: 14px; margin-bottom: 1.5rem; }
+    .btn-explorer { background: #C9963A; color: #fff; border: none; border-radius: 8px; padding: 12px 28px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'Segoe UI', sans-serif; }
+
+    footer { text-align: center; padding: 2rem; font-size: 13px; color: #888780; border-top: 1px solid rgba(0,0,0,0.08); }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html" class="logo">Immo<span>CG</span></a>
+    <div>
+      <a href="index.html">← Retour</a>
+      <a href="contact.html">Contact</a>
+    </div>
+  </nav>
+
+  <div class="hero">
+    <h1>❤️ Mes favoris</h1>
+    <p id="nb-favoris">Chargement...</p>
+  </div>
+
+  <div class="container">
+    <div class="cards" id="liste-favoris">
+      <div style="text-align:center;padding:3rem;color:#888780;grid-column:1/-1;">Chargement...</div>
+    </div>
+  </div>
+
+  <footer>ImmoCG · Brazzaville, Congo · 2026</footer>
+
+  <script>
+    async function chargerFavoris() {
+      const favoris = JSON.parse(localStorage.getItem('favoris_immocg') || '[]')
+      const container = document.getElementById('liste-favoris')
+
+      if (favoris.length === 0) {
+        document.getElementById('nb-favoris').textContent = 'Aucun favori sauvegardé'
+        container.innerHTML = `
+          <div class="empty-state" style="grid-column:1/-1;">
+            <h2>Aucun favori</h2>
+            <p>Vous n'avez pas encore sauvegardé de biens. Explorez nos annonces et cliquez sur ❤️ pour sauvegarder.</p>
+            <button class="btn-explorer" onclick="window.location.href='index.html'">Explorer les biens</button>
+          </div>
+        `
+        return
+      }
+
+      document.getElementById('nb-favoris').textContent = `${favoris.length} bien(s) sauvegardé(s)`
+
+      const biens = []
+      for (const id of favoris) {
+        try {
+          const r = await fetch(`/biens/${id}`)
+          const d = await r.json()
+          if (d.success) biens.push(d.bien)
+        } catch {}
+      }
+
+      if (biens.length === 0) {
+        container.innerHTML = '<div style="text-align:center;padding:3rem;color:#888780;grid-column:1/-1;">Ces biens ne sont plus disponibles.</div>'
+        return
+      }
+
+      const icones = { 'Villa': '🏡', 'Appartement': '🏢', 'Studio': '🏠', 'Maison': '🏘️' }
+      container.innerHTML = biens.map(b => `
+        <div class="card">
+          <div class="card-img" style="${b.image_url ? `background-image:url(${b.image_url});` : ''}">
+            ${b.image_url ? '' : (icones[b.type] || '🏠')}
+            <div class="card-badge">${b.mode === 'louer' ? 'À louer' : 'À vendre'}</div>
+            <button class="card-remove" onclick="retirerFavori(${b.id}, this)" title="Retirer des favoris">✕</button>
+          </div>
+          <div class="card-body" onclick="window.location.href='bien.html?id=${b.id}'">
+            <div class="card-type">${b.type}</div>
+            <div class="card-titre">${b.titre || b.type + ' à ' + b.quartier}</div>
+            <div class="card-prix">${parseInt(b.prix).toLocaleString('fr-FR')} <span>${b.unite}</span></div>
+            <div class="card-loc">📍 ${b.quartier}, ${b.ville}</div>
+            <button class="card-btn">Voir le détail</button>
+          </div>
+        </div>
+      `).join('')
+    }
+
+    function retirerFavori(id, btn) {
+      let favoris = JSON.parse(localStorage.getItem('favoris_immocg') || '[]')
+      favoris = favoris.filter(f => f !== id)
+      localStorage.setItem('favoris_immocg', JSON.stringify(favoris))
+      btn.closest('.card').remove()
+      const restant = document.querySelectorAll('.card').length
+      document.getElementById('nb-favoris').textContent = `${restant} bien(s) sauvegardé(s)`
+      if (restant === 0) chargerFavoris()
+    }
+
+    chargerFavoris()
+  </script>
+</body>
+</html>
