@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog ImmoCG — Conseils immobilier au Congo</title>
+  <meta name="description" content="Conseils pour trouver un logement au Congo, prix des loyers à Brazzaville, droits du locataire, guide achat immobilier Congo.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #F7F3EC; color: #2C2C28; }
+    nav { background: #1A1A18; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+    .logo { font-size: 22px; font-weight: 700; color: #fff; text-decoration: none; }
+    .logo span { color: #C9963A; }
+    nav a { color: #aaa; text-decoration: none; font-size: 14px; margin-left: 1.5rem; }
+    nav a:hover { color: #C9963A; }
+
+    .hero { background: #1A1A18; padding: 3rem 2rem; text-align: center; }
+    .hero h1 { font-size: 30px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+    .hero p { color: rgba(255,255,255,0.5); font-size: 15px; }
+
+    .container { max-width: 900px; margin: 3rem auto; padding: 0 2rem 4rem; }
+
+    .articles { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+
+    .article {
+      background: #fff;
+      border-radius: 14px;
+      border: 1px solid rgba(0,0,0,0.08);
+      overflow: hidden;
+      transition: transform 0.2s;
+      cursor: pointer;
+    }
+    .article:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
+
+    .article-img {
+      height: 140px;
+      background: linear-gradient(135deg, #1A1A18, #2C2C28);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+    }
+
+    .article-body { padding: 1.2rem; }
+    .article-cat { font-size: 11px; font-weight: 600; color: #C9963A; text-transform: uppercase; margin-bottom: 6px; }
+    .article-titre { font-size: 15px; font-weight: 700; color: #1A1A18; margin-bottom: 8px; line-height: 1.4; }
+    .article-desc { font-size: 13px; color: #888780; line-height: 1.6; margin-bottom: 12px; }
+    .article-meta { font-size: 11px; color: #aaa; }
+
+    .article-full {
+      display: none;
+      background: #fff;
+      border-radius: 14px;
+      border: 1px solid rgba(0,0,0,0.08);
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+    .article-full.active { display: block; }
+    .article-full h2 { font-size: 24px; font-weight: 700; margin-bottom: 1rem; }
+    .article-full p { font-size: 14px; color: #444; line-height: 1.8; margin-bottom: 1rem; }
+    .article-full h3 { font-size: 17px; font-weight: 600; margin: 1.5rem 0 0.8rem; color: #1A1A18; }
+    .article-full ul { padding-left: 1.2rem; margin-bottom: 1rem; }
+    .article-full ul li { font-size: 14px; color: #444; line-height: 1.8; }
+    .btn-retour { background: #F7F3EC; border: none; border-radius: 8px; padding: 8px 18px; font-size: 13px; cursor: pointer; font-family: 'Segoe UI', sans-serif; margin-bottom: 1.5rem; color: #2C2C28; }
+
+    @media (max-width: 768px) {
+      .container { padding: 0 1rem 3rem; }
+      .articles { grid-template-columns: 1fr; }
+    }
+
+    footer { text-align: center; padding: 2rem; font-size: 13px; color: #888780; border-top: 1px solid rgba(0,0,0,0.08); }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html" class="logo">Immo<span>CG</span></a>
+    <div>
+      <a href="index.html">Accueil</a>
+      <a href="contact.html">Contact</a>
+    </div>
+  </nav>
+
+  <div class="hero">
+    <h1>📰 Blog ImmoCG</h1>
+    <p>Conseils, guides et actualités immobilières au Congo</p>
+  </div>
+
+  <div class="container">
+
+    <!-- ARTICLE COMPLET (caché par défaut) -->
+    <div class="article-full" id="article-complet"></div>
+
+    <!-- LISTE DES ARTICLES -->
+    <div class="articles" id="liste-articles"></div>
+  </div>
+
+  <footer>ImmoCG · Brazzaville, Congo · 2026
+    <a href="blog.html">Blog</a>
+  </footer>
+
+  <script>
+    const articles = [
+      {
+        id: 1,
+        emoji: '🏠',
+        cat: 'Guide locataire',
+        titre: 'Comment trouver un appartement à Brazzaville en 2026',
+        desc: 'Nos conseils pratiques pour trouver votre logement rapidement et en toute sécurité à Brazzaville.',
+        date: 'Mai 2026',
+        contenu: `
+          <h3>1. Définissez votre budget</h3>
+          <p>Avant de commencer vos recherches, calculez votre budget total. À Brazzaville, prévoyez en général :</p>
+          <ul>
+            <li>Loyer mensuel : le montant que vous pouvez payer chaque mois</li>
+            <li>Caution : 3 mois de loyer remboursables à votre départ</li>
+            <li>Frais d'agence : l'équivalent d'1 mois de loyer</li>
+            <li>Frais de visite : 5 000 FCFA par bien visité</li>
+          </ul>
+          <h3>2. Choisissez votre quartier</h3>
+          <p>Brazzaville compte plusieurs quartiers résidentiels, chacun avec ses caractéristiques :</p>
+          <ul>
+            <li><strong>Bacongo</strong> : Calme, résidentiel, bien desservi</li>
+            <li><strong>Poto-Poto</strong> : Animé, central, proche des commerces</li>
+            <li><strong>Moungali</strong> : Populaire, prix accessibles</li>
+            <li><strong>Centre-ville</strong> : Premium, proche des bureaux</li>
+            <li><strong>Makélékélé</strong> : Grand quartier, mixte</li>
+          </ul>
+          <h3>3. Passez par une agence certifiée</h3>
+          <p>Pour éviter les arnaques, privilégiez les agences immobilières certifiées comme celles référencées sur ImmoCG. Elles garantissent des biens vérifiés, des prix réels et un accompagnement professionnel.</p>
+          <h3>4. Vérifiez le bien avant de signer</h3>
+          <ul>
+            <li>Visitez le bien en journée pour voir la luminosité</li>
+            <li>Vérifiez l'eau et l'électricité</li>
+            <li>Testez la plomberie</li>
+            <li>Regardez l'état du toit et des murs</li>
+            <li>Vérifiez la sécurité du quartier</li>
+          </ul>
+        `
+      },
+      {
+        id: 2,
+        emoji: '💰',
+        cat: 'Prix du marché',
+        titre: 'Prix des loyers à Brazzaville en 2026 — quartier par quartier',
+        desc: 'Découvrez les prix moyens des loyers dans chaque quartier de Brazzaville pour mieux préparer votre budget.',
+        date: 'Mai 2026',
+        contenu: `
+          <h3>Studios et F1 (1 pièce)</h3>
+          <ul>
+            <li>Moungali / Ouenzé : 50 000 — 100 000 FCFA/mois</li>
+            <li>Poto-Poto / Bacongo : 80 000 — 150 000 FCFA/mois</li>
+            <li>Centre-ville : 150 000 — 250 000 FCFA/mois</li>
+          </ul>
+          <h3>Appartements F2/F3 (2-3 pièces)</h3>
+          <ul>
+            <li>Quartiers populaires : 100 000 — 200 000 FCFA/mois</li>
+            <li>Quartiers résidentiels : 200 000 — 400 000 FCFA/mois</li>
+            <li>Centre-ville / standing : 400 000 — 800 000 FCFA/mois</li>
+          </ul>
+          <h3>Villas (4+ pièces)</h3>
+          <ul>
+            <li>Standard : 300 000 — 600 000 FCFA/mois</li>
+            <li>Standing moyen : 600 000 — 1 200 000 FCFA/mois</li>
+            <li>Haut standing : 1 200 000 FCFA et plus/mois</li>
+          </ul>
+          <h3>Facteurs qui influencent le prix</h3>
+          <ul>
+            <li>Meublé ou non meublé (+30 à 50% si meublé)</li>
+            <li>Groupe électrogène (+20 à 30%)</li>
+            <li>Gardien et clôture (+15 à 20%)</li>
+            <li>Proximité des axes principaux</li>
+          </ul>
+        `
+      },
+      {
+        id: 3,
+        emoji: '⚖️',
+        cat: 'Droits & Lois',
+        titre: 'Droits du locataire au Congo — ce que vous devez savoir',
+        desc: 'Connaissez vos droits en tant que locataire en République du Congo pour éviter les abus.',
+        date: 'Mai 2026',
+        contenu: `
+          <h3>La loi qui vous protège</h3>
+          <p>En République du Congo, la location est encadrée par la loi n° 37-2012 portant réglementation de la location à usage d'habitation.</p>
+          <h3>Vos droits principaux</h3>
+          <ul>
+            <li>Recevoir un contrat de bail écrit</li>
+            <li>Récupérer votre caution à la fin du bail (sous conditions)</li>
+            <li>Être prévenu à l'avance en cas de résiliation</li>
+            <li>Habiter un logement en bon état</li>
+            <li>Ne pas être expulsé sans procédure légale</li>
+          </ul>
+          <h3>Vos obligations</h3>
+          <ul>
+            <li>Payer le loyer à la date convenue</li>
+            <li>Entretenir le logement</li>
+            <li>Ne pas sous-louer sans accord du propriétaire</li>
+            <li>Respecter le règlement de l'immeuble</li>
+          </ul>
+          <h3>En cas de litige</h3>
+          <p>En cas de conflit avec votre propriétaire, vous pouvez saisir la commission de conciliation avant tout recours judiciaire. ImmoCG peut vous mettre en contact avec des agences qui vous accompagnent dans ces démarches.</p>
+        `
+      },
+      {
+        id: 4,
+        emoji: '🏢',
+        cat: 'Investissement',
+        titre: 'Acheter un bien immobilier au Congo — guide complet',
+        desc: 'Tout ce que vous devez savoir avant d\'acheter un terrain, une maison ou un appartement au Congo.',
+        date: 'Mai 2026',
+        contenu: `
+          <h3>Les frais à prévoir</h3>
+          <ul>
+            <li>Prix du bien : le prix négocié avec le vendeur</li>
+            <li>Commission agence : 10% du prix de vente</li>
+            <li>Frais de notaire : 5% environ</li>
+            <li>Frais d'enregistrement et de mutation</li>
+          </ul>
+          <h3>Les documents à vérifier</h3>
+          <ul>
+            <li>Titre foncier (document le plus sûr)</li>
+            <li>Attestation villagéoise (terrain)</li>
+            <li>Permis de construire (construction)</li>
+            <li>Quittances de loyer si bien occupé</li>
+          </ul>
+          <h3>Les étapes de l'achat</h3>
+          <ul>
+            <li>Visite et négociation du prix</li>
+            <li>Signature d'un compromis de vente</li>
+            <li>Vérification des documents avec un notaire</li>
+            <li>Signature de l'acte authentique</li>
+            <li>Paiement et transfert de propriété</li>
+          </ul>
+          <h3>Conseils importants</h3>
+          <p>Ne jamais payer sans avoir un titre foncier vérifié. Faites toujours appel à un notaire agréé. Méfiez-vous des prix trop bas qui cachent souvent des problèmes juridiques.</p>
+        `
+      }
+    ]
+
+    function afficherArticles() {
+      const container = document.getElementById('liste-articles')
+      container.innerHTML = articles.map(a => `
+        <div class="article" onclick="lireArticle(${a.id})">
+          <div class="article-img">${a.emoji}</div>
+          <div class="article-body">
+            <div class="article-cat">${a.cat}</div>
+            <div class="article-titre">${a.titre}</div>
+            <div class="article-desc">${a.desc}</div>
+            <div class="article-meta">📅 ${a.date} · 3 min de lecture</div>
+          </div>
+        </div>
+      `).join('')
+    }
+
+    function lireArticle(id) {
+      const a = articles.find(x => x.id === id)
+      if (!a) return
+      const el = document.getElementById('article-complet')
+      el.innerHTML = `
+        <button class="btn-retour" onclick="fermerArticle()">← Retour aux articles</button>
+        <div class="article-cat">${a.cat}</div>
+        <h2>${a.titre}</h2>
+        <div class="article-meta" style="margin-bottom:1.5rem;">📅 ${a.date}</div>
+        ${a.contenu}
+        <div style="margin-top:2rem;padding:1.5rem;background:#F7F3EC;border-radius:10px;">
+          <p style="font-size:14px;color:#444;">Vous cherchez un logement au Congo ? <a href="index.html" style="color:#C9963A;font-weight:600;">Consultez nos annonces →</a></p>
+        </div>
+      `
+      el.classList.add('active')
+      document.getElementById('liste-articles').style.display = 'none'
+      el.scrollIntoView({ behavior: 'smooth' })
+    }
+
+    function fermerArticle() {
+      document.getElementById('article-complet').classList.remove('active')
+      document.getElementById('liste-articles').style.display = 'grid'
+    }
+
+    afficherArticles()
+  </script>
+</body>
+</html>

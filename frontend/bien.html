@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+  <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZLM0TRVDG9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-ZLM0TRVDG9');
+</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ImmoCG — Détail du bien</title>
@@ -320,17 +329,39 @@
       margin-top: 8px;
       font-style: italic;
     }
+
+    @media (max-width: 768px) {
+  .container {
+    grid-template-columns: 1fr;
+    padding: 0 1rem 3rem;
+  }
+  .contact-card {
+    position: static;
+    order: -1;
+  }
+  .galerie-main { height: 240px; }
+  .bien-titre { font-size: 22px; }
+  .bien-prix { font-size: 24px; }
+  .feats { gap: 1rem; flex-wrap: wrap; }
+  .equipements { grid-template-columns: 1fr; }
+  .breadcrumb { padding: 0 1rem; }
+  nav a { font-size: 13px; }
+}
+@media (max-width: 480px) {
+  .galerie-thumbs .thumb { width: 60px; height: 48px; }
+  .btn { padding: 11px; font-size: 13px; }
+}
   </style>
 </head>
 <body>
 
   <nav>
-    <a href="index.html" style="text-decoration:none;"><div class="logo">Immo<span>CG</span></div></a>
-    
-    <div>
-      <a href="index.html">← Retour aux biens</a>
-    </div>
-  </nav>
+  <a href="index.html" style="text-decoration:none;"><div class="logo">Immo<span>CG</span></div></a>
+  <div id="bien-nav-menu" style="display:flex;align-items:center;gap:1rem;">
+    <a href="index.html">← Retour aux biens</a>
+    <a href="favoris.html" style="color:#C9963A;">❤️</a>
+  </div>
+</nav>
 
   <div class="breadcrumb">
     <a href="index.html">Accueil</a> › <span id="breadcrumb-type">Bien</span>
@@ -340,7 +371,9 @@
     <div class="loading">Chargement du bien...</div>
   </div>
 
-  <footer>ImmoCG · Brazzaville, Congo · 2026</footer>
+  <footer>ImmoCG · Brazzaville, Congo · 2026
+    <a href="blog.html">Blog</a>
+  </footer>
 
   <script>
     // Configuration des taux - À MODIFIER SELON VOS TAUX RÉELS

@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+    <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZLM0TRVDG9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-ZLM0TRVDG9');
+</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>À propos — ImmoCG, plateforme immobilière du Congo</title>
@@ -52,13 +61,13 @@
     footer { text-align: center; padding: 2rem; font-size: 13px; color: #888780; border-top: 1px solid rgba(0,0,0,0.08); }
 
     @media (max-width: 768px) {
+  .container { padding: 0 1rem 3rem; }
   .values { grid-template-columns: 1fr; }
   .stats-grid { grid-template-columns: 1fr 1fr; }
-  .team { grid-template-columns: 1fr; }
-  .container { padding: 0 1rem 3rem; }
   .hero h1 { font-size: 26px; }
   .cta { padding: 1.5rem; }
   .cta-btns { flex-direction: column; align-items: center; }
+  nav div { display: none; }
 }
   </style>
 </head>
@@ -139,7 +148,9 @@
 
   </div>
 
-  <footer>ImmoCG · Brazzaville, Congo · 2026 · Tous droits réservés</footer>
+  <footer>ImmoCG · Brazzaville, Congo · 2026 · Tous droits réservés
+    <a href="blog.html">Blog</a>
+  </footer>
 
   <script>
     async function chargerStats() {

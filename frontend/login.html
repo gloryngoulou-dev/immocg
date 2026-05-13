@@ -1,6 +1,17 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+
+  <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZLM0TRVDG9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-ZLM0TRVDG9');
+</script>
+
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ImmoCG — Connexion</title>
@@ -102,6 +113,11 @@
     .register-link a { color: #C9963A; text-decoration: none; }
 
     footer { text-align: center; padding: 1.5rem; font-size: 13px; color: #888780; }
+
+    @media (max-width: 480px) {
+  .card { padding: 1.5rem; margin: 0 1rem; }
+  .page { padding: 1rem; }
+}
   </style>
 </head>
 <body>
@@ -136,7 +152,9 @@
     </div>
   </div>
 
-  <footer>ImmoCG · Brazzaville, Congo · 2026</footer>
+  <footer>ImmoCG · Brazzaville, Congo · 2026
+    <a href="blog.html">Blog</a>
+  </footer>
 
   <script>
     // Si déjà connecté, rediriger
