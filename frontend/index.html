@@ -207,23 +207,83 @@
     .footer-links { display: flex; justify-content: center; gap: 2rem; margin-bottom: 1rem; flex-wrap: wrap; }
     .footer-links a { color: #888780; text-decoration: none; font-size: 13px; }
     .footer-links a:hover { color: #C9963A; }
+
+    /* HAMBURGER */
+.hamburger {
+  display: none;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+  .hamburger { display: block; }
+
+  .nav-links {
+    display: none;
+    position: absolute;
+    top: 60px;
+    left: 0;
+    right: 0;
+    background: #1A1A18;
+    flex-direction: column;
+    padding: 1rem 2rem;
+    gap: 1rem;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    z-index: 200;
+  }
+
+  .nav-links.open { display: flex; }
+
+  .nav-links a { font-size: 15px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
+
+  .hero { padding: 3rem 1.5rem 2.5rem; }
+  .hero h1 { font-size: 28px; }
+
+  .search-box { flex-direction: column; }
+  .search-box input, .search-box select { min-width: unset; width: 100%; }
+
+  .stats { gap: 1.5rem; padding: 1.5rem; }
+  .stat-num { font-size: 22px; }
+
+  .cards { grid-template-columns: 1fr; }
+
+  .how-steps { grid-template-columns: 1fr 1fr; }
+
+  .cta-card { flex-direction: column; text-align: center; padding: 1.5rem; }
+
+  .metrics { grid-template-columns: 1fr 1fr; }
+
+  .footer-links { gap: 1rem; }
+
+  nav { position: relative; }
+}
+
+@media (max-width: 480px) {
+  .how-steps { grid-template-columns: 1fr; }
+  .hero-tags { justify-content: flex-start; overflow-x: auto; flex-wrap: nowrap; padding-bottom: 4px; }
+}
   </style>
 </head>
 <body>
 
   <!-- NAV -->
   <nav>
-    <div class="logo">Immo<span>CG</span></div>
-    <div class="nav-links">
-      <a href="index.html#biens">Biens</a>
-      <a href="index.html#comment">Comment ça marche</a>
-      <a href="conditions.html">Partenariat</a>
-      <a href="contact.html">Contact</a>
-      <a href="favoris.html">❤️ Favoris</a>
-      <a href="login.html" id="nav-login" class="nav-btn">Connexion</a>
-      <a href="#" id="nav-user-btn" class="nav-user-btn" style="display:none;"></a>
-    </div>
-  </nav>
+  <a href="index.html" style="text-decoration:none;"><div class="logo">Immo<span>CG</span></div></a>
+  <div class="nav-links" id="nav-menu">
+    <a href="index.html#biens">Biens</a>
+    <a href="index.html#comment">Comment ça marche</a>
+    <a href="conditions.html">Partenariat</a>
+    <a href="contact.html">Contact</a>
+    <a href="favoris.html">❤️ Favoris</a>
+    <a href="login.html" id="nav-login" class="nav-btn">Connexion</a>
+    <a href="#" id="nav-user-btn" class="nav-user-btn" style="display:none;"></a>
+  </div>
+  <button class="hamburger" id="hamburger" onclick="toggleMenu()">☰</button>
+</nav>
 
   <!-- HERO -->
   <section class="hero">
@@ -444,6 +504,16 @@
     }
 
     chargerBiens()
+
+    function toggleMenu() {
+  document.getElementById('nav-menu').classList.toggle('open')
+}
+// Fermer le menu en cliquant ailleurs
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('nav')) {
+    document.getElementById('nav-menu').classList.remove('open')
+  }
+})
   </script>
 </body>
 </html>

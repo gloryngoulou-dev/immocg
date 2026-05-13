@@ -31,3 +31,7 @@ const PORT = process.env.PORT || 3000
 app.listen(PORT, () => {
   console.log(`Serveur démarré sur http://localhost:${PORT}`)
 })
+
+app.get('/favicon.ico', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/favicon.svg'))
+})
