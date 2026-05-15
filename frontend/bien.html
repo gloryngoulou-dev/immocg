@@ -481,46 +481,75 @@
       let caution = 0;
       let fraisNotaire = 0;
       let total = prix;
-      let detailsHTML = ''
+      
 
-if (mode === 'louer' || mode === 'location') {
-  const caution = prix * TAUX_CAUTION_MOIS
-  const fraisAgence = prix * TAUX_FRAIS_AGENCE_LOCATION
-  const total = prix + caution + fraisAgence + FRAIS_VISITE
+// Calcul frais de visite selon prix
+function calculerFraisVisite(prix) {
+  if (prix < 100000) return 0
+  if (prix < 300000) return 5000
+  if (prix < 600000) return 10000
+  return 15000
+}
+
+const fraisVisite = calculerFraisVisite(prix)
+let detailsHTML = ''
+
+if (estLocation) {
+  const moisCaution = 2
+  const moisAgence = 1
+  const totalMois = moisCaution + moisAgence
+  const caution = prix * moisCaution
+  const fraisAgence = prix * moisAgence
+  const total = caution + fraisAgence
 
   detailsHTML = `
-    <div class="prix-ligne">
-      <span>🏠 Loyer mensuel</span>
-      <span>${prix.toLocaleString('fr-FR')} FCFA</span>
+    <div style="background:#e8f4e8;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#2d6e2d;font-weight:500;">
+      ✅ Pour emménager : <strong>${totalMois} mois de loyer</strong>
     </div>
     <div class="prix-ligne">
-      <span>🔒 Caution (3 mois)</span>
+      <span>🔒 Caution (${moisCaution} mois)</span>
       <span>${caution.toLocaleString('fr-FR')} FCFA</span>
     </div>
     <div class="prix-ligne">
-      <span>🏢 Frais d'agence (1 mois)</span>
+      <span>🏢 Frais d'agence (${moisAgence} mois)</span>
       <span>${fraisAgence.toLocaleString('fr-FR')} FCFA</span>
-    </div>
-    <div class="prix-ligne">
-      <span>👁️ Frais de visite</span>
-      <span>${FRAIS_VISITE.toLocaleString('fr-FR')} FCFA</span>
     </div>
     <div class="prix-ligne total">
       <span>💰 TOTAL À PRÉVOIR</span>
       <span>${total.toLocaleString('fr-FR')} FCFA</span>
     </div>
+    ${fraisVisite > 0 ? `
+    <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(0,0,0,0.06);font-size:12px;color:#888780;display:flex;justify-content:space-between;">
+      <span>👁️ Frais de visite</span>
+      <span>${fraisVisite.toLocaleString('fr-FR')} FCFA</span>
+    </div>` : `
+    <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(0,0,0,0.06);font-size:12px;color:#2d6e2d;">
+      👁️ Visite gratuite pour ce bien
+    </div>`}
     <div class="info-frais">
-      ⓘ Caution remboursable. Loyer mensuel hors charges.
+      ⓘ Caution de ${moisCaution} mois remboursable à votre départ.
+    </div>
+    <div style="margin-top:10px;background:#fffdf5;border-radius:8px;padding:10px;font-size:12px;color:#7A5A1A;line-height:1.6;">
+      📋 <strong>Comment ça se passe ?</strong><br>
+      À la signature : ${totalMois} mois = ${total.toLocaleString('fr-FR')} FCFA<br>
+      Chaque mois : ${prix.toLocaleString('fr-FR')} FCFA de loyer<br>
+      Au départ : ${caution.toLocaleString('fr-FR')} FCFA remboursés
     </div>
   `
 } else {
-  const fraisAgence = Math.round(prix * TAUX_FRAIS_AGENCE_VENTE)
-  const fraisNotaire = Math.round(prix * TAUX_FRAIS_NOTAIRE_VENTE)
-  const total = prix + fraisAgence + fraisNotaire
+  const tauxAgence = 0.10
+  const tauxNotaire = 0.05
+  const fraisAgence = Math.round(prix * tauxAgence)
+  const fraisNotaire = Math.round(prix * tauxNotaire)
+  const totalFrais = fraisAgence + fraisNotaire
+  const totalAcquisition = prix + totalFrais
 
   detailsHTML = `
+    <div style="background:#e8f4e8;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#2d6e2d;font-weight:500;">
+      ✅ Frais d'acquisition : <strong>15% du prix</strong>
+    </div>
     <div class="prix-ligne">
-      <span>🏠 Prix de vente</span>
+      <span>🏠 Prix du bien</span>
       <span>${prix.toLocaleString('fr-FR')} FCFA</span>
     </div>
     <div class="prix-ligne">
@@ -533,10 +562,21 @@ if (mode === 'louer' || mode === 'location') {
     </div>
     <div class="prix-ligne total">
       <span>💰 TOTAL ACQUISITION</span>
-      <span>${total.toLocaleString('fr-FR')} FCFA</span>
+      <span>${totalAcquisition.toLocaleString('fr-FR')} FCFA</span>
     </div>
+    ${fraisVisite > 0 ? `
+    <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(0,0,0,0.06);font-size:12px;color:#888780;display:flex;justify-content:space-between;">
+      <span>👁️ Frais de visite</span>
+      <span>${fraisVisite.toLocaleString('fr-FR')} FCFA</span>
+    </div>` : ''}
     <div class="info-frais">
       ⓘ Commission agence payée par le vendeur.
+    </div>
+    <div style="margin-top:10px;background:#fffdf5;border-radius:8px;padding:10px;font-size:12px;color:#7A5A1A;line-height:1.6;">
+      📋 <strong>Comment ça se passe ?</strong><br>
+      Vous payez : ${prix.toLocaleString('fr-FR')} FCFA au vendeur<br>
+      + ${fraisNotaire.toLocaleString('fr-FR')} FCFA au notaire<br>
+      Commission agence payée par le vendeur
     </div>
   `
 }

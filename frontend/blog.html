@@ -34,13 +34,28 @@
     .article:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
 
     .article-img {
-      height: 140px;
-      background: linear-gradient(135deg, #1A1A18, #2C2C28);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 48px;
-    }
+  height: 160px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+.article-img-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.5));
+  display: flex;
+  align-items: flex-end;
+  padding: 12px;
+}
+.article-img-cat {
+  background: #C9963A;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 40px;
+  text-transform: uppercase;
+}
 
     .article-body { padding: 1.2rem; }
     .article-cat { font-size: 11px; font-weight: 600; color: #C9963A; text-transform: uppercase; margin-bottom: 6px; }
@@ -101,157 +116,128 @@
 
   <script>
     const articles = [
-      {
-        id: 1,
-        emoji: '🏠',
-        cat: 'Guide locataire',
-        titre: 'Comment trouver un appartement à Brazzaville en 2026',
-        desc: 'Nos conseils pratiques pour trouver votre logement rapidement et en toute sécurité à Brazzaville.',
-        date: 'Mai 2026',
-        contenu: `
-          <h3>1. Définissez votre budget</h3>
-          <p>Avant de commencer vos recherches, calculez votre budget total. À Brazzaville, prévoyez en général :</p>
-          <ul>
-            <li>Loyer mensuel : le montant que vous pouvez payer chaque mois</li>
-            <li>Caution : 3 mois de loyer remboursables à votre départ</li>
-            <li>Frais d'agence : l'équivalent d'1 mois de loyer</li>
-            <li>Frais de visite : 5 000 FCFA par bien visité</li>
-          </ul>
-          <h3>2. Choisissez votre quartier</h3>
-          <p>Brazzaville compte plusieurs quartiers résidentiels, chacun avec ses caractéristiques :</p>
-          <ul>
-            <li><strong>Bacongo</strong> : Calme, résidentiel, bien desservi</li>
-            <li><strong>Poto-Poto</strong> : Animé, central, proche des commerces</li>
-            <li><strong>Moungali</strong> : Populaire, prix accessibles</li>
-            <li><strong>Centre-ville</strong> : Premium, proche des bureaux</li>
-            <li><strong>Makélékélé</strong> : Grand quartier, mixte</li>
-          </ul>
-          <h3>3. Passez par une agence certifiée</h3>
-          <p>Pour éviter les arnaques, privilégiez les agences immobilières certifiées comme celles référencées sur ImmoCG. Elles garantissent des biens vérifiés, des prix réels et un accompagnement professionnel.</p>
-          <h3>4. Vérifiez le bien avant de signer</h3>
-          <ul>
-            <li>Visitez le bien en journée pour voir la luminosité</li>
-            <li>Vérifiez l'eau et l'électricité</li>
-            <li>Testez la plomberie</li>
-            <li>Regardez l'état du toit et des murs</li>
-            <li>Vérifiez la sécurité du quartier</li>
-          </ul>
-        `
-      },
-      {
-        id: 2,
-        emoji: '💰',
-        cat: 'Prix du marché',
-        titre: 'Prix des loyers à Brazzaville en 2026 — quartier par quartier',
-        desc: 'Découvrez les prix moyens des loyers dans chaque quartier de Brazzaville pour mieux préparer votre budget.',
-        date: 'Mai 2026',
-        contenu: `
-          <h3>Studios et F1 (1 pièce)</h3>
-          <ul>
-            <li>Moungali / Ouenzé : 50 000 — 100 000 FCFA/mois</li>
-            <li>Poto-Poto / Bacongo : 80 000 — 150 000 FCFA/mois</li>
-            <li>Centre-ville : 150 000 — 250 000 FCFA/mois</li>
-          </ul>
-          <h3>Appartements F2/F3 (2-3 pièces)</h3>
-          <ul>
-            <li>Quartiers populaires : 100 000 — 200 000 FCFA/mois</li>
-            <li>Quartiers résidentiels : 200 000 — 400 000 FCFA/mois</li>
-            <li>Centre-ville / standing : 400 000 — 800 000 FCFA/mois</li>
-          </ul>
-          <h3>Villas (4+ pièces)</h3>
-          <ul>
-            <li>Standard : 300 000 — 600 000 FCFA/mois</li>
-            <li>Standing moyen : 600 000 — 1 200 000 FCFA/mois</li>
-            <li>Haut standing : 1 200 000 FCFA et plus/mois</li>
-          </ul>
-          <h3>Facteurs qui influencent le prix</h3>
-          <ul>
-            <li>Meublé ou non meublé (+30 à 50% si meublé)</li>
-            <li>Groupe électrogène (+20 à 30%)</li>
-            <li>Gardien et clôture (+15 à 20%)</li>
-            <li>Proximité des axes principaux</li>
-          </ul>
-        `
-      },
-      {
-        id: 3,
-        emoji: '⚖️',
-        cat: 'Droits & Lois',
-        titre: 'Droits du locataire au Congo — ce que vous devez savoir',
-        desc: 'Connaissez vos droits en tant que locataire en République du Congo pour éviter les abus.',
-        date: 'Mai 2026',
-        contenu: `
-          <h3>La loi qui vous protège</h3>
-          <p>En République du Congo, la location est encadrée par la loi n° 37-2012 portant réglementation de la location à usage d'habitation.</p>
-          <h3>Vos droits principaux</h3>
-          <ul>
-            <li>Recevoir un contrat de bail écrit</li>
-            <li>Récupérer votre caution à la fin du bail (sous conditions)</li>
-            <li>Être prévenu à l'avance en cas de résiliation</li>
-            <li>Habiter un logement en bon état</li>
-            <li>Ne pas être expulsé sans procédure légale</li>
-          </ul>
-          <h3>Vos obligations</h3>
-          <ul>
-            <li>Payer le loyer à la date convenue</li>
-            <li>Entretenir le logement</li>
-            <li>Ne pas sous-louer sans accord du propriétaire</li>
-            <li>Respecter le règlement de l'immeuble</li>
-          </ul>
-          <h3>En cas de litige</h3>
-          <p>En cas de conflit avec votre propriétaire, vous pouvez saisir la commission de conciliation avant tout recours judiciaire. ImmoCG peut vous mettre en contact avec des agences qui vous accompagnent dans ces démarches.</p>
-        `
-      },
-      {
-        id: 4,
-        emoji: '🏢',
-        cat: 'Investissement',
-        titre: 'Acheter un bien immobilier au Congo — guide complet',
-        desc: 'Tout ce que vous devez savoir avant d\'acheter un terrain, une maison ou un appartement au Congo.',
-        date: 'Mai 2026',
-        contenu: `
-          <h3>Les frais à prévoir</h3>
-          <ul>
-            <li>Prix du bien : le prix négocié avec le vendeur</li>
-            <li>Commission agence : 10% du prix de vente</li>
-            <li>Frais de notaire : 5% environ</li>
-            <li>Frais d'enregistrement et de mutation</li>
-          </ul>
-          <h3>Les documents à vérifier</h3>
-          <ul>
-            <li>Titre foncier (document le plus sûr)</li>
-            <li>Attestation villagéoise (terrain)</li>
-            <li>Permis de construire (construction)</li>
-            <li>Quittances de loyer si bien occupé</li>
-          </ul>
-          <h3>Les étapes de l'achat</h3>
-          <ul>
-            <li>Visite et négociation du prix</li>
-            <li>Signature d'un compromis de vente</li>
-            <li>Vérification des documents avec un notaire</li>
-            <li>Signature de l'acte authentique</li>
-            <li>Paiement et transfert de propriété</li>
-          </ul>
-          <h3>Conseils importants</h3>
-          <p>Ne jamais payer sans avoir un titre foncier vérifié. Faites toujours appel à un notaire agréé. Méfiez-vous des prix trop bas qui cachent souvent des problèmes juridiques.</p>
-        `
-      }
-    ]
+  {
+    id: 1,
+    image: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=600&q=80',
+    cat: 'Guide locataire',
+    titre: 'Comment trouver un appartement à Brazzaville en 2026',
+    desc: 'Nos conseils pratiques pour trouver votre logement rapidement et en toute sécurité.',
+    date: 'Mai 2026',
+    contenu: `
+      <h3>1. Définissez votre budget</h3>
+      <p>Prévoyez 3 mois de loyer pour emménager : 2 mois de caution remboursable + 1 mois de frais d'agence.</p>
+      <h3>2. Choisissez votre quartier</h3>
+      <ul>
+        <li><strong>Bacongo</strong> : Calme, résidentiel</li>
+        <li><strong>Poto-Poto</strong> : Animé, central</li>
+        <li><strong>Moungali</strong> : Populaire, accessibles</li>
+        <li><strong>Centre-ville</strong> : Premium</li>
+      </ul>
+      <h3>3. Passez par une agence certifiée ImmoCG</h3>
+      <p>Biens vérifiés, prix réels, accompagnement professionnel.</p>
+      <h3>4. Vérifiez le bien avant de signer</h3>
+      <ul>
+        <li>Visitez en journée</li>
+        <li>Vérifiez eau et électricité</li>
+        <li>Testez la plomberie</li>
+        <li>Vérifiez la sécurité du quartier</li>
+      </ul>
+    `
+  },
+  {
+    id: 2,
+    image: 'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=600&q=80',
+    cat: 'Prix du marché',
+    titre: 'Prix des loyers à Brazzaville en 2026 — quartier par quartier',
+    desc: 'Les prix moyens dans chaque quartier pour mieux préparer votre budget.',
+    date: 'Mai 2026',
+    contenu: `
+      <h3>Studios (1 pièce)</h3>
+      <ul>
+        <li>Moungali / Ouenzé : 50 000 — 100 000 FCFA</li>
+        <li>Poto-Poto / Bacongo : 80 000 — 150 000 FCFA</li>
+        <li>Centre-ville : 150 000 — 250 000 FCFA</li>
+      </ul>
+      <h3>Appartements F2/F3</h3>
+      <ul>
+        <li>Quartiers populaires : 100 000 — 200 000 FCFA</li>
+        <li>Résidentiels : 200 000 — 400 000 FCFA</li>
+        <li>Standing : 400 000 — 800 000 FCFA</li>
+      </ul>
+      <h3>Villas</h3>
+      <ul>
+        <li>Standard : 300 000 — 600 000 FCFA</li>
+        <li>Haut standing : 1 200 000 FCFA et plus</li>
+      </ul>
+    `
+  },
+  {
+    id: 3,
+    image: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=600&q=80',
+    cat: 'Droits & Lois',
+    titre: 'Droits du locataire au Congo — ce que vous devez savoir',
+    desc: 'Connaissez vos droits pour éviter les abus et les arnaques.',
+    date: 'Mai 2026',
+    contenu: `
+      <h3>La loi qui vous protège</h3>
+      <p>Loi n° 37-2012 portant réglementation de la location à usage d'habitation.</p>
+      <h3>Vos droits</h3>
+      <ul>
+        <li>Contrat de bail écrit obligatoire</li>
+        <li>Caution remboursable à la fin du bail</li>
+        <li>Préavis obligatoire avant résiliation</li>
+        <li>Logement en bon état garanti</li>
+      </ul>
+      <h3>Vos obligations</h3>
+      <ul>
+        <li>Payer le loyer à temps</li>
+        <li>Entretenir le logement</li>
+        <li>Pas de sous-location sans accord</li>
+      </ul>
+    `
+  },
+  {
+    id: 4,
+    image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&q=80',
+    cat: 'Investissement',
+    titre: 'Acheter un bien au Congo — guide complet',
+    desc: 'Tout ce qu\'il faut savoir avant d\'acheter terrain, maison ou appartement.',
+    date: 'Mai 2026',
+    contenu: `
+      <h3>Les frais</h3>
+      <ul>
+        <li>Commission agence : 10% (payée par le vendeur)</li>
+        <li>Frais notaire : 5% (à votre charge)</li>
+      </ul>
+      <h3>Documents à vérifier</h3>
+      <ul>
+        <li>Titre foncier (le plus sûr)</li>
+        <li>Attestation villagéoise</li>
+        <li>Permis de construire</li>
+      </ul>
+      <h3>⚠️ Attention</h3>
+      <p>Ne jamais payer sans titre foncier vérifié par un notaire.</p>
+    `
+  }
+]
 
-    function afficherArticles() {
-      const container = document.getElementById('liste-articles')
-      container.innerHTML = articles.map(a => `
-        <div class="article" onclick="lireArticle(${a.id})">
-          <div class="article-img">${a.emoji}</div>
-          <div class="article-body">
-            <div class="article-cat">${a.cat}</div>
-            <div class="article-titre">${a.titre}</div>
-            <div class="article-desc">${a.desc}</div>
-            <div class="article-meta">📅 ${a.date} · 3 min de lecture</div>
-          </div>
+function afficherArticles() {
+  const container = document.getElementById('liste-articles')
+  container.innerHTML = articles.map(a => `
+    <div class="article" onclick="lireArticle(${a.id})">
+      <div class="article-img" style="background-image:url(${a.image});">
+        <div class="article-img-overlay">
+          <span class="article-img-cat">${a.cat}</span>
         </div>
-      `).join('')
-    }
+      </div>
+      <div class="article-body">
+        <div class="article-titre">${a.titre}</div>
+        <div class="article-desc">${a.desc}</div>
+        <div class="article-meta">📅 ${a.date} · 3 min de lecture</div>
+      </div>
+    </div>
+  `).join('')
+}
 
     function lireArticle(id) {
       const a = articles.find(x => x.id === id)
