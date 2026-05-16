@@ -5,7 +5,9 @@
   "main": "backend/server.js",
   "scripts": {
     "start": "node backend/server.js",
-    "dev": "nodemon backend/server.js"
+    "dev": "nodemon backend/server.js",
+    "fix-data": "node backend/scripts/fix-biens-data.js",
+    "migrate-passwords": "node backend/scripts/migrate-passwords.js"
   },
   "keywords": [],
   "author": "",

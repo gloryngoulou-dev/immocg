@@ -1,8 +1,8 @@
 const express = require('express')
 const router = express.Router()
-const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const { createClient } = require('@supabase/supabase-js')
+const { hashPassword, verifyPassword, isHashed } = require('../utils/password')
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -12,6 +12,11 @@ const supabase = createClient(
 const JWT_SECRET = process.env.JWT_SECRET || 'immocg_secret_2026'
 
 const { envoyerEmailActivation, envoyerEmailRefus } = require('./email')
+
+async function upgradePasswordIfNeeded(userId, plainPassword) {
+  const hashed = await hashPassword(plainPassword)
+  await supabase.from('users').update({ mot_de_passe: hashed }).eq('id', userId)
+}
 
 // POST /auth/login
 router.post('/login', async (req, res) => {
@@ -32,17 +37,19 @@ router.post('/login', async (req, res) => {
   }
 
   if (!user.actif) {
-    return res.status(401).json({ success: false, message: 'Compte désactivé' })
+    return res.status(401).json({ success: false, message: 'Compte en attente de validation ou désactivé' })
   }
 
-  // Vérifier le mot de passe (texte simple pour l'instant)
-  const motDePasseOk = mot_de_passe === user.mot_de_passe
+  const motDePasseOk = await verifyPassword(mot_de_passe, user.mot_de_passe)
 
   if (!motDePasseOk) {
     return res.status(401).json({ success: false, message: 'Email ou mot de passe incorrect' })
   }
 
-  // Créer le token
+  if (!isHashed(user.mot_de_passe)) {
+    await upgradePasswordIfNeeded(user.id, mot_de_passe)
+  }
+
   const token = jwt.sign(
     { id: user.id, email: user.email, role: user.role },
     JWT_SECRET,
@@ -57,8 +64,8 @@ router.post('/login', async (req, res) => {
       nom: user.nom,
       email: user.email,
       role: user.role,
-      nom_agence: user.nom_agence
-    }
+      nom_agence: user.nom_agence,
+    },
   })
 })
 
@@ -70,7 +77,10 @@ router.post('/register', async (req, res) => {
     return res.status(400).json({ success: false, message: 'Tous les champs sont requis' })
   }
 
-  // Vérifier si email existe déjà
+  if (mot_de_passe.length < 6) {
+    return res.status(400).json({ success: false, message: 'Le mot de passe doit faire au moins 6 caractères' })
+  }
+
   const { data: existant } = await supabase
     .from('users')
     .select('id')
@@ -81,10 +91,19 @@ router.post('/register', async (req, res) => {
     return res.status(400).json({ success: false, message: 'Cet email est déjà utilisé' })
   }
 
-  const { data, error } = await supabase
+  const motDePasseHash = await hashPassword(mot_de_passe)
+
+  const { error } = await supabase
     .from('users')
-    .insert([{ nom, email, mot_de_passe, telephone, nom_agence, role: 'agence', actif: false }])
-    .select()
+    .insert([{
+      nom,
+      email,
+      mot_de_passe: motDePasseHash,
+      telephone,
+      nom_agence,
+      role: 'agence',
+      actif: false,
+    }])
 
   if (error) {
     return res.status(500).json({ success: false, message: error.message })
@@ -92,11 +111,10 @@ router.post('/register', async (req, res) => {
 
   res.json({
     success: true,
-    message: 'Compte créé ! En attente de validation par ImmoCG.'
+    message: 'Compte créé ! En attente de validation par ImmoCG.',
   })
 })
 
-// Middleware pour vérifier le token
 function verifierToken(req, res, next) {
   const token = req.headers.authorization?.split(' ')[1]
   if (!token) return res.status(401).json({ success: false, message: 'Token manquant' })
@@ -110,7 +128,6 @@ function verifierToken(req, res, next) {
   }
 }
 
-// GET /auth/me — récupérer l'utilisateur connecté
 router.get('/me', verifierToken, async (req, res) => {
   const { data: user } = await supabase
     .from('users')
@@ -121,7 +138,6 @@ router.get('/me', verifierToken, async (req, res) => {
   res.json({ success: true, user })
 })
 
-// GET /auth/users — liste tous les utilisateurs (admin seulement)
 router.get('/users', verifierToken, async (req, res) => {
   if (req.user.role !== 'admin') {
     return res.status(403).json({ success: false, message: 'Accès refusé' })
@@ -134,14 +150,12 @@ router.get('/users', verifierToken, async (req, res) => {
   res.json({ success: true, users: data })
 })
 
-// PATCH /auth/users/:id — activer/désactiver
 router.patch('/users/:id', verifierToken, async (req, res) => {
   if (req.user.role !== 'admin') {
     return res.status(403).json({ success: false, message: 'Accès refusé' })
   }
   const { actif } = req.body
 
-  // Récupérer les infos de l'agence
   const { data: agence } = await supabase
     .from('users')
     .select('*')
@@ -155,7 +169,6 @@ router.patch('/users/:id', verifierToken, async (req, res) => {
 
   if (error) return res.status(500).json({ success: false, message: error.message })
 
-  // Envoyer email selon l'action
   if (agence) {
     if (actif) await envoyerEmailActivation(agence)
     else await envoyerEmailRefus(agence)
@@ -164,7 +177,6 @@ router.patch('/users/:id', verifierToken, async (req, res) => {
   res.json({ success: true })
 })
 
-// GET /auth/stats — stats publiques
 router.get('/stats', async (req, res) => {
   const { data, error } = await supabase
     .from('users')
@@ -174,7 +186,7 @@ router.get('/stats', async (req, res) => {
   res.json({
     success: true,
     total: data.length,
-    actives: data.filter(u => u.actif).length
+    actives: data.filter(u => u.actif).length,
   })
 })
 

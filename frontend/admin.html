@@ -305,7 +305,9 @@
 
   // Charger les biens
   async function chargerBiens() {
-  const r = await fetch('/biens?admin=true')
+  const r = await fetch('/biens?admin=true', {
+    headers: { 'Authorization': 'Bearer ' + token }
+  })
   const data = await r.json()
   const biens = data.biens || []
 
@@ -351,7 +353,10 @@
 async function changerStatutBien(id, statut) {
   await fetch('/biens/' + id + '/statut', {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + token
+    },
     body: JSON.stringify({ statut })
   })
   chargerBiens()

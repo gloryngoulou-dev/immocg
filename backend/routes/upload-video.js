@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 const multer = require('multer')
 const { createClient } = require('@supabase/supabase-js')
+const { verifierToken } = require('./auth')
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -13,7 +14,7 @@ const upload = multer({
   limits: { fileSize: 100 * 1024 * 1024 } // 100MB max
 })
 
-router.post('/', upload.single('video'), async (req, res) => {
+router.post('/', verifierToken, upload.single('video'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ success: false, message: 'Aucun fichier reçu' })
   }

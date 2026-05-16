@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 const multer = require('multer')
 const { createClient } = require('@supabase/supabase-js')
+const { verifierToken } = require('./auth')
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -12,7 +13,7 @@ const supabase = createClient(
 const upload = multer({ storage: multer.memoryStorage() })
 
 // Route POST /upload — envoie l'image vers Supabase Storage
-router.post('/', upload.single('image'), async (req, res) => {
+router.post('/', verifierToken, upload.single('image'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ success: false, message: 'Aucun fichier reçu' })
   }
