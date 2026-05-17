@@ -600,19 +600,19 @@
 function closeMenu() {
   const menu = document.getElementById('nav-menu')
   menu.classList.remove('open')
-  document.getElementById('close-btn').style.display = 'none'
+  const closeBtn = document.getElementById('close-btn')
+  if (closeBtn) closeBtn.style.display = 'none'
   document.body.style.overflow = ''
 }
 
+// UN SEUL event listener
 document.addEventListener('click', (e) => {
-  if (!e.target.closest('nav') && !e.target.closest('#nav-menu')) {
+  const menu = document.getElementById('nav-menu')
+  const hamburger = document.querySelector('.hamburger')
+  if (menu.classList.contains('open') && 
+      !menu.contains(e.target) && 
+      !hamburger.contains(e.target)) {
     closeMenu()
-  }
-})
-// Fermer le menu en cliquant ailleurs
-document.addEventListener('click', (e) => {
-  if (!e.target.closest('nav')) {
-    document.getElementById('nav-menu').classList.remove('open')
   }
 })
   </script>
