@@ -36,17 +36,18 @@ async function loadBiens(req, res, admin) {
 
 router.get('/', async (req, res) => {
   const admin = req.query.admin === 'true'
+  const { quartier, type, mode } = req.query
 
-  if (admin) {
-    return verifierToken(req, res, () => {
-      if (req.user.role !== 'admin') {
-        return res.status(403).json({ success: false, message: 'Accès refusé' })
-      }
-      return loadBiens(req, res, true)
-    })
-  }
+  let query = supabase.from('biens').select('*').order('created_at', { ascending: false })
 
-  return loadBiens(req, res, false)
+  if (!admin) query = query.eq('statut', 'disponible')
+  if (quartier) query = query.ilike('quartier', `%${quartier}%`)
+  if (type) query = query.eq('type', type)
+  if (mode) query = query.eq('mode', mode)
+
+  const { data, error } = await query
+  if (error) return res.status(500).json({ success: false, message: error.message })
+  res.json({ success: true, total: data.length, biens: data })
 })
 
 router.get('/mine', verifierToken, async (req, res) => {
