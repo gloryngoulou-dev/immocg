@@ -14,12 +14,12 @@
   <meta charset="UTF-8">
   <meta name="google-site-verification" content="BIEAqsDHh3dncc9fDXotM9OwyADAVU0rdJurB-IgJVs" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ImmoCG — Appartements, Villas, Studios à Brazzaville et Pointe-Noire</title>
-<meta name="description" content="Trouvez votre logement au Congo sur ImmoCG. Appartements, villas, studios à louer ou à vendre à Brazzaville et Pointe-Noire. Biens vérifiés, agences certifiées.">
+  <title>ImmoCG — Appartements, Villas, Studios à Brazzaville</title>
+<meta name="description" content="Trouvez votre logement à Brazzaville sur ImmoCG. Appartements, villas, studios à louer ou à vendre. Biens vérifiés, agences certifiées.">
 <meta name="keywords" content="immobilier Congo, appartement Brazzaville, villa à louer Brazzaville, studio Congo, location immobilier Brazzaville, acheter maison Congo">
 <meta name="robots" content="index, follow">
 <meta property="og:title" content="ImmoCG — Immobilier au Congo">
-<meta property="og:description" content="La première plateforme immobilière du Congo. Trouvez votre logement à Brazzaville et Pointe-Noire.">
+<meta property="og:description" content="La plateforme immobilière de Brazzaville. Trouvez votre logement en toute confiance.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://immocg-production.up.railway.app">
 <meta property="og:image" content="https://immocg-production.up.railway.app/og-image.jpg">
@@ -143,6 +143,11 @@
       transition: all 0.2s;
     }
     .hero-tag:hover { background: rgba(201,150,58,0.2); border-color: #C9963A; color: #C9963A; }
+    .hero-tag.active { background: rgba(201,150,58,0.25); border-color: #C9963A; color: #C9963A; }
+
+    .search-hint { font-size: 12px; color: rgba(255,255,255,0.45); margin-top: 10px; min-height: 18px; }
+    .search-hint.loading { color: #C9963A; }
+    .section-sub { font-size: 14px; color: #888780; margin-top: 4px; }
 
     /* STATS */
     .stats {
@@ -315,12 +320,13 @@
 
   <!-- HERO -->
   <section class="hero">
-    <div class="hero-badge">🇨🇬 Brazzaville & Pointe-Noire</div>
+    <div class="hero-badge">🇨🇬 Brazzaville — Congo</div>
     <h1>Trouvez le logement<br><span>fait pour vous</span></h1>
-    <p>La première plateforme immobilière du Congo — appartements, villas, studios vérifiés par notre équipe.</p>
+    <p>La plateforme immobilière de Brazzaville — appartements, villas, studios vérifiés par notre équipe.</p>
 
-    <div class="search-box">
-      <input type="text" id="search-quartier" placeholder="Quartier, ville...">
+    <form class="search-box" id="search-form" role="search">
+      <input type="text" id="search-quartier" placeholder="Quartier à Brazzaville..." list="liste-quartiers" autocomplete="off">
+      <datalist id="liste-quartiers"></datalist>
       <select id="search-type">
         <option value="">Tous les types</option>
         <option value="Villa">Villa</option>
@@ -335,16 +341,17 @@
         <option value="louer">Louer</option>
         <option value="acheter">Acheter</option>
       </select>
-      <button onclick="filtrerBiens()">🔍 Rechercher</button>
-    </div>
+      <button type="submit" id="search-btn">🔍 Rechercher</button>
+    </form>
+    <p class="search-hint" id="search-hint"></p>
 
-    <div class="hero-tags">
-      <div class="hero-tag" onclick="filtrerParQuartier('Bacongo')">Bacongo</div>
-      <div class="hero-tag" onclick="filtrerParQuartier('Poto-Poto')">Poto-Poto</div>
-      <div class="hero-tag" onclick="filtrerParQuartier('Moungali')">Moungali</div>
-      <div class="hero-tag" onclick="filtrerParQuartier('Ouenzé')">Ouenzé</div>
-      <div class="hero-tag" onclick="filtrerParQuartier('Makélékélé')">Makélékélé</div>
-      <div class="hero-tag" onclick="filtrerParQuartier('Centre-ville')">Centre-ville</div>
+    <div class="hero-tags" id="hero-tags">
+      <div class="hero-tag" data-quartier="Bacongo" onclick="filtrerParQuartier('Bacongo')">Bacongo</div>
+      <div class="hero-tag" data-quartier="Poto-Poto" onclick="filtrerParQuartier('Poto-Poto')">Poto-Poto</div>
+      <div class="hero-tag" data-quartier="Moungali" onclick="filtrerParQuartier('Moungali')">Moungali</div>
+      <div class="hero-tag" data-quartier="Ouenzé" onclick="filtrerParQuartier('Ouenzé')">Ouenzé</div>
+      <div class="hero-tag" data-quartier="Makélékélé" onclick="filtrerParQuartier('Makélékélé')">Makélékélé</div>
+      <div class="hero-tag" data-quartier="Centre-ville" onclick="filtrerParQuartier('Centre-ville')">Centre-ville</div>
     </div>
   </section>
 
@@ -359,7 +366,10 @@
   <!-- BIENS -->
   <section class="section" id="biens">
     <div class="section-header">
-      <h2>Biens disponibles</h2>
+      <div>
+        <h2>Biens disponibles à Brazzaville</h2>
+        <p class="section-sub" id="biens-count"></p>
+      </div>
       <a href="javascript:void(0)" onclick="afficherTout()">Voir tout →</a>
     </div>
     <div class="cards" id="liste-biens">
@@ -410,9 +420,9 @@
   ImmoCG · Brazzaville, Congo · 2026 · Tous droits réservés
 </footer>
 
+  <script src="/js/config.js"></script>
   <script>
     let tousLesBiens = []
-
     // Gestion connexion
     const userConnecte = JSON.parse(localStorage.getItem('immocg_user') || 'null')
     if (userConnecte) {
@@ -453,16 +463,60 @@
     }
     afficherSteps('chercheur', document.querySelector('.how-tab'))
 
-    // Charger les biens
-    async function chargerBiens() {
+    function majCompteur(n) {
+      const el = document.getElementById('biens-count')
+      if (el) el.textContent = n === 1 ? '1 bien trouvé' : `${n} biens trouvés`
+    }
+
+    function majHint(texte, loading) {
+      const hint = document.getElementById('search-hint')
+      if (!hint) return
+      hint.textContent = texte || ''
+      hint.classList.toggle('loading', !!loading)
+    }
+
+    function initRecherche() {
+      const datalist = document.getElementById('liste-quartiers')
+      if (datalist && typeof IMMOCG_CONFIG !== 'undefined') {
+        datalist.innerHTML = IMMOCG_CONFIG.quartiers.map(q => `<option value="${q}">`).join('')
+      }
+
+      document.getElementById('search-form').addEventListener('submit', (e) => {
+        e.preventDefault()
+        appliquerFiltres()
+      })
+
+      document.getElementById('search-type').addEventListener('change', appliquerFiltres)
+      document.getElementById('search-mode').addEventListener('change', appliquerFiltres)
+
+      let timer
+      document.getElementById('search-quartier').addEventListener('input', () => {
+        clearTimeout(timer)
+        timer = setTimeout(appliquerFiltres, 350)
+      })
+    }
+
+    async function chargerBiens(filtres = {}) {
+      majHint('Chargement des biens à Brazzaville...', true)
+      const params = new URLSearchParams()
+      if (filtres.quartier) params.set('quartier', filtres.quartier)
+      if (filtres.type) params.set('type', filtres.type)
+      if (filtres.mode) params.set('mode', filtres.mode)
+
       try {
-        const r = await fetch('/biens')
+        const url = params.toString() ? `/biens?${params}` : '/biens'
+        const r = await fetch(url)
         const data = await r.json()
+        if (!data.success) throw new Error(data.message || 'Erreur')
+
         tousLesBiens = data.biens || []
         document.getElementById('stat-biens').textContent = tousLesBiens.length
         afficherBiens(tousLesBiens)
+        majCompteur(tousLesBiens.length)
+        majHint(tousLesBiens.length ? '' : 'Aucun bien pour ces critères.')
       } catch {
-        document.getElementById('liste-biens').innerHTML = '<div class="loading">Erreur de connexion.</div>'
+        document.getElementById('liste-biens').innerHTML = '<div class="loading">Erreur de connexion. Réessayez.</div>'
+        majHint('Impossible de charger les biens.')
       }
     }
 
@@ -500,38 +554,39 @@
               <span>🚿 ${b.salles_bain} sdb.</span>
               <span>📐 ${b.surface}m²</span>
             </div>
-            <button class="card-btn">Voir le détail</button>
+            <button type="button" class="card-btn" onclick="event.stopPropagation(); window.location.href='bien.html?id=${b.id}'">Voir le détail</button>
           </div>
         </div>
       `).join('')
     }
 
-    function filtrerBiens() {
-      const q = document.getElementById('search-quartier').value.toLowerCase()
+    function appliquerFiltres() {
+      const quartier = document.getElementById('search-quartier').value.trim()
       const type = document.getElementById('search-type').value
       const mode = document.getElementById('search-mode').value
-      const res = tousLesBiens.filter(b => {
-        const mq = !q || b.quartier?.toLowerCase().includes(q) || b.ville?.toLowerCase().includes(q) || b.titre?.toLowerCase().includes(q)
-        const mt = !type || b.type === type
-        const mm = !mode || b.mode === mode
-        return mq && mt && mm
+
+      document.querySelectorAll('.hero-tag').forEach(tag => {
+        tag.classList.toggle('active', tag.dataset.quartier === quartier && quartier !== '')
       })
-      afficherBiens(res)
+
+      chargerBiens({ quartier, type, mode })
       document.getElementById('biens').scrollIntoView({ behavior: 'smooth' })
     }
 
     function filtrerParQuartier(q) {
       document.getElementById('search-quartier').value = q
-      filtrerBiens()
+      appliquerFiltres()
     }
 
     function afficherTout() {
       document.getElementById('search-quartier').value = ''
       document.getElementById('search-type').value = ''
       document.getElementById('search-mode').value = ''
-      afficherBiens(tousLesBiens)
+      document.querySelectorAll('.hero-tag').forEach(t => t.classList.remove('active'))
+      chargerBiens()
     }
 
+    initRecherche()
     chargerBiens()
 
     function toggleMenu() {

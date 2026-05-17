@@ -16,9 +16,18 @@ function requireAdmin(req, res, next) {
   next()
 }
 
-async function loadBiens(res, admin) {
+async function loadBiens(req, res, admin) {
   let query = supabase.from('biens').select('*').order('created_at', { ascending: false })
-  if (!admin) query = query.eq('statut', 'disponible')
+  if (!admin) {
+    query = query.eq('statut', 'disponible').eq('ville', 'Brazzaville')
+    const { quartier, type, mode } = req.query
+    if (quartier?.trim()) {
+      const t = quartier.trim()
+      query = query.or(`quartier.ilike.%${t}%,titre.ilike.%${t}%,description.ilike.%${t}%`)
+    }
+    if (type?.trim()) query = query.eq('type', type.trim())
+    if (mode?.trim()) query = query.eq('mode', mode.trim())
+  }
   const { data, error } = await query
   if (error) return res.status(500).json({ success: false, message: error.message })
   const biens = admin ? data : sanitizeBiensPublic(data)
@@ -33,11 +42,11 @@ router.get('/', async (req, res) => {
       if (req.user.role !== 'admin') {
         return res.status(403).json({ success: false, message: 'Accès refusé' })
       }
-      return loadBiens(res, true)
+      return loadBiens(req, res, true)
     })
   }
 
-  return loadBiens(res, false)
+  return loadBiens(req, res, false)
 })
 
 router.get('/mine', verifierToken, async (req, res) => {
