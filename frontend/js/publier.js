@@ -1,5 +1,3 @@
-document.addEventListener('DOMContentLoaded', () => {
-
 const photosAUploader = [] // tableau global
 const files = new Array(5).fill(null)
 
@@ -201,5 +199,3 @@ async function uploaderVideo() {
   const d = await r.json()
   return d.success ? d.url : null
 }
-
-}) // DOMContentLoaded

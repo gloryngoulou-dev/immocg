@@ -1,6 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
-
-    function esc(v) {
+function esc(v) {
       return String(v == null ? '' : v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#x27;')
     }
 
@@ -130,9 +128,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const restant = document.querySelectorAll('.card').length
       document.getElementById('nb-favoris').textContent = `${restant} bien(s) sauvegardé(s)`
       if (restant === 0) chargerFavoris()
-    }
+    } }
 
     chargerFavoris()
-  
-
-}) // DOMContentLoaded

@@ -1,6 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
-
-    async function sInscrire() {
+async function sInscrire() {
       const nom_agence = document.getElementById('nom_agence').value
       const nom = document.getElementById('nom').value
       const telephone = document.getElementById('telephone').value
@@ -56,6 +54,3 @@ if (!conditions) {
       el.textContent = msg
       el.className = 'message ' + type
     }
-  
-
-}) // DOMContentLoaded

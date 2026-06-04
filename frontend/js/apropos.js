@@ -1,6 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
-
-    async function chargerStats() {
+async function chargerStats() {
       try {
         const r1 = await fetch('/biens')
         const d1 = await r1.json()
@@ -12,6 +10,3 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch {}
     }
     chargerStats()
-  
-
-}) // DOMContentLoaded

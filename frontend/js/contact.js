@@ -1,6 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
-
-    async function envoyerMessage() {
+async function envoyerMessage() {
       const nom = document.getElementById('nom').value.trim()
       const tel = document.getElementById('tel').value.trim()
       const email = document.getElementById('email')?.value.trim() || ''
@@ -58,6 +56,3 @@ Tél: ${tel}
 Message: ${msg}`
       window.open(`https://wa.me/242068834146?text=${encodeURIComponent(texte)}`, '_blank', 'noopener,noreferrer')
     }
-  
-
-}) // DOMContentLoaded

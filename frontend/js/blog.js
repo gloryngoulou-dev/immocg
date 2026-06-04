@@ -1,6 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
-
-    const articles = [
+const articles = [
   {
     id: 1,
     image: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=600&q=80',
@@ -181,6 +179,3 @@ function afficherArticles() {
     }
 
     afficherArticles()
-  
-
-}) // DOMContentLoaded

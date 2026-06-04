@@ -1,6 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
-
-  const token = localStorage.getItem('immocg_token')
+const token = localStorage.getItem('immocg_token')
   const user = JSON.parse(localStorage.getItem('immocg_user') || 'null')
 
   if (!token || !user) {
@@ -149,5 +147,3 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   chargerMesBiens()
-
-}) // DOMContentLoaded
