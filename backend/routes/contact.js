@@ -1,9 +1,19 @@
 const express = require('express')
 const router = express.Router()
 const { Resend } = require('resend')
+const Joi = require('joi')
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 const CONTACT_EMAIL = process.env.CONTACT_EMAIL || 'gloryngoulou@gmail.com'
+
+// ========== VALIDATION SCHEMA ==========
+const contactSchema = Joi.object({
+  nom: Joi.string().min(2).max(100).required(),
+  tel: Joi.string().pattern(/^[0-9+\-\s]{8,20}$/).required(),
+  email: Joi.string().email().max(255).optional().allow(''),
+  sujet: Joi.string().max(200).optional().allow(''),
+  message: Joi.string().min(10).max(5000).required()
+})
 
 function escapeHtml(str) {
   return String(str || '')
@@ -14,11 +24,17 @@ function escapeHtml(str) {
 }
 
 router.post('/', async (req, res) => {
-  const { nom, tel, email, sujet, message } = req.body
-
-  if (!nom?.trim() || !tel?.trim() || !message?.trim()) {
-    return res.status(400).json({ success: false, message: 'Nom, téléphone et message sont requis' })
+  // Validation stricte des entrées
+  const { error, value } = contactSchema.validate(req.body)
+  if (error) {
+    return res.status(400).json({
+      success: false,
+      message: 'Données invalides',
+      details: error.details[0].message
+    })
   }
+
+  const { nom, tel, email, sujet, message } = value
 
   if (!process.env.RESEND_API_KEY) {
     return res.status(503).json({
@@ -33,7 +49,7 @@ router.post('/', async (req, res) => {
       from: 'ImmoCG <onboarding@resend.dev>',
       to: CONTACT_EMAIL,
       replyTo: email || undefined,
-      subject: `[ImmoCG Contact] ${sujet || 'Demande'}`,
+      subject: `[ImmoCG Contact] ${escapeHtml(sujet) || 'Demande'}`,
       html: `<div style="font-family:Segoe UI,Arial,sans-serif;max-width:560px;margin:0 auto;padding:20px;">
 <h2 style="color:#1A1A18;">Nouveau message — ImmoCG</h2>
 <p><strong>Sujet :</strong> ${escapeHtml(sujet)}</p>
@@ -47,7 +63,7 @@ router.post('/', async (req, res) => {
 
     res.json({ success: true, message: 'Message envoyé ! Nous vous répondrons sous 24h.' })
   } catch (err) {
-    console.error('Contact email:', err)
+    console.error('Contact email error (détails masqués)')
     res.status(500).json({ success: false, message: 'Erreur lors de l\'envoi' })
   }
 })
