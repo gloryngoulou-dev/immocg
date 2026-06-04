@@ -1,4 +1,6 @@
-let tousLesBiens = []
+document.addEventListener('DOMContentLoaded', () => {
+
+    let tousLesBiens = []
     // Gestion connexion
     const userConnecte = JSON.parse(localStorage.getItem('immocg_user') || 'null')
     if (userConnecte) {
@@ -274,3 +276,5 @@ document.addEventListener('click', (e) => {
     closeMenu()
   }
 })
+  
+}) // DOMContentLoaded

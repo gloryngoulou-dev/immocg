@@ -1,4 +1,6 @@
-// Si déjà connecté, rediriger
+document.addEventListener('DOMContentLoaded', () => {
+
+    // Si déjà connecté, rediriger
     const token = localStorage.getItem('immocg_token')
     const user = JSON.parse(localStorage.getItem('immocg_user') || 'null')
     if (token && user) {
@@ -62,3 +64,6 @@
     document.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') seConnecter()
     })
+  
+
+}) // DOMContentLoaded

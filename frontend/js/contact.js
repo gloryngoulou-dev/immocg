@@ -1,4 +1,6 @@
-async function envoyerMessage() {
+document.addEventListener('DOMContentLoaded', () => {
+
+    async function envoyerMessage() {
       const nom = document.getElementById('nom').value.trim()
       const tel = document.getElementById('tel').value.trim()
       const email = document.getElementById('email')?.value.trim() || ''
@@ -47,6 +49,15 @@ async function envoyerMessage() {
     }
 
     function ouvrirWhatsApp(nom, tel, sujet, msg) {
-      const texte = `Bonjour ImmoCG !\n\nSujet: ${sujet}\nNom: ${nom}\nTél: ${tel}\n\nMessage: ${msg}`
+      const texte = `Bonjour ImmoCG !
+
+Sujet: ${sujet}
+Nom: ${nom}
+Tél: ${tel}
+
+Message: ${msg}`
       window.open(`https://wa.me/242068834146?text=${encodeURIComponent(texte)}`, '_blank', 'noopener,noreferrer')
     }
+  
+
+}) // DOMContentLoaded

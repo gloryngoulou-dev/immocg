@@ -1,3 +1,4 @@
+document.addEventListener('DOMContentLoaded', () => {
 // admin.js — script externe pour éviter les scripts inline (CSP)
 
 // Vérifier que c'est un admin (cookie HttpOnly gère le token, on vérifie le rôle via user info)
@@ -242,3 +243,5 @@ async function activerUser(id, actif) {
 
 chargerBiens()
 chargerAgences()
+
+}) // DOMContentLoaded

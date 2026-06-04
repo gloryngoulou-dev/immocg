@@ -1,4 +1,6 @@
-// Configuration des taux - À MODIFIER SELON VOS TAUX RÉELS
+document.addEventListener('DOMContentLoaded', () => {
+
+    // Configuration des taux - À MODIFIER SELON VOS TAUX RÉELS
     const TAUX_CAUTION_MOIS = 3
     const TAUX_FRAIS_AGENCE_LOCATION = 1.0
     const TAUX_FRAIS_AGENCE_VENTE = 0.10
@@ -282,9 +284,8 @@ if (estLocation) {
           <div>${badges.join('')}</div>` : ''}
 
           <div class="section-titre">Description</div>
-          <div class="description">${esc(description).replace(/\n/g, '<br>')}</div>
-
-          ${b.video_url && safeUrl(b.video_url) ? `
+          <div class="description">${esc(description).replace(//g, '<br>')}</div>
+$ {b.video_url && safeUrl(b.video_url) ? `
           <div class="section-titre">Visite virtuelle</div>
           <div style="position:relative;padding-bottom:56.25%;height:0;border-radius:12px;overflow:hidden;margin-bottom:1.5rem;">
             <iframe src="${safeUrl(b.video_url.includes('youtube') ? b.video_url.replace('watch?v=', 'embed/') : b.video_url)}" 
@@ -360,12 +361,16 @@ if (estLocation) {
     }
 
     function envoyerMessage(bienId, whatsapp) {
-      const message = prompt("Votre message :\n\nExprimez votre intérêt pour ce bien :");
+      const message = prompt("Votre message :
+
+Exprimez votre intérêt pour ce bien :");
       if (message && message.trim()) {
         if (whatsapp && whatsapp !== '+242 05 123 4567') {
           const numClean = whatsapp.replace(/[^0-9]/g, '');
           if (numClean && numClean.length > 8) {
-            const url = `https://wa.me/${numClean}?text=${encodeURIComponent(message + '\n\nBien #' + bienId)}`;
+            const url = `https://wa.me/${numClean}?text=${encodeURIComponent(message + '
+
+Bien #' + bienId)}`;
             window.open(url, '_blank', 'noopener,noreferrer');
             return;
           }
@@ -395,3 +400,6 @@ if (estLocation) {
     }
 
     chargerBien();
+  
+
+}) // DOMContentLoaded
