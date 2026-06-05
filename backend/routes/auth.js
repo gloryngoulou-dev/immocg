@@ -38,7 +38,10 @@ const updateUserSchema = Joi.object({
 })
 
 const userIdParamSchema = Joi.object({
-  id: Joi.string().uuid().required() // Suppose que Supabase utilise des UUID
+  id: Joi.alternatives().try(
+    Joi.string().uuid(),
+    Joi.number().integer().positive()
+  ).required()
 })
 
 // ========== FONCTIONS UTILITAIRES ==========

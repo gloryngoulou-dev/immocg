@@ -20,7 +20,10 @@ const queryParamsSchema = Joi.object({
 })
 
 const idParamSchema = Joi.object({
-  id: Joi.string().uuid().required()
+  id: Joi.alternatives().try(
+    Joi.string().uuid(),
+    Joi.number().integer().positive()
+  ).required()
 })
 
 const bienCreationSchema = Joi.object({

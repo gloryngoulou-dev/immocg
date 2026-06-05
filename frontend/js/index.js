@@ -52,7 +52,8 @@ let tousLesBiens = []
         container.appendChild(div)
       })
     }
-    afficherSteps('chercheur', document.querySelector('.how-tab'))
+    const firstTab = document.querySelector('.how-tab')
+    if (firstTab) afficherSteps('chercheur', firstTab)
 
     function majCompteur(n) {
       const el = document.getElementById('biens-count')
