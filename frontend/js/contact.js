@@ -56,3 +56,6 @@ Tél: ${tel}
 Message: ${msg}`
       window.open(`https://wa.me/242068834146?text=${encodeURIComponent(texte)}`, '_blank', 'noopener,noreferrer')
     }
+  
+
+window.envoyerMessage = envoyerMessage

@@ -62,3 +62,6 @@
     document.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') seConnecter()
     })
+  
+
+window.seConnecter = seConnecter

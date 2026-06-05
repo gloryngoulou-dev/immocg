@@ -54,3 +54,6 @@ if (!conditions) {
       el.textContent = msg
       el.className = 'message ' + type
     }
+  
+
+window.sInscrire = sInscrire

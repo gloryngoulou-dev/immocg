@@ -242,3 +242,6 @@ async function activerUser(id, actif) {
 
 chargerBiens()
 chargerAgences()
+
+window.afficherSection = afficherSection
+window.seDeconnecter = seDeconnecter

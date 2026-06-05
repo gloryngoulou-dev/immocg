@@ -199,3 +199,7 @@ async function uploaderVideo() {
   const d = await r.json()
   return d.success ? d.url : null
 }
+
+window.publierBien = publierBien
+window.selectPhoto = selectPhoto
+window.removePhoto = removePhoto

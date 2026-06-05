@@ -274,3 +274,10 @@ document.addEventListener('click', (e) => {
     closeMenu()
   }
 })
+
+// Exposer les fonctions appelées depuis le HTML (onclick="...")
+window.filtrerParQuartier = filtrerParQuartier
+window.afficherTout = afficherTout
+window.afficherSteps = afficherSteps
+window.toggleMenu = toggleMenu
+window.closeMenu = closeMenu
