@@ -15,7 +15,7 @@ const supabase = createClient(
 const queryParamsSchema = Joi.object({
   quartier: Joi.string().max(100).optional(),
   type: Joi.string().valid('appartement', 'maison', 'terrain', 'local', 'bureau').optional(),
-  mode: Joi.string().valid('vente', 'location', 'viager').optional(),
+  mode: Joi.string().valid('vente', 'location', 'viager', 'jour').optional(),
   admin: Joi.boolean().optional()
 })
 
@@ -32,7 +32,9 @@ const bienCreationSchema = Joi.object({
   ville: Joi.string().max(100).required(),
   prix: Joi.number().positive().required(),
   unite: Joi.string().valid('FCFA', 'EUR', 'USD').default('FCFA'),
-  mode: Joi.string().valid('vente', 'location', 'viager').required(),
+  mode: Joi.string().valid('vente', 'location', 'viager', 'jour').required(),
+  prix_jour: Joi.number().positive().optional(), // Prix par nuit pour location/jour
+  duree_min_jours: Joi.number().integer().min(1).max(30).default(1), // Durée min en jours
   chambres: Joi.number().integer().min(0).max(20).optional(),
   salles_bain: Joi.number().integer().min(0).max(20).optional(),
   surface: Joi.number().positive().optional(),

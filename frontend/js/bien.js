@@ -1,9 +1,9 @@
 // Configuration des taux - À MODIFIER SELON VOS TAUX RÉELS
-const TAUX_CAUTION_MOIS = 3
-const TAUX_FRAIS_AGENCE_LOCATION = 1.0
-const TAUX_FRAIS_AGENCE_VENTE = 0.10
-const TAUX_FRAIS_NOTAIRE_VENTE = 0.05
-const FRAIS_VISITE = 5000
+const TAUX_CAUTION_MOIS = 3;
+const TAUX_FRAIS_AGENCE_LOCATION = 1.0;
+const TAUX_FRAIS_AGENCE_VENTE = 0.10;
+const TAUX_FRAIS_NOTAIRE_VENTE = 0.05;
+const FRAIS_VISITE = 5000;
 
 // Récupérer l'ID dans l'URL
 const params = new URLSearchParams(window.location.search);
@@ -19,10 +19,10 @@ function showToast(message) {
 
 async function chargerBien() {
   if (!id) {
-    const div = document.createElement('div')
-    div.className = 'loading'
-    div.textContent = 'Aucun bien sélectionné.'
-    document.getElementById('contenu').replaceChildren(div)
+    const div = document.createElement('div');
+    div.className = 'loading';
+    div.textContent = 'Aucun bien sélectionné.';
+    document.getElementById('contenu').replaceChildren(div);
     return;
   }
 
@@ -31,20 +31,20 @@ async function chargerBien() {
     const data = await reponse.json();
 
     if (!data.success) {
-      const div = document.createElement('div')
-      div.className = 'loading'
-      div.textContent = 'Bien introuvable.'
-      document.getElementById('contenu').replaceChildren(div)
+      const div = document.createElement('div');
+      div.className = 'loading';
+      div.textContent = 'Bien introuvable.';
+      document.getElementById('contenu').replaceChildren(div);
       return;
     }
 
     afficherBien(data.bien);
 
   } catch (erreur) {
-    const div = document.createElement('div')
-    div.className = 'loading'
-    div.textContent = '⚠️ Erreur de connexion au serveur. Vérifiez votre connexion.'
-    document.getElementById('contenu').replaceChildren(div)
+    const div = document.createElement('div');
+    div.className = 'loading';
+    div.textContent = '⚠️ Erreur de connexion au serveur. Vérifiez votre connexion.';
+    document.getElementById('contenu').replaceChildren(div);
   }
 }
 
@@ -53,18 +53,22 @@ function afficherBien(b) {
   function esc(val) {
     return String(val == null ? '' : val)
       .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#x27;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#x27;');
   }
+  
   const titre = b.titre || b.Titre || `${b.Type || b.type || 'Bien'} à ${b.Quartier || b.quartier || ''}`;
   const type = b.Type || b.type || 'Bien';
   const quartier = b.Quartier || b.quartier || '';
   const ville = b.ville || 'Brazzaville';
   const adresse = b.adresse || '';
   const prix = b.Prix || b.prix || 0;
+  const prixJour = b.prix_jour || 0;
+  const dureeMin = b.duree_min_jours || 1;
   const unite = b.unite || 'FCFA';
   const mode = (b.mode || b.Mode || '').toLowerCase();
   const estLocation = mode === 'louer' || mode === 'location';
-  const modeLabel = estLocation ? '📍 À LOUER' : '💰 À VENDRE';
+  const estParJour = mode === 'jour';
+  const modeLabel = estParJour ? '📅 LOCATION PAR JOUR' : estLocation ? '📍 À LOUER' : '💰 À VENDRE';
   const chambres = b.Chambres || b.chambres || 0;
   const sallesBain = b.salles_bain || 0;
   const surface = b.Surface || b.surface || 0;
@@ -112,22 +116,52 @@ function afficherBien(b) {
   
   // Calcul frais de visite selon prix
   function calculerFraisVisite(prix) {
-    if (prix < 100000) return 0
-    if (prix < 300000) return 5000
-    if (prix < 600000) return 10000
-    return 15000
+    if (prix < 100000) return 0;
+    if (prix < 300000) return 5000;
+    if (prix < 600000) return 10000;
+    return 15000;
   }
 
-  const fraisVisite = calculerFraisVisite(prix)
-  let detailsHTML = ''
+  const fraisVisite = calculerFraisVisite(prix);
+  let detailsHTML = '';
 
-  if (estLocation) {
-    const moisCaution = 2
-    const moisAgence = 1
-    const totalMois = moisCaution + moisAgence
-    const cautionCalc = prix * moisCaution
-    const fraisAgence = prix * moisAgence
-    const totalCalc = cautionCalc + fraisAgence
+  if (estParJour) {
+    // Calcul estimatif pour 3 nuits
+    const total3Nuits = prixJour * 3;
+    detailsHTML = `
+      <div style="background:#e8f4e8;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#2d6e2d;font-weight:500;">
+        📅 Location courte durée — ${dureeMin > 1 ? `min. ${dureeMin} nuits` : 'disponible à la nuit'}
+      </div>
+      <div class="prix-ligne">
+        <span>🌙 Prix par nuit</span>
+        <span>${parseInt(prixJour).toLocaleString('fr-FR')} ${esc(unite)}</span>
+      </div>
+      <div class="prix-ligne">
+        <span>📆 Exemple 3 nuits</span>
+        <span>${total3Nuits.toLocaleString('fr-FR')} ${esc(unite)}</span>
+      </div>
+      <div class="prix-ligne total">
+        <span>🔒 Caution (remboursable)</span>
+        <span>${parseInt(prixJour * 2).toLocaleString('fr-FR')} ${esc(unite)}</span>
+      </div>
+      <div class="info-frais">
+        ⓘ La caution est remboursée à votre départ si aucun dommage.
+      </div>
+      <div style="margin-top:12px;background:#fffdf5;border-radius:8px;padding:10px;font-size:12px;color:#7A5A1A;line-height:1.6;">
+        📋 <strong>Comment réserver ?</strong><br>
+        1. Contactez l'agence ci-dessous<br>
+        2. Confirmez vos dates par WhatsApp<br>
+        3. Versez la caution pour bloquer le bien<br>
+        ⚠️ Délai max. 48h pour confirmer votre arrivée
+      </div>
+    `;
+  } else if (estLocation) {
+    const moisCaution = 2;
+    const moisAgence = 1;
+    const totalMois = moisCaution + moisAgence;
+    const caution = prix * moisCaution;
+    const fraisAgence = prix * moisAgence;
+    const total = caution + fraisAgence;
 
     detailsHTML = `
       <div style="background:#e8f4e8;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#2d6e2d;font-weight:500;">
@@ -135,7 +169,7 @@ function afficherBien(b) {
       </div>
       <div class="prix-ligne">
         <span>🔒 Caution (${moisCaution} mois)</span>
-        <span>${cautionCalc.toLocaleString('fr-FR')} FCFA</span>
+        <span>${caution.toLocaleString('fr-FR')} FCFA</span>
       </div>
       <div class="prix-ligne">
         <span>🏢 Frais d'agence (${moisAgence} mois)</span>
@@ -143,7 +177,7 @@ function afficherBien(b) {
       </div>
       <div class="prix-ligne total">
         <span>💰 TOTAL À PRÉVOIR</span>
-        <span>${totalCalc.toLocaleString('fr-FR')} FCFA</span>
+        <span>${total.toLocaleString('fr-FR')} FCFA</span>
       </div>
       ${fraisVisite > 0 ? `
       <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(0,0,0,0.06);font-size:12px;color:#888780;display:flex;justify-content:space-between;">
@@ -158,18 +192,18 @@ function afficherBien(b) {
       </div>
       <div style="margin-top:10px;background:#fffdf5;border-radius:8px;padding:10px;font-size:12px;color:#7A5A1A;line-height:1.6;">
         📋 <strong>Comment ça se passe ?</strong><br>
-        À la signature : ${totalMois} mois = ${totalCalc.toLocaleString('fr-FR')} FCFA<br>
+        À la signature : ${totalMois} mois = ${total.toLocaleString('fr-FR')} FCFA<br>
         Chaque mois : ${prix.toLocaleString('fr-FR')} FCFA de loyer<br>
-        Au départ : ${cautionCalc.toLocaleString('fr-FR')} FCFA remboursés
+        Au départ : ${caution.toLocaleString('fr-FR')} FCFA remboursés
       </div>
-    `
+    `;
   } else {
-    const tauxAgence = 0.10
-    const tauxNotaire = 0.05
-    const fraisAgence = Math.round(prix * tauxAgence)
-    const fraisNotaireCalc = Math.round(prix * tauxNotaire)
-    const totalFrais = fraisAgence + fraisNotaireCalc
-    const totalAcquisition = prix + totalFrais
+    const tauxAgence = 0.10;
+    const tauxNotaire = 0.05;
+    const fraisAgence = Math.round(prix * tauxAgence);
+    const fraisNotaire = Math.round(prix * tauxNotaire);
+    const totalFrais = fraisAgence + fraisNotaire;
+    const totalAcquisition = prix + totalFrais;
 
     detailsHTML = `
       <div style="background:#e8f4e8;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#2d6e2d;font-weight:500;">
@@ -185,7 +219,7 @@ function afficherBien(b) {
       </div>
       <div class="prix-ligne">
         <span>⚖️ Frais de notaire (5%)</span>
-        <span>${fraisNotaireCalc.toLocaleString('fr-FR')} FCFA</span>
+        <span>${fraisNotaire.toLocaleString('fr-FR')} FCFA</span>
       </div>
       <div class="prix-ligne total">
         <span>💰 TOTAL ACQUISITION</span>
@@ -202,10 +236,10 @@ function afficherBien(b) {
       <div style="margin-top:10px;background:#fffdf5;border-radius:8px;padding:10px;font-size:12px;color:#7A5A1A;line-height:1.6;">
         📋 <strong>Comment ça se passe ?</strong><br>
         Vous payez : ${prix.toLocaleString('fr-FR')} FCFA au vendeur<br>
-        + ${fraisNotaireCalc.toLocaleString('fr-FR')} FCFA au notaire<br>
+        + ${fraisNotaire.toLocaleString('fr-FR')} FCFA au notaire<br>
         Commission agence payée par le vendeur
       </div>
-    `
+    `;
   }
 
   // Badges
@@ -215,16 +249,16 @@ function afficherBien(b) {
   if (stationnement) badges.push(`<span class="badge badge-stationnement">🅿️ ${stationnement}</span>`);
   if (etage && etage !== '0') badges.push(`<span class="badge">📌 Étage: ${etage}</span>`);
 
-  const adresseComplete = [adresse, quartier, ville].filter(a => a && a.trim()).join(', ')
+  const adresseComplete = [adresse, quartier, ville].filter(a => a && a.trim()).join(', ');
 
   // Valider les URLs images (seulement http/https)
   function safeUrl(url) {
     try {
-      const u = new URL(url)
-      return (u.protocol === 'https:' || u.protocol === 'http:') ? url : ''
-    } catch(e) { return '' }
+      const u = new URL(url);
+      return (u.protocol === 'https:' || u.protocol === 'http:') ? url : '';
+    } catch(e) { return ''; }
   }
-  const safeImagePrincipale = safeUrl(imagePrincipale)
+  const safeImagePrincipale = safeUrl(imagePrincipale);
 
   document.getElementById('contenu').innerHTML = DOMPurify.sanitize(`
     <div>
@@ -233,9 +267,9 @@ function afficherBien(b) {
         ${images.length > 1 ? `
         <div class="galerie-thumbs">
           ${images.map((url, i) => {
-            const safe = safeUrl(url)
+            const safe = safeUrl(url);
             return safe ? `<div class="thumb ${i===0?'active':''}" style="background-image:url(${safe});"
-                 onclick="changePhoto('${safe}', this)"></div>` : ''
+                 onclick="changePhoto('${safe}', this)"></div>` : '';
           }).join('')}
         </div>` : ''}
       </div>
@@ -247,8 +281,10 @@ function afficherBien(b) {
       </div>
       
       <div class="bien-prix">
-        ${parseInt(prix).toLocaleString('fr-FR')}
-        <span>${esc(unite)}${mode === 'location' ? '/mois' : ''}</span>
+        ${estParJour 
+          ? `${parseInt(prixJour).toLocaleString('fr-FR')}<span>${esc(unite)}/nuit${dureeMin > 1 ? ` · min. ${dureeMin} nuits` : ''}</span>`
+          : `${parseInt(prix).toLocaleString('fr-FR')}<span>${esc(unite)}${estLocation ? '/mois' : ''}</span>`
+        }
       </div>
 
       <div class="feats">
@@ -281,7 +317,7 @@ function afficherBien(b) {
 
       <div class="section-titre">Description</div>
       <div class="description">${esc(description).replace(/\n/g, '<br>')}</div>
-      
+
       ${b.video_url && safeUrl(b.video_url) ? `
       <div class="section-titre">Visite virtuelle</div>
       <div style="position:relative;padding-bottom:56.25%;height:0;border-radius:12px;overflow:hidden;margin-bottom:1.5rem;">
@@ -318,31 +354,31 @@ function afficherBien(b) {
       <button class="btn btn-outline" data-id="${esc(String(b.id))}" data-wa="${esc(contactWhatsapp || contactTel)}" id="btn-message">💬 Envoyer un message</button>
       <button class="btn btn-outline" data-id="${esc(String(b.id))}" id="btn-sauver">❤️ Sauvegarder</button>
     </div>
-  `, { ADD_ATTR: ['onclick', 'target', 'rel'], FORCE_BODY: false })
+  `, { ADD_ATTR: ['onclick', 'target', 'rel'], FORCE_BODY: false });
 
   // SEO dynamique
-  document.title = `${esc(titre)} — ${esc(quartier)}, ${esc(ville)} | ImmoCG`
-  const metaDesc = document.getElementById('meta-desc')
-  if (metaDesc) metaDesc.content = `${esc(type)} à ${mode === 'louer' ? 'louer' : 'vendre'} à ${esc(quartier)}, ${esc(ville)}. ${parseInt(prix).toLocaleString('fr-FR')} FCFA. ${esc(description.substring(0, 100))}...`
-  const ogTitle = document.getElementById('og-title')
-  if (ogTitle) ogTitle.content = `${esc(titre)} — ImmoCG`
-  const ogImage = document.getElementById('og-image')
-  if (ogImage && images[0]) ogImage.content = safeUrl(images[0]) || ''
+  document.title = `${esc(titre)} — ${esc(quartier)}, ${esc(ville)} | ImmoCG`;
+  const metaDesc = document.getElementById('meta-desc');
+  if (metaDesc) metaDesc.content = `${esc(type)} à ${mode === 'louer' ? 'louer' : 'vendre'} à ${esc(quartier)}, ${esc(ville)}. ${parseInt(prix).toLocaleString('fr-FR')} FCFA. ${esc(description.substring(0, 100))}...`;
+  const ogTitle = document.getElementById('og-title');
+  if (ogTitle) ogTitle.content = `${esc(titre)} — ImmoCG`;
+  const ogImage = document.getElementById('og-image');
+  if (ogImage && images[0]) ogImage.content = safeUrl(images[0]) || '';
 
-  // Attacher les event listeners aux boutons
-  const btnContacter = document.getElementById('btn-contacter')
+  // Attacher les event listeners aux boutons (data-* au lieu d'onclick inline)
+  const btnContacter = document.getElementById('btn-contacter');
   if (btnContacter) {
     btnContacter.addEventListener('click', () =>
-      contacterAgence(btnContacter.dataset.nom, btnContacter.dataset.tel))
+      contacterAgence(btnContacter.dataset.nom, btnContacter.dataset.tel));
   }
-  const btnMessage = document.getElementById('btn-message')
+  const btnMessage = document.getElementById('btn-message');
   if (btnMessage) {
     btnMessage.addEventListener('click', () =>
-      envoyerMessage(btnMessage.dataset.id, btnMessage.dataset.wa))
+      envoyerMessage(btnMessage.dataset.id, btnMessage.dataset.wa));
   }
-  const btnSauver = document.getElementById('btn-sauver')
+  const btnSauver = document.getElementById('btn-sauver');
   if (btnSauver) {
-    btnSauver.addEventListener('click', () => sauvegarderBien(btnSauver.dataset.id))
+    btnSauver.addEventListener('click', () => sauvegarderBien(btnSauver.dataset.id));
   }
 }
 
@@ -357,14 +393,13 @@ function contacterAgence(nom, phone) {
   }
 }
 
-// FONCTION CORRIGÉE - avec l'accolade fermante manquante AJOUTÉE
 function envoyerMessage(bienId, whatsapp) {
-  const message = prompt("Votre message : Exprimez votre intérêt pour ce bien :");
+  const message = prompt("Votre message :\n\nExprimez votre intérêt pour ce bien :");
   if (message && message.trim()) {
     if (whatsapp && whatsapp !== '+242 05 123 4567') {
       const numClean = whatsapp.replace(/[^0-9]/g, '');
       if (numClean && numClean.length > 8) {
-        const url = `https://wa.me/${numClean}?text=${encodeURIComponent(message + ' Bien #' + bienId)}`;
+        const url = `https://wa.me/${numClean}?text=${encodeURIComponent(message + '\n\nBien #' + bienId)}`;
         window.open(url, '_blank', 'noopener,noreferrer');
         return;
       }
@@ -372,7 +407,7 @@ function envoyerMessage(bienId, whatsapp) {
     showToast(`✓ Message envoyé à l'agence. Nous vous répondrons sous 24h.`);
     console.log(`Message pour bien #${bienId}:`, message);
   }
-}  // <-- CETTE ACCOLADE FERMANTE ÉTAIT MANQUANTE !!!
+}
 
 function sauvegarderBien(bienId) {
   let favoris = JSON.parse(localStorage.getItem('favoris_immocg') || '[]');

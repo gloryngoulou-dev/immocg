@@ -221,14 +221,28 @@
         </div>
         <div class="form-group">
           <label>Transaction *</label>
-          <select id="mode">
-            <option value="louer">À louer</option>
+          <select id="mode" onchange="toggleModeJour()">
+            <option value="louer">À louer (mensuel)</option>
             <option value="acheter">À vendre</option>
+            <option value="jour">📅 Location par jour</option>
           </select>
         </div>
         <div class="form-group">
-          <label>Prix (FCFA) *</label>
+          <label id="label-prix">Prix mensuel (FCFA) *</label>
           <input type="number" id="prix" placeholder="ex: 250000">
+
+          <!-- Champs spécifiques location par jour -->
+          <div id="section-jour" style="display:none;">
+            <label>Prix par nuit (FCFA) *</label>
+            <input type="number" id="prix_jour" placeholder="ex: 15000">
+            <label>Durée minimum (nuits)</label>
+            <select id="duree_min_jours">
+              <option value="1">1 nuit minimum</option>
+              <option value="2">2 nuits minimum</option>
+              <option value="3">3 nuits minimum</option>
+              <option value="7">1 semaine minimum</option>
+            </select>
+          </div>
         </div>
         <div class="form-group">
           <label>Unité</label>

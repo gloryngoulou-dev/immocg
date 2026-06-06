@@ -166,8 +166,8 @@ let tousLesBiens = []
           cardImg.textContent = icones[b.type] || '🏠'
         }
         const badge = document.createElement('div')
-        badge.className = 'card-badge' + (b.mode === 'louer' ? ' louer' : '')
-        badge.textContent = b.mode === 'louer' ? 'À louer' : 'À vendre'
+        badge.className = 'card-badge' + (b.mode === 'louer' ? ' louer' : b.mode === 'jour' ? ' jour' : '')
+        badge.textContent = b.mode === 'louer' ? 'À louer' : b.mode === 'jour' ? '📅 Par jour' : 'À vendre'
         cardImg.appendChild(badge)
 
         // Body
@@ -184,10 +184,23 @@ let tousLesBiens = []
 
         const cardPrix = document.createElement('div')
         cardPrix.className = 'card-prix'
-        cardPrix.textContent = `${parseInt(b.prix).toLocaleString('fr-FR')} `
-        const prixSpan = document.createElement('span')
-        prixSpan.textContent = b.unite
-        cardPrix.appendChild(prixSpan)
+        if (b.mode === 'jour' && b.prix_jour) {
+          cardPrix.textContent = `${parseInt(b.prix_jour).toLocaleString('fr-FR')} `
+          const prixSpan = document.createElement('span')
+          prixSpan.textContent = `${b.unite || 'FCFA'}/nuit`
+          cardPrix.appendChild(prixSpan)
+          if (b.duree_min_jours > 1) {
+            const mini = document.createElement('small')
+            mini.style.cssText = 'display:block;font-size:11px;color:#888;font-weight:normal;'
+            mini.textContent = `Min. ${b.duree_min_jours} nuits`
+            cardPrix.appendChild(mini)
+          }
+        } else {
+          cardPrix.textContent = `${parseInt(b.prix).toLocaleString('fr-FR')} `
+          const prixSpan = document.createElement('span')
+          prixSpan.textContent = b.unite
+          cardPrix.appendChild(prixSpan)
+        }
 
         const cardLoc = document.createElement('div')
         cardLoc.className = 'card-loc'

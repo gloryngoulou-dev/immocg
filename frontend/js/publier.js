@@ -97,10 +97,15 @@ async function publierBien() {
 
     const equipements = [...document.querySelectorAll('.equip-item input:checked')].map(e => e.value)
 
+    const mode = document.getElementById('mode').value
+    const estParJour = mode === 'jour'
+
     const bien = {
   type: document.getElementById('type').value,
-  mode: document.getElementById('mode').value,
-  prix: parseInt(document.getElementById('prix').value),
+  mode: estParJour ? 'jour' : mode,
+  prix: estParJour ? 0 : (parseInt(document.getElementById('prix').value) || 0),
+  prix_jour: estParJour ? (parseInt(document.getElementById('prix_jour').value) || 0) : null,
+  duree_min_jours: estParJour ? parseInt(document.getElementById('duree_min_jours').value) : null,
   unite: document.getElementById('unite').value,
   quartier: document.getElementById('quartier').value,
   ville: document.getElementById('ville').value,
@@ -203,3 +208,24 @@ async function uploaderVideo() {
 window.publierBien = publierBien
 window.selectPhoto = selectPhoto
 window.removePhoto = removePhoto
+
+// Afficher/masquer les champs location par jour
+function toggleModeJour() {
+  const mode = document.getElementById('mode').value
+  const sectionJour = document.getElementById('section-jour')
+  const labelPrix = document.getElementById('label-prix')
+  const champPrix = document.getElementById('prix')
+
+  if (mode === 'jour') {
+    sectionJour.style.display = 'block'
+    labelPrix.style.display = 'none'
+    champPrix.style.display = 'none'
+    champPrix.removeAttribute('required')
+  } else {
+    sectionJour.style.display = 'none'
+    labelPrix.style.display = 'block'
+    champPrix.style.display = 'block'
+    labelPrix.textContent = mode === 'acheter' ? 'Prix de vente (FCFA) *' : 'Loyer mensuel (FCFA) *'
+  }
+}
+window.toggleModeJour = toggleModeJour
