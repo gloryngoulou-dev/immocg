@@ -1,36 +1,36 @@
 const user = JSON.parse(localStorage.getItem('immocg_user') || 'null')
 
-  // Vérifier connexion via /auth/me (cookie HttpOnly)
-  async function verifierConnexion() {
-    try {
-      const r = await fetch('/auth/me', { credentials: 'include' })
-      const data = await r.json()
-      if (!data.success) {
-        window.location.href = 'login.html'
-        return false
-      }
-      if (data.user.role === 'admin') {
-        window.location.href = 'admin.html'
-        return false
-      }
-      return true
-    } catch {
-      window.location.href = 'login.html'
-      return false
-    }
-  }
-
   if (!user) {
     window.location.href = 'login.html'
   } else {
     if (user.role === 'admin') {
       window.location.href = 'admin.html'
     }
-
     document.getElementById('nav-user').textContent = user?.nom_agence || user?.nom || ''
     document.getElementById('welcome-title').textContent = `Bonjour, ${user?.nom_agence || user?.nom} 👋`
     document.getElementById('welcome-sub').textContent = `Bienvenue sur votre espace partenaire ImmoCG`
   }
+
+  // Vérifier le cookie avant de charger les données
+  async function init() {
+    try {
+      const r = await fetch('/auth/me', { credentials: 'include' })
+      const data = await r.json()
+      if (!data.success) {
+        // Cookie absent ou expiré — forcer reconnexion
+        localStorage.removeItem('immocg_user')
+        window.location.href = 'login.html'
+        return
+      }
+      // Cookie valide — charger les biens
+      chargerMesBiens()
+    } catch {
+      // Erreur réseau — on essaie quand même de charger
+      chargerMesBiens()
+    }
+  }
+
+  init()
 
   async function chargerMesBiens() {
     try {
@@ -167,8 +167,6 @@ const user = JSON.parse(localStorage.getItem('immocg_user') || 'null')
       window.location.href = 'login.html'
     })
   }
-
-  chargerMesBiens()
 
 window.seDeconnecter = seDeconnecter
 window.supprimerBien = supprimerBien
