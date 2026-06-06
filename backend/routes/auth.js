@@ -108,8 +108,8 @@ router.post('/login', async (req, res) => {
     res.cookie('immocg_token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 jours
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000
     })
 
     res.json({
@@ -185,18 +185,16 @@ router.post('/register', async (req, res) => {
 
 // Middleware de vérification token
 function verifierToken(req, res, next) {
-  // Lire depuis le cookie HttpOnly en priorité, sinon header Authorization (rétrocompatibilité)
   const token = req.cookies?.immocg_token || req.headers.authorization?.split(' ')[1]
   if (!token) {
-    return res.status(401).json({ success: false, message: 'Token manquant' })
+    return res.status(401).json({ success: false, message: 'Non connecté — veuillez vous reconnecter' })
   }
-
   try {
     const decoded = jwt.verify(token, JWT_SECRET)
     req.user = decoded
     next()
   } catch (err) {
-    return res.status(401).json({ success: false, message: 'Token invalide ou expiré' })
+    return res.status(401).json({ success: false, message: 'Session expirée — veuillez vous reconnecter' })
   }
 }
 

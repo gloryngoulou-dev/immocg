@@ -39,6 +39,8 @@ const user = JSON.parse(localStorage.getItem('immocg_user') || 'null')
       })
 
       if (r.status === 401) {
+        // Session expirée — forcer reconnexion
+        localStorage.removeItem('immocg_user')
         window.location.href = 'login.html'
         return
       }
