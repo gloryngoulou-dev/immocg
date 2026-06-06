@@ -1,7 +1,7 @@
 // Si déjà connecté, rediriger
-    const token = localStorage.getItem('immocg_token')
+    
     const user = JSON.parse(localStorage.getItem('immocg_user') || 'null')
-    if (token && user) {
+    if (user) {
       if (user.role === 'admin') window.location.href = 'admin.html'
       else window.location.href = 'dashboard.html'
     }

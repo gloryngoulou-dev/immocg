@@ -55,10 +55,10 @@ function removePhoto(e, index) {
 async function uploaderPhoto(file) {
   const formData = new FormData()
   formData.append('image', file)
-  const token = localStorage.getItem('immocg_token')
+  
   const r = await fetch('/upload', {
     method: 'POST',
-    headers: token ? { 'Authorization': 'Bearer ' + token } : {},
+    credentials: 'include',
     body: formData
   })
   const d = await r.json()
@@ -133,12 +133,12 @@ async function publierBien() {
 
     setProgress(85)
 
-    const token = localStorage.getItem('immocg_token')
+    
     const r = await fetch('/biens', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...(token ? { 'Authorization': 'Bearer ' + token } : {})
+        credentials: 'include'
       },
       body: JSON.stringify(bien)
     })
@@ -195,10 +195,10 @@ async function uploaderVideo() {
   const formData = new FormData()
   formData.append('video', input.files[0])
 
-  const token = localStorage.getItem('immocg_token')
+  
   const r = await fetch('/upload-video', {
     method: 'POST',
-    headers: token ? { 'Authorization': 'Bearer ' + token } : {},
+    credentials: 'include',
     body: formData
   })
   const d = await r.json()

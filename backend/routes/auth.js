@@ -323,4 +323,14 @@ router.get('/stats', async (req, res) => {
   }
 })
 
+// POST /auth/logout
+router.post('/logout', (req, res) => {
+  res.clearCookie('immocg_token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict'
+  })
+  res.json({ success: true, message: 'Déconnecté' })
+})
+
 module.exports = { router, verifierToken }
