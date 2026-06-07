@@ -17,20 +17,15 @@ const user = JSON.parse(localStorage.getItem('immocg_user') || 'null')
       const r = await fetch('/auth/me', { credentials: 'include' })
       const data = await r.json()
       if (!data.success) {
-        // Cookie absent ou expiré — forcer reconnexion
         localStorage.removeItem('immocg_user')
         window.location.href = 'login.html'
         return
       }
-      // Cookie valide — charger les biens
       chargerMesBiens()
     } catch {
-      // Erreur réseau — on essaie quand même de charger
       chargerMesBiens()
     }
   }
-
-  init()
 
   async function chargerMesBiens() {
     try {
@@ -170,3 +165,6 @@ const user = JSON.parse(localStorage.getItem('immocg_user') || 'null')
 
 window.seDeconnecter = seDeconnecter
 window.supprimerBien = supprimerBien
+
+// Lancer après que toutes les fonctions sont définies
+init()
