@@ -43,8 +43,9 @@ const user = JSON.parse(localStorage.getItem('immocg_user') || 'null')
       const data = await r.json()
       const mesBiens = data.biens || []
 
-      document.getElementById('nb-mes-biens').textContent = mesBiens.length
-      document.getElementById('nb-en-attente').textContent = mesBiens.filter(b => b.statut === 'attente').length
+      document.getElementById('nb-total').textContent = mesBiens.length
+      document.getElementById('nb-disponible').textContent = mesBiens.filter(b => b.statut === 'disponible').length
+      document.getElementById('nb-loue').textContent = mesBiens.filter(b => b.statut === 'loue' || b.statut === 'vendu').length
 
       const tbody = document.getElementById('tbody-biens')
       tbody.textContent = ''
