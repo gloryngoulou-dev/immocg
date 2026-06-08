@@ -95,12 +95,14 @@ const uploadRoutes = require('./routes/upload')
 const uploadVideoRoutes = require('./routes/upload-video')
 const { router: authRoutes } = require('./routes/auth')
 const contactRoutes = require('./routes/contact')
+const reservationsRoutes = require('./routes/reservations')
 
 app.use('/biens', biensRoutes)
 app.use('/upload', uploadRoutes)
 app.use('/upload-video', uploadVideoRoutes)
 app.use('/auth', authRoutes)
 app.use('/contact', contactRoutes)
+app.use('/reservations', reservationsRoutes)
 
 app.get('/og-image.jpg', (req, res) => {
   res.type('image/svg+xml')

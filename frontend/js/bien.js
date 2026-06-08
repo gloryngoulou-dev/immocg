@@ -351,7 +351,7 @@ function afficherBien(b) {
       </div>
 
       <button class="btn btn-primary" data-nom="${esc(contactNom)}" data-tel="${esc(contactTel)}" id="btn-contacter">📞 Contacter ${esc(contactNom.split(' ')[0])}</button>
-      <button class="btn btn-outline" data-id="${esc(String(b.id))}" data-wa="${esc(contactWhatsapp || contactTel)}" id="btn-message">💬 Envoyer un message</button>
+      <button class="btn btn-reserve" data-id="${esc(String(b.id))}" data-mode="${esc(mode)}" id="btn-reserver">📅 ${estParJour ? 'Réserver ce logement' : 'Demander une visite'}</button>
       <button class="btn btn-outline" data-id="${esc(String(b.id))}" id="btn-sauver">❤️ Sauvegarder</button>
     </div>
   `, { ADD_ATTR: ['onclick', 'target', 'rel'], FORCE_BODY: false });
@@ -371,10 +371,10 @@ function afficherBien(b) {
     btnContacter.addEventListener('click', () =>
       contacterAgence(btnContacter.dataset.nom, btnContacter.dataset.tel));
   }
-  const btnMessage = document.getElementById('btn-message');
-  if (btnMessage) {
-    btnMessage.addEventListener('click', () =>
-      envoyerMessage(btnMessage.dataset.id, btnMessage.dataset.wa));
+  const btnReserver = document.getElementById('btn-reserver');
+  if (btnReserver) {
+    btnReserver.addEventListener('click', () =>
+      ouvrirModalReservation(btnReserver.dataset.id, btnReserver.dataset.mode));
   }
   const btnSauver = document.getElementById('btn-sauver');
   if (btnSauver) {
@@ -429,3 +429,199 @@ function changePhoto(url, el) {
 }
 
 chargerBien();
+
+// ========== SYSTÈME DE RÉSERVATION ==========
+
+function ouvrirModalReservation(bienId, mode) {
+  // Supprimer modal existant si présent
+  const existant = document.getElementById('modal-reservation');
+  if (existant) existant.remove();
+
+  const estParJour = mode === 'jour';
+
+  const modal = document.createElement('div');
+  modal.id = 'modal-reservation';
+  modal.style.cssText = `
+    position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.6);
+    display:flex;align-items:center;justify-content:center;padding:1rem;
+  `;
+
+  const box = document.createElement('div');
+  box.style.cssText = `
+    background:#fff;border-radius:16px;padding:2rem;max-width:500px;width:100%;
+    max-height:90vh;overflow-y:auto;position:relative;
+  `;
+
+  box.innerHTML = `
+    <button id="modal-close" style="position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:22px;cursor:pointer;color:#888;">✕</button>
+    <h2 style="font-size:20px;font-weight:700;color:#1A1A18;margin-bottom:0.3rem;">
+      ${estParJour ? '📅 Réserver ce logement' : '🏠 Demander une visite'}
+    </h2>
+    <p style="color:#888780;font-size:13px;margin-bottom:1.5rem;">
+      Remplissez ce formulaire — l'agence vous contactera sous 24h
+    </p>
+
+    <!-- CLAUSES -->
+    <div style="background:#fffdf5;border:1px solid #f0d98a;border-radius:10px;padding:1rem;margin-bottom:1.5rem;font-size:12px;line-height:1.8;color:#7A5A1A;">
+      <strong>📋 Clauses à respecter par les deux parties :</strong><br>
+      ⏱️ <strong>Client :</strong> 48h max pour confirmer votre présence après validation<br>
+      ⏱️ <strong>Agence :</strong> 24h max pour valider ou refuser votre demande<br>
+      ✅ <strong>Correspondance :</strong> Si le bien ne correspond pas aux critères annoncés, annulation sans frais<br>
+      ⚠️ Passé ces délais, le bien sera automatiquement remis en disponibilité
+    </div>
+
+    <!-- FORMULAIRE -->
+    <div style="display:flex;flex-direction:column;gap:0.8rem;">
+      <div>
+        <label style="font-size:12px;font-weight:600;color:#555;display:block;margin-bottom:4px;">Votre nom complet *</label>
+        <input id="res-nom" type="text" placeholder="Ex: Jean Moukala" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;">
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:600;color:#555;display:block;margin-bottom:4px;">Téléphone / WhatsApp *</label>
+        <input id="res-tel" type="tel" placeholder="+242 06 XXX XXXX" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;">
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:600;color:#555;display:block;margin-bottom:4px;">Email (optionnel)</label>
+        <input id="res-email" type="email" placeholder="votre@email.com" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;">
+      </div>
+      ${estParJour ? `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;">
+        <div>
+          <label style="font-size:12px;font-weight:600;color:#555;display:block;margin-bottom:4px;">Date d'arrivée *</label>
+          <input id="res-arrivee" type="date" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;">
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:600;color:#555;display:block;margin-bottom:4px;">Date de départ *</label>
+          <input id="res-depart" type="date" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;">
+        </div>
+      </div>` : `
+      <div>
+        <label style="font-size:12px;font-weight:600;color:#555;display:block;margin-bottom:4px;">Date souhaitée pour la visite</label>
+        <input id="res-date" type="date" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;">
+      </div>`}
+
+      <!-- CRITÈRES CLIENT -->
+      <div style="background:#f8f8f8;border-radius:8px;padding:0.8rem;margin-top:0.3rem;">
+        <p style="font-size:12px;font-weight:600;color:#555;margin-bottom:0.6rem;">🎯 Vos critères (pour garantir la correspondance du bien)</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;">
+          <div>
+            <label style="font-size:11px;color:#888;display:block;margin-bottom:3px;">Surface min. (m²)</label>
+            <input id="res-surface" type="number" placeholder="Ex: 50" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:13px;">
+          </div>
+          <div>
+            <label style="font-size:11px;color:#888;display:block;margin-bottom:3px;">Chambres min.</label>
+            <input id="res-chambres" type="number" placeholder="Ex: 2" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:13px;">
+          </div>
+        </div>
+        <div style="margin-top:0.6rem;">
+          <label style="font-size:11px;color:#888;display:block;margin-bottom:3px;">Notes / équipements souhaités</label>
+          <textarea id="res-notes" placeholder="Ex: Je veux que le bien soit meublé, avec parking..." rows="2" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:13px;resize:none;"></textarea>
+        </div>
+      </div>
+
+      <div id="res-erreur" style="color:#c0392b;font-size:13px;display:none;padding:8px;background:#fdf0f0;border-radius:6px;"></div>
+
+      <button id="res-soumettre" style="background:#C9963A;color:#fff;border:none;padding:13px;border-radius:10px;font-weight:700;font-size:15px;cursor:pointer;margin-top:0.3rem;">
+        ${estParJour ? '📅 Confirmer la réservation' : '🏠 Envoyer ma demande de visite'}
+      </button>
+      <p style="font-size:11px;color:#aaa;text-align:center;">En soumettant, vous acceptez les clauses ci-dessus</p>
+    </div>
+  `;
+
+  modal.appendChild(box);
+  document.body.appendChild(modal);
+
+  // Fermer le modal
+  document.getElementById('modal-close').addEventListener('click', () => modal.remove());
+  modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+
+  // Dates minimum = aujourd'hui
+  const today = new Date().toISOString().split('T')[0];
+  const dateInputs = ['res-arrivee', 'res-depart', 'res-date'].map(id => document.getElementById(id)).filter(Boolean);
+  dateInputs.forEach(input => input.min = today);
+
+  // Soumettre la réservation
+  document.getElementById('res-soumettre').addEventListener('click', async () => {
+    const nom = document.getElementById('res-nom').value.trim();
+    const tel = document.getElementById('res-tel').value.trim();
+    const email = document.getElementById('res-email')?.value.trim() || '';
+    const erreurEl = document.getElementById('res-erreur');
+    const btn = document.getElementById('res-soumettre');
+
+    if (!nom || nom.length < 2) {
+      erreurEl.textContent = 'Veuillez entrer votre nom complet';
+      erreurEl.style.display = 'block';
+      return;
+    }
+    if (!tel || tel.length < 8) {
+      erreurEl.textContent = 'Veuillez entrer un numéro de téléphone valide';
+      erreurEl.style.display = 'block';
+      return;
+    }
+
+    erreurEl.style.display = 'none';
+    btn.textContent = 'Envoi en cours...';
+    btn.disabled = true;
+
+    const payload = {
+      bien_id: bienId,
+      client_nom: nom,
+      client_tel: tel,
+      client_email: email,
+      type_reservation: estParJour ? 'location_jour' : 'visite',
+      criteres_client: {
+        surface_min: parseInt(document.getElementById('res-surface')?.value) || null,
+        chambres_min: parseInt(document.getElementById('res-chambres')?.value) || null,
+        notes: document.getElementById('res-notes')?.value.trim() || null
+      }
+    };
+
+    if (estParJour) {
+      payload.date_souhaitee = document.getElementById('res-arrivee')?.value || null;
+      payload.date_depart = document.getElementById('res-depart')?.value || null;
+    } else {
+      payload.date_souhaitee = document.getElementById('res-date')?.value || null;
+    }
+
+    try {
+      const r = await fetch('/reservations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await r.json();
+
+      if (data.success) {
+        box.innerHTML = `
+          <div style="text-align:center;padding:2rem 1rem;">
+            <div style="font-size:48px;margin-bottom:1rem;">✅</div>
+            <h2 style="font-size:20px;font-weight:700;color:#1A1A18;margin-bottom:0.5rem;">Demande envoyée !</h2>
+            <p style="color:#555;line-height:1.6;margin-bottom:1.5rem;">
+              L'agence a <strong>24h</strong> pour valider votre demande.<br>
+              Vous serez contacté au <strong>${tel}</strong>.
+            </p>
+            <div style="background:#fffdf5;border-radius:10px;padding:1rem;font-size:12px;color:#7A5A1A;line-height:1.8;text-align:left;">
+              <strong>📋 Rappel des clauses :</strong><br>
+              ⏱️ L'agence a 24h pour vous répondre<br>
+              ⏱️ Vous avez 48h pour confirmer votre présence<br>
+              ✅ Si le bien ne correspond pas aux critères, annulation sans frais
+            </div>
+            <button onclick="document.getElementById('modal-reservation').remove()" style="margin-top:1.5rem;background:#C9963A;color:#fff;border:none;padding:12px 32px;border-radius:8px;font-weight:600;cursor:pointer;">
+              Fermer
+            </button>
+          </div>
+        `;
+      } else {
+        erreurEl.textContent = data.message || 'Erreur lors de l\'envoi';
+        erreurEl.style.display = 'block';
+        btn.textContent = estParJour ? '📅 Confirmer la réservation' : '🏠 Envoyer ma demande de visite';
+        btn.disabled = false;
+      }
+    } catch {
+      erreurEl.textContent = 'Erreur de connexion. Réessayez.';
+      erreurEl.style.display = 'block';
+      btn.textContent = estParJour ? '📅 Confirmer la réservation' : '🏠 Envoyer ma demande de visite';
+      btn.disabled = false;
+    }
+  });
+}

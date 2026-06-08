@@ -22,8 +22,10 @@ const user = JSON.parse(localStorage.getItem('immocg_user') || 'null')
         return
       }
       chargerMesBiens()
+      chargerReservations()
     } catch {
       chargerMesBiens()
+      chargerReservations()
     }
   }
 
@@ -147,14 +149,144 @@ const user = JSON.parse(localStorage.getItem('immocg_user') || 'null')
     }
   }
 
-  async function supprimerBien(id) {
+  async function chargerReservations() {
+    try {
+      const r = await fetch('/reservations/mes', { credentials: 'include' })
+      if (r.status === 401) return
+      const data = await r.json()
+      const reservations = data.reservations || []
+
+      document.getElementById('nb-reservations').textContent = reservations.filter(r => r.statut === 'en_attente').length
+
+      const tbody = document.getElementById('tbody-reservations')
+      tbody.textContent = ''
+
+      if (reservations.length === 0) {
+        const tr = document.createElement('tr')
+        const td = document.createElement('td')
+        td.setAttribute('colspan', '6')
+        td.className = 'empty'
+        td.textContent = 'Aucune demande reçue pour le moment'
+        tr.appendChild(td)
+        tbody.appendChild(tr)
+        return
+      }
+
+      reservations.forEach(res => {
+        const tr = document.createElement('tr')
+
+        // Client
+        const tdClient = document.createElement('td')
+        const divNom = document.createElement('div')
+        divNom.style.fontWeight = '500'
+        divNom.textContent = res.client_nom
+        const divTel = document.createElement('div')
+        divTel.style.cssText = 'font-size:12px;color:#888780;'
+        divTel.textContent = res.client_tel
+        tdClient.appendChild(divNom)
+        tdClient.appendChild(divTel)
+        tr.appendChild(tdClient)
+
+        // Bien
+        const tdBien = document.createElement('td')
+        tdBien.style.fontSize = '13px'
+        tdBien.textContent = `Bien #${String(res.bien_id).substring(0,8)}...`
+        tr.appendChild(tdBien)
+
+        // Type
+        const tdType = document.createElement('td')
+        tdType.textContent = res.type_reservation === 'location_jour' ? '📅 Par jour'
+          : res.type_reservation === 'achat' ? '💰 Achat' : '🏠 Visite'
+        tr.appendChild(tdType)
+
+        // Date
+        const tdDate = document.createElement('td')
+        tdDate.style.fontSize = '12px'
+        tdDate.textContent = res.date_souhaitee
+          ? new Date(res.date_souhaitee).toLocaleDateString('fr-FR')
+          : '—'
+        tr.appendChild(tdDate)
+
+        // Statut
+        const tdStatut = document.createElement('td')
+        const span = document.createElement('span')
+        const statutColors = {
+          en_attente: { bg: '#fff3cd', color: '#856404', label: '⏳ En attente' },
+          confirmee: { bg: '#d4edda', color: '#155724', label: '✅ Confirmée' },
+          annulee: { bg: '#f8d7da', color: '#721c24', label: '❌ Annulée' },
+          expiree: { bg: '#e2e3e5', color: '#383d41', label: '⌛ Expirée' }
+        }
+        const s = statutColors[res.statut] || statutColors.en_attente
+        span.style.cssText = `background:${s.bg};color:${s.color};padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;white-space:nowrap;`
+        span.textContent = s.label
+        tdStatut.appendChild(span)
+        tr.appendChild(tdStatut)
+
+        // Actions
+        const tdActions = document.createElement('td')
+        if (res.statut === 'en_attente') {
+          const btnConfirmer = document.createElement('button')
+          btnConfirmer.className = 'btn-sm btn-valider'
+          btnConfirmer.textContent = '✅ Valider'
+          btnConfirmer.addEventListener('click', () => traiterReservation(res.id, 'confirmee'))
+
+          const btnRefuser = document.createElement('button')
+          btnRefuser.className = 'btn-sm btn-refuser'
+          btnRefuser.textContent = '❌ Refuser'
+          btnRefuser.addEventListener('click', () => traiterReservation(res.id, 'annulee'))
+
+          tdActions.appendChild(btnConfirmer)
+          tdActions.appendChild(btnRefuser)
+        }
+
+        // Afficher les critères si présents
+        if (res.criteres_client && Object.keys(res.criteres_client).length > 0) {
+          const btnCriteres = document.createElement('button')
+          btnCriteres.className = 'btn-sm btn-voir'
+          btnCriteres.textContent = '🎯 Critères'
+          btnCriteres.addEventListener('click', () => afficherCriteres(res))
+          tdActions.appendChild(btnCriteres)
+        }
+
+        tr.appendChild(tdActions)
+        tbody.appendChild(tr)
+      })
+    } catch (err) {
+      console.error('Erreur chargement réservations')
+    }
+  }
+
+  async function traiterReservation(id, statut) {
+    const action = statut === 'confirmee' ? 'confirmer' : 'refuser'
+    if (!confirm(`Voulez-vous ${action} cette réservation ?`)) return
+    try {
+      await fetch('/reservations/' + id, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ statut })
+      })
+      chargerReservations()
+    } catch {}
+  }
+
+  function afficherCriteres(res) {
+    const c = res.criteres_client || {}
+    const lignes = []
+    if (c.surface_min) lignes.push(`Surface min: ${c.surface_min}m²`)
+    if (c.chambres_min) lignes.push(`Chambres min: ${c.chambres_min}`)
+    if (c.notes) lignes.push(`Notes: ${c.notes}`)
+    alert(`Critères de ${res.client_nom}:\n\n${lignes.join('\n') || 'Aucun critère spécifié'}`)
+  }
+
+  window.traiterReservation = traiterReservation
     if (!confirm('Supprimer cette annonce ?')) return
     await fetch('/biens/' + id, {
       method: 'DELETE',
       credentials: 'include'
     })
     chargerMesBiens()
-  }
+  
 
   function seDeconnecter() {
     localStorage.removeItem('immocg_user')
