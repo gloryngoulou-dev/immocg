@@ -245,3 +245,92 @@ chargerAgences()
 
 window.afficherSection = afficherSection
 window.seDeconnecter = seDeconnecter
+
+async function chargerReservationsAdmin() {
+  try {
+    // Admin voit toutes les réservations via une route dédiée
+    const r = await fetch('/reservations/admin', { credentials: 'include' })
+    if (!r.ok) return
+    const data = await r.json()
+    const reservations = data.reservations || []
+
+    document.getElementById('nb-reservations-admin').textContent = reservations.filter(r => r.statut === 'en_attente').length
+
+    const tbody = document.getElementById('tbody-reservations-admin')
+    tbody.textContent = ''
+
+    if (reservations.length === 0) {
+      const tr = document.createElement('tr')
+      const td = document.createElement('td')
+      td.setAttribute('colspan', '6')
+      td.className = 'empty'
+      td.textContent = 'Aucune réservation pour le moment'
+      tr.appendChild(td)
+      tbody.appendChild(tr)
+      return
+    }
+
+    reservations.forEach(res => {
+      const tr = document.createElement('tr')
+
+      const tdClient = document.createElement('td')
+      const divNom = document.createElement('div')
+      divNom.style.fontWeight = '500'
+      divNom.textContent = res.client_nom
+      const divTel = document.createElement('div')
+      divTel.style.fontSize = '12px'
+      divTel.style.color = '#888780'
+      divTel.textContent = res.client_tel
+      tdClient.appendChild(divNom)
+      tdClient.appendChild(divTel)
+      tr.appendChild(tdClient)
+
+      const tdBien = document.createElement('td')
+      tdBien.style.fontSize = '13px'
+      tdBien.textContent = `#${String(res.bien_id).substring(0, 8)}...`
+      tr.appendChild(tdBien)
+
+      const tdType = document.createElement('td')
+      tdType.textContent = res.type_reservation === 'location_jour' ? '📅 Par jour'
+        : res.type_reservation === 'achat' ? '💰 Achat' : '🏠 Visite'
+      tr.appendChild(tdType)
+
+      const tdDate = document.createElement('td')
+      tdDate.style.fontSize = '12px'
+      tdDate.textContent = res.date_souhaitee
+        ? new Date(res.date_souhaitee).toLocaleDateString('fr-FR') : '—'
+      tr.appendChild(tdDate)
+
+      const tdStatut = document.createElement('td')
+      const span = document.createElement('span')
+      const couleurs = {
+        en_attente: { bg: '#fff3cd', color: '#856404', label: '⏳ En attente' },
+        confirmee: { bg: '#d4edda', color: '#155724', label: '✅ Confirmée' },
+        annulee: { bg: '#f8d7da', color: '#721c24', label: '❌ Annulée' },
+        expiree: { bg: '#e2e3e5', color: '#383d41', label: '⌛ Expirée' }
+      }
+      const s = couleurs[res.statut] || couleurs.en_attente
+      span.style.cssText = `background:${s.bg};color:${s.color};padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;`
+      span.textContent = s.label
+      tdStatut.appendChild(span)
+      tr.appendChild(tdStatut)
+
+      const tdCriteres = document.createElement('td')
+      const c = res.criteres_client || {}
+      const infos = []
+      if (c.surface_min) infos.push(`${c.surface_min}m²`)
+      if (c.chambres_min) infos.push(`${c.chambres_min} ch.`)
+      if (c.notes) infos.push(c.notes.substring(0, 30))
+      tdCriteres.style.fontSize = '12px'
+      tdCriteres.style.color = '#555'
+      tdCriteres.textContent = infos.join(' · ') || '—'
+      tr.appendChild(tdCriteres)
+
+      tbody.appendChild(tr)
+    })
+  } catch (err) {
+    console.error('Erreur réservations admin')
+  }
+}
+
+chargerReservationsAdmin()

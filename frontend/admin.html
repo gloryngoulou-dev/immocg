@@ -221,6 +221,7 @@
   <div class="tabs">
     <button class="tab active" onclick="afficherSection('biens', this)">Annonces</button>
     <button class="tab" onclick="afficherSection('agences', this)">Agences</button>
+    <button class="tab" onclick="afficherSection('reservations', this)">📅 Réservations</button>
   </div>
 
   <!-- SECTION BIENS -->
@@ -249,8 +250,7 @@
   </div>
 
   <!-- SECTION AGENCES -->
-  <div class="section" id="section-agences">
-    <div class="table-box">
+  <div class="section" id="section-agences">    <div class="table-box">
       <div class="table-header">
         <div class="table-title">Agences partenaires</div>
       </div>
@@ -271,6 +271,32 @@
       </table>
     </div>
   </div>
+
+  <!-- SECTION RÉSERVATIONS -->
+  <div class="section" id="section-reservations">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+      <div class="section-title">Toutes les réservations</div>
+      <span id="nb-reservations-admin" style="background:#C9963A;color:#fff;padding:3px 12px;border-radius:20px;font-size:13px;font-weight:600;">0</span>
+    </div>
+    <div class="table-box">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Client</th>
+            <th>Bien</th>
+            <th>Type</th>
+            <th>Date souhaitée</th>
+            <th>Statut</th>
+            <th>Critères</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-reservations-admin">
+          <tr><td colspan="6" class="empty">Chargement...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
 </div>
 
 <script src="js/admin.js"></script>

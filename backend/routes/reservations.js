@@ -107,6 +107,24 @@ router.post('/', async (req, res) => {
   }
 })
 
+// GET /reservations/admin — toutes les réservations (admin uniquement)
+router.get('/admin', verifierToken, async (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ success: false, message: 'Accès refusé' })
+  }
+  try {
+    const { data, error } = await supabase
+      .from('reservations')
+      .select('*')
+      .order('created_at', { ascending: false })
+
+    if (error) throw error
+    res.json({ success: true, reservations: data || [] })
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Erreur interne' })
+  }
+})
+
 // GET /reservations/bien/:id — réservations d'un bien (pour l'agence)
 router.get('/bien/:id', verifierToken, async (req, res) => {
   try {
