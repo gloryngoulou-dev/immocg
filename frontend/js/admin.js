@@ -334,3 +334,19 @@ async function chargerReservationsAdmin() {
 }
 
 chargerReservationsAdmin()
+
+async function chargerSignalements() {
+  try {
+    const r = await fetch('/signalements', { credentials: 'include' })
+    if (!r.ok) return
+    const data = await r.json()
+    const signalements = data.signalements || []
+    // Afficher le nombre dans l'onglet réservations (on réutilise le badge)
+    const nonTraites = signalements.filter(s => !s.traite).length
+    if (nonTraites > 0) {
+      const tabRes = document.querySelector('[onclick*="reservations"]')
+      if (tabRes) tabRes.textContent = `📅 Réservations + Signalements (${nonTraites})`
+    }
+  } catch {}
+}
+chargerSignalements()

@@ -228,3 +228,21 @@ router.patch('/:id/statut', verifierToken, requireAdmin, async (req, res) => {
 })
 
 module.exports = router
+// PATCH /biens/:id/verifier — agence confirme que le bien est toujours disponible
+router.patch('/:id/verifier', verifierToken, async (req, res) => {
+  const { error: idError } = idParamSchema.validate({ id: req.params.id })
+  if (idError) return res.status(400).json({ success: false, message: 'ID invalide' })
+
+  try {
+    const { error } = await supabase
+      .from('biens')
+      .update({ derniere_verification: new Date().toISOString() })
+      .eq('id', req.params.id)
+      .eq('user_id', req.user.id) // Seul le propriétaire peut vérifier
+
+    if (error) throw error
+    res.json({ success: true, message: 'Disponibilité confirmée ✅' })
+  } catch {
+    res.status(500).json({ success: false, message: 'Erreur interne' })
+  }
+})

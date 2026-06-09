@@ -98,6 +98,31 @@ async function chargerMesBiens() {
       tr.appendChild(tdStatut)
 
       const tdActions = document.createElement('td')
+
+      // Badge vérification disponibilité
+      if (b.derniere_verification) {
+        const diff = Date.now() - new Date(b.derniere_verification).getTime()
+        const jours = Math.floor(diff / (1000*60*60*24))
+        const btnVerif = document.createElement('button')
+        btnVerif.className = 'btn-sm'
+        if (jours <= 7) {
+          btnVerif.style.cssText = 'background:#d4edda;color:#155724;border:none;'
+          btnVerif.textContent = '✅ Vérifié'
+        } else {
+          btnVerif.style.cssText = 'background:#fff3cd;color:#856404;border:none;'
+          btnVerif.textContent = '⚠️ Confirmer dispo'
+          btnVerif.addEventListener('click', () => confirmerDisponibilite(b.id))
+        }
+        tdActions.appendChild(btnVerif)
+      } else {
+        const btnVerif = document.createElement('button')
+        btnVerif.className = 'btn-sm'
+        btnVerif.style.cssText = 'background:#f8d7da;color:#721c24;border:none;'
+        btnVerif.textContent = '🔴 Confirmer dispo'
+        btnVerif.addEventListener('click', () => confirmerDisponibilite(b.id))
+        tdActions.appendChild(btnVerif)
+      }
+
       const btnVoir = document.createElement('button')
       btnVoir.className = 'btn-sm btn-voir'
       btnVoir.textContent = 'Voir'
@@ -193,6 +218,16 @@ async function chargerReservations() {
       tr.appendChild(tdStatut)
 
       const tdActions = document.createElement('td')
+      // Bouton PDF pour réservations confirmées
+      if (res.statut === 'confirmee') {
+        const btnPDF = document.createElement('button')
+        btnPDF.className = 'btn-sm'
+        btnPDF.style.cssText = 'background:#1A1A18;color:#C9963A;border:1px solid #C9963A;'
+        btnPDF.textContent = '📄 Contrat PDF'
+        btnPDF.addEventListener('click', () => telechargerContrat(res))
+        tdActions.appendChild(btnPDF)
+      }
+
       if (res.statut === 'en_attente') {
         const btnConfirmer = document.createElement('button')
         btnConfirmer.className = 'btn-sm btn-valider'
@@ -260,6 +295,44 @@ function seDeconnecter() {
 chargerMesBiens()
 chargerReservations()
 
+async function confirmerDisponibilite(bienId) {
+  try {
+    const r = await fetch('/biens/' + bienId + '/verifier', {
+      method: 'PATCH',
+      credentials: 'include'
+    })
+    const data = await r.json()
+    if (data.success) {
+      showToast('✅ Disponibilité confirmée !')
+      chargerMesBiens()
+    }
+  } catch {
+    showToast('Erreur lors de la confirmation')
+  }
+}
+
+function showToast(msg) {
+  const t = document.createElement('div')
+  t.style.cssText = 'position:fixed;bottom:2rem;right:2rem;background:#1A1A18;color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.3);'
+  t.textContent = msg
+  document.body.appendChild(t)
+  setTimeout(() => t.remove(), 3000)
+}
+
 window.seDeconnecter = seDeconnecter
 window.supprimerBien = supprimerBien
 window.traiterReservation = traiterReservation
+window.confirmerDisponibilite = confirmerDisponibilite
+
+async function telechargerContrat(reservation) {
+  try {
+    // Récupérer les infos du bien
+    const r = await fetch('/biens/' + reservation.bien_id)
+    const data = await r.json()
+    const bien = data.bien || {}
+    genererContratPDF(reservation, bien)
+  } catch {
+    alert('Erreur lors de la génération du contrat')
+  }
+}
+window.telechargerContrat = telechargerContrat

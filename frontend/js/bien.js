@@ -260,6 +260,16 @@ function afficherBien(b) {
   }
   const safeImagePrincipale = safeUrl(imagePrincipale);
 
+  // Générer le badge de vérification
+  const verificationBadge = (() => {
+    if (!b.derniere_verification) return '';
+    const diff = Date.now() - new Date(b.derniere_verification).getTime();
+    const jours = Math.floor(diff / (1000 * 60 * 60 * 24));
+    if (jours <= 7) return '<div style="display:inline-flex;align-items:center;gap:6px;background:#d4edda;color:#155724;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;margin:6px 0 8px;">✅ Disponibilité vérifiée il y a ' + jours + ' jour(s)</div>';
+    if (jours <= 15) return '<div style="display:inline-flex;align-items:center;gap:6px;background:#fff3cd;color:#856404;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;margin:6px 0 8px;">⚠️ Vérifié il y a ' + jours + ' jours</div>';
+    return '<div style="display:inline-flex;align-items:center;gap:6px;background:#f8d7da;color:#721c24;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;margin:6px 0 8px;">🔴 Non vérifié depuis ' + jours + ' jours</div>';
+  })();
+
   document.getElementById('contenu').innerHTML = DOMPurify.sanitize(`
     <div>
       <div class="galerie">
@@ -279,7 +289,9 @@ function afficherBien(b) {
       <div class="bien-loc">
         📍 ${esc(adresseComplete || quartier)} · Réf. IMC-${esc(String(b.id).padStart(4, '0'))}
       </div>
-      
+
+      ${verificationBadge}
+
       <div class="bien-prix">
         ${estParJour 
           ? `${parseInt(prixJour).toLocaleString('fr-FR')}<span>${esc(unite)}/nuit${dureeMin > 1 ? ` · min. ${dureeMin} nuits` : ''}</span>`
@@ -353,6 +365,7 @@ function afficherBien(b) {
       <button class="btn btn-primary" data-nom="${esc(contactNom)}" data-tel="${esc(contactTel)}" id="btn-contacter">📞 Contacter ${esc(contactNom.split(' ')[0])}</button>
       <button class="btn btn-reserve" data-id="${esc(String(b.id))}" data-mode="${esc(mode)}" id="btn-reserver">📅 ${estParJour ? 'Réserver ce logement' : 'Demander une visite'}</button>
       <button class="btn btn-outline" data-id="${esc(String(b.id))}" id="btn-sauver">❤️ Sauvegarder</button>
+      <button class="btn btn-signaler" data-id="${esc(String(b.id))}" id="btn-signaler" style="background:none;border:1px solid #ddd;color:#888;font-size:12px;padding:8px 16px;border-radius:8px;cursor:pointer;margin-top:4px;">⚠️ Signaler une erreur</button>
     </div>
   `, { ADD_ATTR: ['onclick', 'target', 'rel'], FORCE_BODY: false });
 
@@ -365,7 +378,7 @@ function afficherBien(b) {
   const ogImage = document.getElementById('og-image');
   if (ogImage && images[0]) ogImage.content = safeUrl(images[0]) || '';
 
-  // Attacher les event listeners aux boutons (data-* au lieu d'onclick inline)
+  // Attacher les event listeners aux boutons
   const btnContacter = document.getElementById('btn-contacter');
   if (btnContacter) {
     btnContacter.addEventListener('click', () =>
@@ -379,6 +392,10 @@ function afficherBien(b) {
   const btnSauver = document.getElementById('btn-sauver');
   if (btnSauver) {
     btnSauver.addEventListener('click', () => sauvegarderBien(btnSauver.dataset.id));
+  }
+  const btnSignaler = document.getElementById('btn-signaler');
+  if (btnSignaler) {
+    btnSignaler.addEventListener('click', () => ouvrirModalSignalement(btnSignaler.dataset.id));
   }
 }
 
@@ -621,6 +638,77 @@ function ouvrirModalReservation(bienId, mode) {
       erreurEl.textContent = 'Erreur de connexion. Réessayez.';
       erreurEl.style.display = 'block';
       btn.textContent = estParJour ? '📅 Confirmer la réservation' : '🏠 Envoyer ma demande de visite';
+      btn.disabled = false;
+    }
+  });
+}
+
+// ========== SIGNALEMENT ==========
+function ouvrirModalSignalement(bienId) {
+  const existant = document.getElementById('modal-signalement');
+  if (existant) existant.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'modal-signalement';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;padding:1rem;';
+
+  const box = document.createElement('div');
+  box.style.cssText = 'background:#fff;border-radius:16px;padding:2rem;max-width:420px;width:100%;position:relative;';
+  box.innerHTML = `
+    <button id="sig-close" style="position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:22px;cursor:pointer;color:#888;">✕</button>
+    <h2 style="font-size:18px;font-weight:700;margin-bottom:0.5rem;">⚠️ Signaler une erreur</h2>
+    <p style="font-size:13px;color:#888;margin-bottom:1.2rem;">Aidez-nous à maintenir la qualité des annonces</p>
+    <div style="display:flex;flex-direction:column;gap:0.7rem;">
+      <label style="font-size:13px;font-weight:600;color:#555;">Type d'erreur *</label>
+      <select id="sig-type" style="padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;">
+        <option value="bien_indisponible">🔴 Ce bien n'est plus disponible</option>
+        <option value="prix_errone">💰 Le prix affiché est incorrect</option>
+        <option value="photos_fausses">📷 Les photos ne correspondent pas</option>
+        <option value="coordonnees_incorrectes">📞 Les coordonnées sont incorrectes</option>
+        <option value="autre">Autre problème</option>
+      </select>
+      <label style="font-size:13px;font-weight:600;color:#555;">Détails (optionnel)</label>
+      <textarea id="sig-desc" rows="3" placeholder="Décrivez le problème..." style="padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;resize:none;"></textarea>
+      <div id="sig-erreur" style="color:#c0392b;font-size:13px;display:none;"></div>
+      <button id="sig-soumettre" style="background:#C9963A;color:#fff;border:none;padding:12px;border-radius:10px;font-weight:700;cursor:pointer;">Envoyer le signalement</button>
+    </div>
+  `;
+  modal.appendChild(box);
+  document.body.appendChild(modal);
+
+  document.getElementById('sig-close').addEventListener('click', () => modal.remove());
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+
+  document.getElementById('sig-soumettre').addEventListener('click', async () => {
+    const type = document.getElementById('sig-type').value;
+    const desc = document.getElementById('sig-desc').value.trim();
+    const btn = document.getElementById('sig-soumettre');
+    btn.textContent = 'Envoi...';
+    btn.disabled = true;
+    try {
+      const r = await fetch('/signalements', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bien_id: bienId, type_signalement: type, description: desc })
+      });
+      const data = await r.json();
+      if (data.success) {
+        box.innerHTML = `<div style="text-align:center;padding:1.5rem;">
+          <div style="font-size:40px;margin-bottom:1rem;">✅</div>
+          <h3 style="font-weight:700;margin-bottom:0.5rem;">Merci pour votre signalement</h3>
+          <p style="color:#555;font-size:14px;margin-bottom:1.5rem;">Notre équipe examinera ce bien dans les 24h.</p>
+          <button onclick="document.getElementById('modal-signalement').remove()" style="background:#C9963A;color:#fff;border:none;padding:10px 28px;border-radius:8px;font-weight:600;cursor:pointer;">Fermer</button>
+        </div>`;
+      } else {
+        document.getElementById('sig-erreur').textContent = data.message;
+        document.getElementById('sig-erreur').style.display = 'block';
+        btn.textContent = 'Envoyer le signalement';
+        btn.disabled = false;
+      }
+    } catch {
+      document.getElementById('sig-erreur').textContent = 'Erreur de connexion';
+      document.getElementById('sig-erreur').style.display = 'block';
+      btn.textContent = 'Envoyer le signalement';
       btn.disabled = false;
     }
   });

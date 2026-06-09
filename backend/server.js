@@ -32,7 +32,7 @@ app.use((req, res, next) => {
   res.setHeader('X-XSS-Protection', '1; mode=block')
   res.setHeader(
     'Content-Security-Policy',
-    "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' https: data:; connect-src 'self' https://*.supabase.co https://www.google-analytics.com https://cdnjs.cloudflare.com; frame-src https://www.youtube.com;"
+    "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' https: data:; connect-src 'self' https://*.supabase.co https://www.google-analytics.com https://www.google.com https://cdnjs.cloudflare.com; frame-src https://www.youtube.com;"
   )
   next()
 })
@@ -96,6 +96,7 @@ const uploadVideoRoutes = require('./routes/upload-video')
 const { router: authRoutes } = require('./routes/auth')
 const contactRoutes = require('./routes/contact')
 const reservationsRoutes = require('./routes/reservations')
+const signalementsRoutes = require('./routes/signalements')
 
 app.use('/biens', biensRoutes)
 app.use('/upload', uploadRoutes)
@@ -103,6 +104,7 @@ app.use('/upload-video', uploadVideoRoutes)
 app.use('/auth', authRoutes)
 app.use('/contact', contactRoutes)
 app.use('/reservations', reservationsRoutes)
+app.use('/signalements', signalementsRoutes)
 
 app.get('/og-image.jpg', (req, res) => {
   res.type('image/svg+xml')
