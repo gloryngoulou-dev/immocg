@@ -326,6 +326,22 @@ async function chargerReservationsAdmin() {
       tdCriteres.textContent = infos.join(' · ') || '—'
       tr.appendChild(tdCriteres)
 
+      // Colonne actions admin
+      const tdActionsRes = document.createElement('td')
+      if (res.statut === 'en_attente') {
+        const btnV = document.createElement('button')
+        btnV.className = 'btn-sm btn-valider'
+        btnV.textContent = '✅ Valider'
+        btnV.addEventListener('click', () => traiterResAdmin(res.id, 'confirmee'))
+        const btnR = document.createElement('button')
+        btnR.className = 'btn-sm btn-refuser'
+        btnR.textContent = '❌ Refuser'
+        btnR.addEventListener('click', () => traiterResAdmin(res.id, 'annulee'))
+        tdActionsRes.appendChild(btnV)
+        tdActionsRes.appendChild(btnR)
+      }
+      tr.appendChild(tdActionsRes)
+
       tbody.appendChild(tr)
     })
   } catch (err) {
@@ -350,3 +366,156 @@ async function chargerSignalements() {
   } catch {}
 }
 chargerSignalements()
+
+async function traiterResAdmin(id, statut) {
+  const action = statut === 'confirmee' ? 'confirmer' : 'refuser'
+  if (!confirm(`Voulez-vous ${action} cette réservation ?`)) return
+  try {
+    const r = await fetch('/reservations/' + id, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ statut })
+    })
+    const data = await r.json()
+    if (data.success) chargerReservationsAdmin()
+  } catch {}
+}
+window.traiterResAdmin = traiterResAdmin
+
+async function traiterResAdmin(id, statut) {
+  const action = statut === 'confirmee' ? 'confirmer' : 'refuser'
+  if (!confirm(`Voulez-vous ${action} cette réservation ?`)) return
+  try {
+    const r = await fetch('/reservations/' + id, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ statut })
+    })
+    const data = await r.json()
+    if (data.success) chargerReservationsAdmin()
+  } catch {}
+}
+window.traiterResAdmin = traiterResAdmin
+
+async function chargerSignalementsAdmin() {
+  try {
+    const r = await fetch('/signalements', { credentials: 'include' })
+    if (!r.ok) return
+    const data = await r.json()
+    const signalements = data.signalements || []
+    const nonTraites = signalements.filter(s => !s.traite)
+
+    // Ajouter section signalements sous les réservations
+    const section = document.getElementById('section-reservations')
+    if (!section) return
+
+    // Supprimer ancienne section signalements si elle existe
+    const ancienne = document.getElementById('section-signalements-admin')
+    if (ancienne) ancienne.remove()
+
+    const div = document.createElement('div')
+    div.id = 'section-signalements-admin'
+    div.style.marginTop = '2rem'
+
+    const header = document.createElement('div')
+    header.style.cssText = 'display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;'
+    const titre = document.createElement('div')
+    titre.className = 'section-title'
+    titre.textContent = '⚠️ Signalements reçus'
+    const badge = document.createElement('span')
+    badge.style.cssText = 'background:#e74c3c;color:#fff;padding:3px 12px;border-radius:20px;font-size:13px;font-weight:600;'
+    badge.textContent = nonTraites.length
+    header.appendChild(titre)
+    header.appendChild(badge)
+    div.appendChild(header)
+
+    if (signalements.length === 0) {
+      const p = document.createElement('p')
+      p.style.cssText = 'text-align:center;color:#888;padding:1.5rem;background:#fff;border-radius:12px;'
+      p.textContent = 'Aucun signalement pour le moment'
+      div.appendChild(p)
+    } else {
+      const tableBox = document.createElement('div')
+      tableBox.className = 'table-box'
+      const table = document.createElement('table')
+      table.className = 'table'
+      table.innerHTML = `<thead><tr>
+        <th>Bien</th><th>Type</th><th>Description</th><th>Date</th><th>Statut</th><th>Action</th>
+      </tr></thead>`
+      const tbody = document.createElement('tbody')
+
+      signalements.forEach(s => {
+        const tr = document.createElement('tr')
+
+        const tdBien = document.createElement('td')
+        tdBien.textContent = `#${String(s.bien_id).substring(0,8)}...`
+        tr.appendChild(tdBien)
+
+        const tdType = document.createElement('td')
+        const types = {
+          bien_indisponible: '🔴 Indisponible',
+          prix_errone: '💰 Prix erroné',
+          photos_fausses: '📷 Photos fausses',
+          coordonnees_incorrectes: '📞 Coordonnées',
+          autre: '❓ Autre'
+        }
+        tdType.textContent = types[s.type_signalement] || s.type_signalement
+        tr.appendChild(tdType)
+
+        const tdDesc = document.createElement('td')
+        tdDesc.style.fontSize = '12px'
+        tdDesc.textContent = s.description || '—'
+        tr.appendChild(tdDesc)
+
+        const tdDate = document.createElement('td')
+        tdDate.style.fontSize = '12px'
+        tdDate.textContent = new Date(s.created_at).toLocaleDateString('fr-FR')
+        tr.appendChild(tdDate)
+
+        const tdStatut = document.createElement('td')
+        const span = document.createElement('span')
+        span.style.cssText = s.traite
+          ? 'background:#d4edda;color:#155724;padding:2px 8px;border-radius:12px;font-size:11px;'
+          : 'background:#f8d7da;color:#721c24;padding:2px 8px;border-radius:12px;font-size:11px;'
+        span.textContent = s.traite ? '✅ Traité' : '⏳ Non traité'
+        tdStatut.appendChild(span)
+        tr.appendChild(tdStatut)
+
+        const tdAction = document.createElement('td')
+        if (!s.traite) {
+          const btn = document.createElement('button')
+          btn.className = 'btn-sm btn-valider'
+          btn.textContent = 'Marquer traité'
+          btn.addEventListener('click', async () => {
+            await fetch('/signalements/' + s.id + '/traiter', {
+              method: 'PATCH', credentials: 'include'
+            })
+            chargerSignalementsAdmin()
+          })
+          tdAction.appendChild(btn)
+
+          // Bouton voir le bien
+          const btnVoir = document.createElement('button')
+          btnVoir.className = 'btn-sm btn-voir'
+          btnVoir.textContent = 'Voir bien'
+          btnVoir.addEventListener('click', () => window.open('bien.html?id=' + s.bien_id))
+          tdAction.appendChild(btnVoir)
+        }
+        tr.appendChild(tdAction)
+        tbody.appendChild(tr)
+      })
+
+      table.appendChild(tbody)
+      tableBox.appendChild(table)
+      div.appendChild(tableBox)
+    }
+
+    section.appendChild(div)
+  } catch (err) {
+    console.error('Erreur signalements admin')
+  }
+}
+
+chargerSignalementsAdmin()
