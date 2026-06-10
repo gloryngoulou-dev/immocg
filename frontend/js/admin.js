@@ -1,6 +1,5 @@
-// admin.js — script externe pour éviter les scripts inline (CSP)
+// admin.js — Dashboard administrateur ImmoCG
 
-// Vérifier que c'est un admin (cookie HttpOnly gère le token, on vérifie le rôle via user info)
 const user = JSON.parse(localStorage.getItem('immocg_user') || 'null')
 
 if (!user || user.role !== 'admin') {
@@ -18,18 +17,18 @@ function afficherSection(nom, btn) {
 
 function seDeconnecter() {
   localStorage.removeItem('immocg_user')
-  window.location.href = 'login.html'
+  fetch('/auth/logout', { method: 'POST', credentials: 'include' }).finally(() => {
+    window.location.href = 'login.html'
+  })
 }
 
 function esc(val) {
   return String(val == null ? '' : val)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#x27;')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#x27;')
 }
 
+// ========== BIENS ==========
 async function chargerBiens() {
   const r = await fetch('/biens?admin=true', { credentials: 'include' })
   const data = await r.json()
@@ -44,12 +43,9 @@ async function chargerBiens() {
   if (biens.length === 0) {
     const tr = document.createElement('tr')
     const td = document.createElement('td')
-    td.setAttribute('colspan', '6')
-    td.className = 'empty'
+    td.setAttribute('colspan', '6'); td.className = 'empty'
     td.textContent = 'Aucune annonce pour le moment'
-    tr.appendChild(td)
-    tbody.appendChild(tr)
-    return
+    tr.appendChild(td); tbody.appendChild(tr); return
   }
 
   biens.forEach(b => {
@@ -62,80 +58,56 @@ async function chargerBiens() {
         const url = new URL(b.image_url)
         if (url.protocol === 'https:' || url.protocol === 'http:') {
           imgDiv.style.backgroundImage = `url(${CSS.escape(b.image_url)})`
-          imgDiv.style.backgroundSize = 'cover'
-          imgDiv.style.backgroundPosition = 'center'
-          imgDiv.style.fontSize = '0'
+          imgDiv.style.backgroundSize = 'cover'; imgDiv.style.backgroundPosition = 'center'; imgDiv.style.fontSize = '0'
         }
       } catch(e) { imgDiv.textContent = '🏠' }
     } else { imgDiv.textContent = '🏠' }
-    tdImg.appendChild(imgDiv)
-    tr.appendChild(tdImg)
+    tdImg.appendChild(imgDiv); tr.appendChild(tdImg)
 
     const tdType = document.createElement('td')
-    const divType = document.createElement('div')
-    divType.style.fontWeight = '500'
-    divType.textContent = b.type
-    const divTitre = document.createElement('div')
-    divTitre.style.fontSize = '12px'
-    divTitre.style.color = '#888780'
-    divTitre.textContent = b.titre || ''
-    tdType.appendChild(divType)
-    tdType.appendChild(divTitre)
-    tr.appendChild(tdType)
+    const divType = document.createElement('div'); divType.style.fontWeight = '500'; divType.textContent = b.type
+    const divTitre = document.createElement('div'); divTitre.style.fontSize = '12px'; divTitre.style.color = '#888780'; divTitre.textContent = b.titre || ''
+    tdType.appendChild(divType); tdType.appendChild(divTitre); tr.appendChild(tdType)
 
     const tdPrix = document.createElement('td')
-    tdPrix.textContent = `${parseInt(b.prix).toLocaleString('fr-FR')} ${b.unite}`
-    tr.appendChild(tdPrix)
+    tdPrix.textContent = `${parseInt(b.prix).toLocaleString('fr-FR')} ${b.unite}`; tr.appendChild(tdPrix)
 
     const tdLoc = document.createElement('td')
-    tdLoc.textContent = `${b.quartier}, ${b.ville}`
-    tr.appendChild(tdLoc)
+    tdLoc.textContent = `${b.quartier}, ${b.ville}`; tr.appendChild(tdLoc)
 
     const tdStatut = document.createElement('td')
     const span = document.createElement('span')
     span.className = `badge ${b.statut === 'disponible' ? 'valide' : b.statut === 'attente' ? 'attente' : 'refuse'}`
     span.textContent = b.statut === 'disponible' ? 'Publié' : b.statut === 'attente' ? 'En attente' : b.statut
-    tdStatut.appendChild(span)
-    tr.appendChild(tdStatut)
+    tdStatut.appendChild(span); tr.appendChild(tdStatut)
 
     const tdActions = document.createElement('td')
     if (b.statut === 'attente') {
-      const btnValider = document.createElement('button')
-      btnValider.className = 'btn-sm btn-valider'
-      btnValider.textContent = '✅ Valider'
-      btnValider.addEventListener('click', () => changerStatutBien(b.id, 'disponible'))
-      const btnRefuser = document.createElement('button')
-      btnRefuser.className = 'btn-sm btn-refuser'
-      btnRefuser.textContent = '❌ Refuser'
-      btnRefuser.addEventListener('click', () => changerStatutBien(b.id, 'refuse'))
-      tdActions.appendChild(btnValider)
-      tdActions.appendChild(btnRefuser)
+      const btnV = document.createElement('button'); btnV.className = 'btn-sm btn-valider'; btnV.textContent = '✅ Valider'
+      btnV.addEventListener('click', () => changerStatutBien(b.id, 'disponible')); tdActions.appendChild(btnV)
+      const btnR = document.createElement('button'); btnR.className = 'btn-sm btn-refuser'; btnR.textContent = '❌ Refuser'
+      btnR.addEventListener('click', () => changerStatutBien(b.id, 'refuse')); tdActions.appendChild(btnR)
     }
-    const btnVoir = document.createElement('button')
-    btnVoir.className = 'btn-sm btn-voir'
-    btnVoir.textContent = 'Voir'
-    btnVoir.addEventListener('click', () => window.open('bien.html?id=' + encodeURIComponent(b.id)))
-    const btnSupp = document.createElement('button')
-    btnSupp.className = 'btn-sm btn-supprimer'
-    btnSupp.textContent = 'Supprimer'
-    btnSupp.addEventListener('click', () => supprimerBien(b.id))
-    tdActions.appendChild(btnVoir)
-    tdActions.appendChild(btnSupp)
-    tr.appendChild(tdActions)
-    tbody.appendChild(tr)
+    const btnVoir = document.createElement('button'); btnVoir.className = 'btn-sm btn-voir'; btnVoir.textContent = 'Voir'
+    btnVoir.addEventListener('click', () => window.open('bien.html?id=' + encodeURIComponent(b.id))); tdActions.appendChild(btnVoir)
+    const btnSupp = document.createElement('button'); btnSupp.className = 'btn-sm btn-supprimer'; btnSupp.textContent = 'Supprimer'
+    btnSupp.addEventListener('click', () => supprimerBien(b.id)); tdActions.appendChild(btnSupp)
+    tr.appendChild(tdActions); tbody.appendChild(tr)
   })
 }
 
 async function changerStatutBien(id, statut) {
-  await fetch('/biens/' + id + '/statut', {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify({ statut })
-  })
+  await fetch('/biens/' + id + '/statut', { method: 'PATCH', headers: {'Content-Type':'application/json'}, credentials: 'include', body: JSON.stringify({ statut }) })
   chargerBiens()
 }
 
+async function supprimerBien(id) {
+  if (!confirm('Supprimer cette annonce ?')) return
+  await fetch('/biens/' + id, { method: 'DELETE', credentials: 'include' })
+  chargerBiens()
+}
+
+// ========== AGENCES ==========
 async function chargerAgences() {
   const r = await fetch('/auth/users', { credentials: 'include' })
   const data = await r.json()
@@ -148,107 +120,46 @@ async function chargerAgences() {
   tbody.textContent = ''
 
   if (users.length === 0) {
-    const tr = document.createElement('tr')
-    const td = document.createElement('td')
-    td.setAttribute('colspan', '6')
-    td.className = 'empty'
-    td.textContent = 'Aucune agence inscrite'
-    tr.appendChild(td)
-    tbody.appendChild(tr)
-    return
+    const tr = document.createElement('tr'); const td = document.createElement('td')
+    td.setAttribute('colspan','6'); td.className = 'empty'; td.textContent = 'Aucune agence inscrite'
+    tr.appendChild(td); tbody.appendChild(tr); return
   }
 
   users.forEach(u => {
     const tr = document.createElement('tr')
-
     const tdNom = document.createElement('td')
-    const divAgence = document.createElement('div')
-    divAgence.style.fontWeight = '500'
-    divAgence.textContent = u.nom_agence || u.nom
-    const divNom = document.createElement('div')
-    divNom.style.fontSize = '12px'
-    divNom.style.color = '#888780'
-    divNom.textContent = u.nom
-    tdNom.appendChild(divAgence)
-    tdNom.appendChild(divNom)
-    tr.appendChild(tdNom)
+    const dA = document.createElement('div'); dA.style.fontWeight='500'; dA.textContent = u.nom_agence || u.nom
+    const dN = document.createElement('div'); dN.style.fontSize='12px'; dN.style.color='#888780'; dN.textContent = u.nom
+    tdNom.appendChild(dA); tdNom.appendChild(dN); tr.appendChild(tdNom)
 
-    const tdContact = document.createElement('td')
-    const divEmail = document.createElement('div')
-    divEmail.textContent = u.email
-    const divTel = document.createElement('div')
-    divTel.style.fontSize = '12px'
-    divTel.style.color = '#888780'
-    divTel.textContent = u.telephone || '—'
-    tdContact.appendChild(divEmail)
-    tdContact.appendChild(divTel)
-    tr.appendChild(tdContact)
+    const tdC = document.createElement('td')
+    const dE = document.createElement('div'); dE.textContent = u.email
+    const dT = document.createElement('div'); dT.style.fontSize='12px'; dT.style.color='#888780'; dT.textContent = u.telephone || '—'
+    tdC.appendChild(dE); tdC.appendChild(dT); tr.appendChild(tdC)
 
-    const tdRole = document.createElement('td')
-    const spanRole = document.createElement('span')
-    spanRole.className = `badge ${u.role}`
-    spanRole.textContent = u.role
-    tdRole.appendChild(spanRole)
-    tr.appendChild(tdRole)
+    const tdR = document.createElement('td'); const sR = document.createElement('span'); sR.className=`badge ${u.role}`; sR.textContent=u.role; tdR.appendChild(sR); tr.appendChild(tdR)
+    const tdS = document.createElement('td'); const sS = document.createElement('span'); sS.className=`badge ${u.actif?'valide':'attente'}`; sS.textContent=u.actif?'Actif':'En attente'; tdS.appendChild(sS); tr.appendChild(tdS)
+    const tdD = document.createElement('td'); tdD.style.fontSize='12px'; tdD.style.color='#888780'; tdD.textContent=new Date(u.created_at).toLocaleDateString('fr-FR'); tr.appendChild(tdD)
 
-    const tdStatut = document.createElement('td')
-    const spanStatut = document.createElement('span')
-    spanStatut.className = `badge ${u.actif ? 'valide' : 'attente'}`
-    spanStatut.textContent = u.actif ? 'Actif' : 'En attente'
-    tdStatut.appendChild(spanStatut)
-    tr.appendChild(tdStatut)
-
-    const tdDate = document.createElement('td')
-    tdDate.style.fontSize = '12px'
-    tdDate.style.color = '#888780'
-    tdDate.textContent = new Date(u.created_at).toLocaleDateString('fr-FR')
-    tr.appendChild(tdDate)
-
-    const tdActions = document.createElement('td')
+    const tdA = document.createElement('td')
     if (!u.actif && u.role !== 'admin') {
-      const btn = document.createElement('button')
-      btn.className = 'btn-sm btn-valider'
-      btn.textContent = 'Activer'
-      btn.addEventListener('click', () => activerUser(u.id, true))
-      tdActions.appendChild(btn)
+      const b = document.createElement('button'); b.className='btn-sm btn-valider'; b.textContent='Activer'; b.addEventListener('click',()=>activerUser(u.id,true)); tdA.appendChild(b)
     }
     if (u.actif && u.role !== 'admin') {
-      const btn = document.createElement('button')
-      btn.className = 'btn-sm btn-refuser'
-      btn.textContent = 'Désactiver'
-      btn.addEventListener('click', () => activerUser(u.id, false))
-      tdActions.appendChild(btn)
+      const b = document.createElement('button'); b.className='btn-sm btn-refuser'; b.textContent='Désactiver'; b.addEventListener('click',()=>activerUser(u.id,false)); tdA.appendChild(b)
     }
-    tr.appendChild(tdActions)
-    tbody.appendChild(tr)
+    tr.appendChild(tdA); tbody.appendChild(tr)
   })
-}
-
-async function supprimerBien(id) {
-  if (!confirm('Supprimer cette annonce ?')) return
-  await fetch('/biens/' + id, { method: 'DELETE', credentials: 'include' })
-  chargerBiens()
 }
 
 async function activerUser(id, actif) {
-  await fetch('/auth/users/' + id, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify({ actif })
-  })
+  await fetch('/auth/users/' + id, { method:'PATCH', headers:{'Content-Type':'application/json'}, credentials:'include', body: JSON.stringify({actif}) })
   chargerAgences()
 }
 
-chargerBiens()
-chargerAgences()
-
-window.afficherSection = afficherSection
-window.seDeconnecter = seDeconnecter
-
+// ========== RÉSERVATIONS ==========
 async function chargerReservationsAdmin() {
   try {
-    // Admin voit toutes les réservations via une route dédiée
     const r = await fetch('/reservations/admin', { credentials: 'include' })
     if (!r.ok) return
     const data = await r.json()
@@ -260,145 +171,78 @@ async function chargerReservationsAdmin() {
     tbody.textContent = ''
 
     if (reservations.length === 0) {
-      const tr = document.createElement('tr')
-      const td = document.createElement('td')
-      td.setAttribute('colspan', '6')
-      td.className = 'empty'
-      td.textContent = 'Aucune réservation pour le moment'
-      tr.appendChild(td)
-      tbody.appendChild(tr)
-      return
+      const tr = document.createElement('tr'); const td = document.createElement('td')
+      td.setAttribute('colspan','7'); td.className='empty'; td.textContent='Aucune réservation pour le moment'
+      tr.appendChild(td); tbody.appendChild(tr); return
     }
 
     reservations.forEach(res => {
       const tr = document.createElement('tr')
 
       const tdClient = document.createElement('td')
-      const divNom = document.createElement('div')
-      divNom.style.fontWeight = '500'
-      divNom.textContent = res.client_nom
-      const divTel = document.createElement('div')
-      divTel.style.fontSize = '12px'
-      divTel.style.color = '#888780'
-      divTel.textContent = res.client_tel
-      tdClient.appendChild(divNom)
-      tdClient.appendChild(divTel)
-      tr.appendChild(tdClient)
+      const dN = document.createElement('div'); dN.style.fontWeight='500'; dN.textContent = res.client_nom
+      const dT = document.createElement('div'); dT.style.fontSize='12px'; dT.style.color='#888780'; dT.textContent = res.client_tel
+      tdClient.appendChild(dN); tdClient.appendChild(dT); tr.appendChild(tdClient)
 
-      const tdBien = document.createElement('td')
-      tdBien.style.fontSize = '13px'
-      tdBien.textContent = `#${String(res.bien_id).substring(0, 8)}...`
-      tr.appendChild(tdBien)
+      const tdBien = document.createElement('td'); tdBien.style.fontSize='13px'; tdBien.textContent=`#${String(res.bien_id).substring(0,8)}...`; tr.appendChild(tdBien)
 
       const tdType = document.createElement('td')
-      tdType.textContent = res.type_reservation === 'location_jour' ? '📅 Par jour'
-        : res.type_reservation === 'achat' ? '💰 Achat' : '🏠 Visite'
+      tdType.textContent = res.type_reservation==='location_jour' ? '📅 Par jour' : res.type_reservation==='achat' ? '💰 Achat' : '🏠 Visite'
       tr.appendChild(tdType)
 
-      const tdDate = document.createElement('td')
-      tdDate.style.fontSize = '12px'
-      tdDate.textContent = res.date_souhaitee
-        ? new Date(res.date_souhaitee).toLocaleDateString('fr-FR') : '—'
-      tr.appendChild(tdDate)
+      const tdDate = document.createElement('td'); tdDate.style.fontSize='12px'
+      tdDate.textContent = res.date_souhaitee ? new Date(res.date_souhaitee).toLocaleDateString('fr-FR') : '—'; tr.appendChild(tdDate)
 
       const tdStatut = document.createElement('td')
-      const span = document.createElement('span')
       const couleurs = {
-        en_attente: { bg: '#fff3cd', color: '#856404', label: '⏳ En attente' },
-        confirmee: { bg: '#d4edda', color: '#155724', label: '✅ Confirmée' },
-        annulee: { bg: '#f8d7da', color: '#721c24', label: '❌ Annulée' },
-        expiree: { bg: '#e2e3e5', color: '#383d41', label: '⌛ Expirée' }
+        en_attente:{bg:'#fff3cd',color:'#856404',label:'⏳ En attente'},
+        confirmee:{bg:'#d4edda',color:'#155724',label:'✅ Confirmée'},
+        annulee:{bg:'#f8d7da',color:'#721c24',label:'❌ Annulée'},
+        expiree:{bg:'#e2e3e5',color:'#383d41',label:'⌛ Expirée'}
       }
       const s = couleurs[res.statut] || couleurs.en_attente
-      span.style.cssText = `background:${s.bg};color:${s.color};padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;`
-      span.textContent = s.label
-      tdStatut.appendChild(span)
-      tr.appendChild(tdStatut)
+      const sp = document.createElement('span')
+      sp.style.cssText=`background:${s.bg};color:${s.color};padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;`
+      sp.textContent=s.label; tdStatut.appendChild(sp); tr.appendChild(tdStatut)
 
       const tdCriteres = document.createElement('td')
       const c = res.criteres_client || {}
       const infos = []
       if (c.surface_min) infos.push(`${c.surface_min}m²`)
       if (c.chambres_min) infos.push(`${c.chambres_min} ch.`)
-      if (c.notes) infos.push(c.notes.substring(0, 30))
-      tdCriteres.style.fontSize = '12px'
-      tdCriteres.style.color = '#555'
-      tdCriteres.textContent = infos.join(' · ') || '—'
-      tr.appendChild(tdCriteres)
+      if (c.notes) infos.push(c.notes.substring(0,30))
+      tdCriteres.style.fontSize='12px'; tdCriteres.style.color='#555'
+      tdCriteres.textContent = infos.join(' · ') || '—'; tr.appendChild(tdCriteres)
 
-      // Colonne actions admin
-      const tdActionsRes = document.createElement('td')
+      const tdActions = document.createElement('td')
       if (res.statut === 'en_attente') {
-        const btnV = document.createElement('button')
-        btnV.className = 'btn-sm btn-valider'
-        btnV.textContent = '✅ Valider'
-        btnV.addEventListener('click', () => traiterResAdmin(res.id, 'confirmee'))
-        const btnR = document.createElement('button')
-        btnR.className = 'btn-sm btn-refuser'
-        btnR.textContent = '❌ Refuser'
-        btnR.addEventListener('click', () => traiterResAdmin(res.id, 'annulee'))
-        tdActionsRes.appendChild(btnV)
-        tdActionsRes.appendChild(btnR)
+        const btnV = document.createElement('button'); btnV.className='btn-sm btn-valider'; btnV.textContent='✅ Valider'
+        btnV.addEventListener('click', () => traiterResAdmin(res.id, 'confirmee')); tdActions.appendChild(btnV)
+        const btnR = document.createElement('button'); btnR.className='btn-sm btn-refuser'; btnR.textContent='❌ Refuser'
+        btnR.addEventListener('click', () => traiterResAdmin(res.id, 'annulee')); tdActions.appendChild(btnR)
       }
-      tr.appendChild(tdActionsRes)
-
+      tr.appendChild(tdActions)
       tbody.appendChild(tr)
     })
   } catch (err) {
-    console.error('Erreur réservations admin')
+    console.error('Erreur réservations admin', err)
   }
 }
 
-chargerReservationsAdmin()
-
-async function chargerSignalements() {
-  try {
-    const r = await fetch('/signalements', { credentials: 'include' })
-    if (!r.ok) return
-    const data = await r.json()
-    const signalements = data.signalements || []
-    // Afficher le nombre dans l'onglet réservations (on réutilise le badge)
-    const nonTraites = signalements.filter(s => !s.traite).length
-    if (nonTraites > 0) {
-      const tabRes = document.querySelector('[onclick*="reservations"]')
-      if (tabRes) tabRes.textContent = `📅 Réservations + Signalements (${nonTraites})`
-    }
-  } catch {}
-}
-chargerSignalements()
-
 async function traiterResAdmin(id, statut) {
   const action = statut === 'confirmee' ? 'confirmer' : 'refuser'
   if (!confirm(`Voulez-vous ${action} cette réservation ?`)) return
   try {
     const r = await fetch('/reservations/' + id, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ statut })
+      method: 'PATCH', headers: {'Content-Type':'application/json'},
+      credentials: 'include', body: JSON.stringify({ statut })
     })
     const data = await r.json()
     if (data.success) chargerReservationsAdmin()
   } catch {}
 }
-window.traiterResAdmin = traiterResAdmin
 
-async function traiterResAdmin(id, statut) {
-  const action = statut === 'confirmee' ? 'confirmer' : 'refuser'
-  if (!confirm(`Voulez-vous ${action} cette réservation ?`)) return
-  try {
-    const r = await fetch('/reservations/' + id, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ statut })
-    })
-    const data = await r.json()
-    if (data.success) chargerReservationsAdmin()
-  } catch {}
-}
-window.traiterResAdmin = traiterResAdmin
-
+// ========== SIGNALEMENTS ==========
 async function chargerSignalementsAdmin() {
   try {
     const r = await fetch('/signalements', { credentials: 'include' })
@@ -407,115 +251,68 @@ async function chargerSignalementsAdmin() {
     const signalements = data.signalements || []
     const nonTraites = signalements.filter(s => !s.traite)
 
-    // Ajouter section signalements sous les réservations
+    // Mettre à jour le badge de l'onglet
+    const tabRes = document.querySelector('[onclick*="reservations"]')
+    if (tabRes && nonTraites.length > 0) {
+      tabRes.textContent = `📅 Réservations + Signalements (${nonTraites.length})`
+    }
+
     const section = document.getElementById('section-reservations')
     if (!section) return
 
-    // Supprimer ancienne section signalements si elle existe
     const ancienne = document.getElementById('section-signalements-admin')
     if (ancienne) ancienne.remove()
 
-    const div = document.createElement('div')
-    div.id = 'section-signalements-admin'
-    div.style.marginTop = '2rem'
+    const div = document.createElement('div'); div.id = 'section-signalements-admin'; div.style.marginTop = '2rem'
 
-    const header = document.createElement('div')
-    header.style.cssText = 'display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;'
-    const titre = document.createElement('div')
-    titre.className = 'section-title'
-    titre.textContent = '⚠️ Signalements reçus'
-    const badge = document.createElement('span')
-    badge.style.cssText = 'background:#e74c3c;color:#fff;padding:3px 12px;border-radius:20px;font-size:13px;font-weight:600;'
-    badge.textContent = nonTraites.length
-    header.appendChild(titre)
-    header.appendChild(badge)
-    div.appendChild(header)
+    const header = document.createElement('div'); header.style.cssText = 'display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;'
+    const titre = document.createElement('div'); titre.className = 'section-title'; titre.textContent = '⚠️ Signalements reçus'
+    const badge = document.createElement('span'); badge.style.cssText = 'background:#e74c3c;color:#fff;padding:3px 12px;border-radius:20px;font-size:13px;font-weight:600;'; badge.textContent = nonTraites.length
+    header.appendChild(titre); header.appendChild(badge); div.appendChild(header)
 
     if (signalements.length === 0) {
-      const p = document.createElement('p')
-      p.style.cssText = 'text-align:center;color:#888;padding:1.5rem;background:#fff;border-radius:12px;'
-      p.textContent = 'Aucun signalement pour le moment'
-      div.appendChild(p)
+      const p = document.createElement('p'); p.style.cssText='text-align:center;color:#888;padding:1.5rem;background:#fff;border-radius:12px;'; p.textContent='Aucun signalement pour le moment'; div.appendChild(p)
     } else {
-      const tableBox = document.createElement('div')
-      tableBox.className = 'table-box'
-      const table = document.createElement('table')
-      table.className = 'table'
-      table.innerHTML = `<thead><tr>
-        <th>Bien</th><th>Type</th><th>Description</th><th>Date</th><th>Statut</th><th>Action</th>
-      </tr></thead>`
+      const tableBox = document.createElement('div'); tableBox.className = 'table-box'
+      const table = document.createElement('table'); table.className = 'table'
+      table.innerHTML = '<thead><tr><th>Bien</th><th>Type</th><th>Description</th><th>Date</th><th>Statut</th><th>Action</th></tr></thead>'
       const tbody = document.createElement('tbody')
 
       signalements.forEach(s => {
         const tr = document.createElement('tr')
-
-        const tdBien = document.createElement('td')
-        tdBien.textContent = `#${String(s.bien_id).substring(0,8)}...`
-        tr.appendChild(tdBien)
-
-        const tdType = document.createElement('td')
-        const types = {
-          bien_indisponible: '🔴 Indisponible',
-          prix_errone: '💰 Prix erroné',
-          photos_fausses: '📷 Photos fausses',
-          coordonnees_incorrectes: '📞 Coordonnées',
-          autre: '❓ Autre'
-        }
-        tdType.textContent = types[s.type_signalement] || s.type_signalement
-        tr.appendChild(tdType)
-
-        const tdDesc = document.createElement('td')
-        tdDesc.style.fontSize = '12px'
-        tdDesc.textContent = s.description || '—'
-        tr.appendChild(tdDesc)
-
-        const tdDate = document.createElement('td')
-        tdDate.style.fontSize = '12px'
-        tdDate.textContent = new Date(s.created_at).toLocaleDateString('fr-FR')
-        tr.appendChild(tdDate)
-
-        const tdStatut = document.createElement('td')
-        const span = document.createElement('span')
-        span.style.cssText = s.traite
-          ? 'background:#d4edda;color:#155724;padding:2px 8px;border-radius:12px;font-size:11px;'
-          : 'background:#f8d7da;color:#721c24;padding:2px 8px;border-radius:12px;font-size:11px;'
-        span.textContent = s.traite ? '✅ Traité' : '⏳ Non traité'
-        tdStatut.appendChild(span)
-        tr.appendChild(tdStatut)
-
-        const tdAction = document.createElement('td')
+        const tdB = document.createElement('td'); tdB.textContent = `#${String(s.bien_id).substring(0,8)}...`; tr.appendChild(tdB)
+        const tdT = document.createElement('td')
+        const types = {bien_indisponible:'🔴 Indisponible',prix_errone:'💰 Prix erroné',photos_fausses:'📷 Photos fausses',coordonnees_incorrectes:'📞 Coordonnées',autre:'❓ Autre'}
+        tdT.textContent = types[s.type_signalement] || s.type_signalement; tr.appendChild(tdT)
+        const tdD = document.createElement('td'); tdD.style.fontSize='12px'; tdD.textContent = s.description||'—'; tr.appendChild(tdD)
+        const tdDt = document.createElement('td'); tdDt.style.fontSize='12px'; tdDt.textContent = new Date(s.created_at).toLocaleDateString('fr-FR'); tr.appendChild(tdDt)
+        const tdS = document.createElement('td'); const sp = document.createElement('span')
+        sp.style.cssText = s.traite ? 'background:#d4edda;color:#155724;padding:2px 8px;border-radius:12px;font-size:11px;' : 'background:#f8d7da;color:#721c24;padding:2px 8px;border-radius:12px;font-size:11px;'
+        sp.textContent = s.traite ? '✅ Traité' : '⏳ Non traité'; tdS.appendChild(sp); tr.appendChild(tdS)
+        const tdA = document.createElement('td')
         if (!s.traite) {
-          const btn = document.createElement('button')
-          btn.className = 'btn-sm btn-valider'
-          btn.textContent = 'Marquer traité'
-          btn.addEventListener('click', async () => {
-            await fetch('/signalements/' + s.id + '/traiter', {
-              method: 'PATCH', credentials: 'include'
-            })
-            chargerSignalementsAdmin()
-          })
-          tdAction.appendChild(btn)
-
-          // Bouton voir le bien
-          const btnVoir = document.createElement('button')
-          btnVoir.className = 'btn-sm btn-voir'
-          btnVoir.textContent = 'Voir bien'
-          btnVoir.addEventListener('click', () => window.open('bien.html?id=' + s.bien_id))
-          tdAction.appendChild(btnVoir)
+          const btn = document.createElement('button'); btn.className='btn-sm btn-valider'; btn.textContent='Marquer traité'
+          btn.addEventListener('click', async () => { await fetch('/signalements/'+s.id+'/traiter',{method:'PATCH',credentials:'include'}); chargerSignalementsAdmin() })
+          tdA.appendChild(btn)
+          const btnV = document.createElement('button'); btnV.className='btn-sm btn-voir'; btnV.textContent='Voir bien'
+          btnV.addEventListener('click', () => window.open('bien.html?id='+s.bien_id)); tdA.appendChild(btnV)
         }
-        tr.appendChild(tdAction)
-        tbody.appendChild(tr)
+        tr.appendChild(tdA); tbody.appendChild(tr)
       })
-
-      table.appendChild(tbody)
-      tableBox.appendChild(table)
-      div.appendChild(tableBox)
+      table.appendChild(tbody); tableBox.appendChild(table); div.appendChild(tableBox)
     }
-
     section.appendChild(div)
   } catch (err) {
-    console.error('Erreur signalements admin')
+    console.error('Erreur signalements admin', err)
   }
 }
 
+// ========== INIT ==========
+chargerBiens()
+chargerAgences()
+chargerReservationsAdmin()
 chargerSignalementsAdmin()
+
+window.afficherSection = afficherSection
+window.seDeconnecter = seDeconnecter
+window.traiterResAdmin = traiterResAdmin
