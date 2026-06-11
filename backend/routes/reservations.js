@@ -177,27 +177,24 @@ router.patch('/:id', verifierToken, async (req, res) => {
   }
 
   try {
-    const { data: reservation } = await supabase
-      .from('reservations')
-      .select('*, biens(user_id)')
-      .eq('id', req.params.id)
-      .maybeSingle()
-
-    if (!reservation) {
-      return res.status(404).json({ success: false, message: 'Réservation introuvable' })
-    }
-
-    const { error } = await supabase
+    // Mettre à jour directement sans SELECT préalable
+    const { data, error } = await supabase
       .from('reservations')
       .update({
         statut,
         confirmed_at: statut === 'confirmee' ? new Date().toISOString() : null
       })
       .eq('id', req.params.id)
+      .select()
 
     if (error) throw error
+    if (!data || data.length === 0) {
+      return res.status(404).json({ success: false, message: 'Réservation introuvable' })
+    }
+
     res.json({ success: true, message: `Réservation ${statut === 'confirmee' ? 'confirmée' : 'annulée'}` })
   } catch (err) {
+    console.error('Erreur update reservation:', err.message)
     res.status(500).json({ success: false, message: 'Erreur interne' })
   }
 })
