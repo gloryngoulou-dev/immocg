@@ -469,7 +469,7 @@ function ouvrirModalReservation(bienId, mode) {
     max-height:90vh;overflow-y:auto;position:relative;
   `;
 
-  box.innerHTML = `
+  box.innerHTML = DOMPurify.sanitize(`
     <button id="modal-close" style="position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:22px;cursor:pointer;color:#888;">✕</button>
     <h2 style="font-size:20px;font-weight:700;color:#1A1A18;margin-bottom:0.3rem;">
       ${estParJour ? '📅 Réserver ce logement' : '🏠 Demander une visite'}
@@ -543,7 +543,7 @@ function ouvrirModalReservation(bienId, mode) {
       </button>
       <p style="font-size:11px;color:#aaa;text-align:center;">En soumettant, vous acceptez les clauses ci-dessus</p>
     </div>
-  `;
+  `);
 
   modal.appendChild(box);
   document.body.appendChild(modal);
@@ -609,7 +609,7 @@ function ouvrirModalReservation(bienId, mode) {
       const data = await r.json();
 
       if (data.success) {
-        box.innerHTML = `
+        box.innerHTML = DOMPurify.sanitize(`
           <div style="text-align:center;padding:2rem 1rem;">
             <div style="font-size:48px;margin-bottom:1rem;">✅</div>
             <h2 style="font-size:20px;font-weight:700;color:#1A1A18;margin-bottom:0.5rem;">Demande envoyée !</h2>
@@ -627,7 +627,7 @@ function ouvrirModalReservation(bienId, mode) {
               Fermer
             </button>
           </div>
-        `;
+        `);
       } else {
         erreurEl.textContent = data.message || 'Erreur lors de l\'envoi';
         erreurEl.style.display = 'block';
@@ -654,7 +654,7 @@ function ouvrirModalSignalement(bienId) {
 
   const box = document.createElement('div');
   box.style.cssText = 'background:#fff;border-radius:16px;padding:2rem;max-width:420px;width:100%;position:relative;';
-  box.innerHTML = `
+  box.innerHTML = DOMPurify.sanitize(`
     <button id="sig-close" style="position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:22px;cursor:pointer;color:#888;">✕</button>
     <h2 style="font-size:18px;font-weight:700;margin-bottom:0.5rem;">⚠️ Signaler une erreur</h2>
     <p style="font-size:13px;color:#888;margin-bottom:1.2rem;">Aidez-nous à maintenir la qualité des annonces</p>
@@ -672,7 +672,7 @@ function ouvrirModalSignalement(bienId) {
       <div id="sig-erreur" style="color:#c0392b;font-size:13px;display:none;"></div>
       <button id="sig-soumettre" style="background:#C9963A;color:#fff;border:none;padding:12px;border-radius:10px;font-weight:700;cursor:pointer;">Envoyer le signalement</button>
     </div>
-  `;
+  `);
   modal.appendChild(box);
   document.body.appendChild(modal);
 
@@ -693,12 +693,14 @@ function ouvrirModalSignalement(bienId) {
       });
       const data = await r.json();
       if (data.success) {
-        box.innerHTML = `<div style="text-align:center;padding:1.5rem;">
-          <div style="font-size:40px;margin-bottom:1rem;">✅</div>
-          <h3 style="font-weight:700;margin-bottom:0.5rem;">Merci pour votre signalement</h3>
-          <p style="color:#555;font-size:14px;margin-bottom:1.5rem;">Notre équipe examinera ce bien dans les 24h.</p>
-          <button onclick="document.getElementById('modal-signalement').remove()" style="background:#C9963A;color:#fff;border:none;padding:10px 28px;border-radius:8px;font-weight:600;cursor:pointer;">Fermer</button>
-        </div>`;
+        box.innerHTML = DOMPurify.sanitize(`
+          <div style="text-align:center;padding:1.5rem;">
+            <div style="font-size:40px;margin-bottom:1rem;">✅</div>
+            <h3 style="font-weight:700;margin-bottom:0.5rem;">Merci pour votre signalement</h3>
+            <p style="color:#555;font-size:14px;margin-bottom:1.5rem;">Notre équipe examinera ce bien dans les 24h.</p>
+            <button onclick="document.getElementById('modal-signalement').remove()" style="background:#C9963A;color:#fff;border:none;padding:10px 28px;border-radius:8px;font-weight:600;cursor:pointer;">Fermer</button>
+          </div>
+        `);
       } else {
         document.getElementById('sig-erreur').textContent = data.message;
         document.getElementById('sig-erreur').style.display = 'block';

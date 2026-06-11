@@ -275,7 +275,12 @@ async function chargerSignalementsAdmin() {
     } else {
       const tableBox = document.createElement('div'); tableBox.className = 'table-box'
       const table = document.createElement('table'); table.className = 'table'
-      table.innerHTML = '<thead><tr><th>Bien</th><th>Type</th><th>Description</th><th>Date</th><th>Statut</th><th>Action</th></tr></thead>'
+      const thead = document.createElement('thead')
+      const theadTr = document.createElement('tr')
+      ;['Bien','Type','Description','Date','Statut','Action'].forEach(t => {
+        const th = document.createElement('th'); th.textContent = t; theadTr.appendChild(th)
+      })
+      thead.appendChild(theadTr); table.appendChild(thead)
       const tbody = document.createElement('tbody')
 
       signalements.forEach(s => {
