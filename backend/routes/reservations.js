@@ -1,8 +1,11 @@
+const { envoyerEmailReservation } = require('./email')
+
 const express = require('express')
 const router = express.Router()
 const { createClient } = require('@supabase/supabase-js')
 const Joi = require('joi')
 const { verifierToken } = require('./auth')
+const { envoyerEmailReservation } = require('./email')
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -191,6 +194,9 @@ router.patch('/:id', verifierToken, async (req, res) => {
     if (!data || data.length === 0) {
       return res.status(404).json({ success: false, message: 'Réservation introuvable' })
     }
+
+    // Envoyer email de notification au client (non bloquant)
+    envoyerEmailReservation(data[0], statut).catch(() => {})
 
     res.json({ success: true, message: `Réservation ${statut === 'confirmee' ? 'confirmée' : 'annulée'}` })
   } catch (err) {

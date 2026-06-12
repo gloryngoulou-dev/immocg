@@ -295,7 +295,7 @@ function afficherBien(b) {
       <div class="bien-prix">
         ${estParJour 
           ? `${parseInt(prixJour).toLocaleString('fr-FR')}<span>${esc(unite)}/nuit${dureeMin > 1 ? ` · min. ${dureeMin} nuits` : ''}</span>`
-          : `${parseInt(prix).toLocaleString('fr-FR')}<span>${esc(unite)}${estLocation ? '/mois' : ''}</span>`
+          : `${parseInt(prix).toLocaleString('fr-FR')}<span>${esc(unite)}${estLocation && !unite.includes('/') ? '/mois' : ''}</span>`
         }
       </div>
 
