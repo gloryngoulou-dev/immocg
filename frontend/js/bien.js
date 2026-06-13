@@ -609,25 +609,57 @@ function ouvrirModalReservation(bienId, mode) {
       const data = await r.json();
 
       if (data.success) {
-        box.innerHTML = DOMPurify.sanitize(`
-          <div style="text-align:center;padding:2rem 1rem;">
-            <div style="font-size:48px;margin-bottom:1rem;">✅</div>
-            <h2 style="font-size:20px;font-weight:700;color:#1A1A18;margin-bottom:0.5rem;">Demande envoyée !</h2>
-            <p style="color:#555;line-height:1.6;margin-bottom:1.5rem;">
-              L'agence a <strong>24h</strong> pour valider votre demande.<br>
-              Vous serez contacté au <strong>${tel}</strong>.
-            </p>
-            <div style="background:#fffdf5;border-radius:10px;padding:1rem;font-size:12px;color:#7A5A1A;line-height:1.8;text-align:left;">
-              <strong>📋 Rappel des clauses :</strong><br>
-              ⏱️ L'agence a 24h pour vous répondre<br>
-              ⏱️ Vous avez 48h pour confirmer votre présence<br>
-              ✅ Si le bien ne correspond pas aux critères, annulation sans frais
-            </div>
-            <button onclick="document.getElementById('modal-reservation').remove()" style="margin-top:1.5rem;background:#C9963A;color:#fff;border:none;padding:12px 32px;border-radius:8px;font-weight:600;cursor:pointer;">
-              Fermer
-            </button>
-          </div>
-        `);
+        // Envoyer notification WhatsApp à l'agence si disponible
+        const msgWA = encodeURIComponent(`Bonjour, je suis ${nom} (${tel}). Je viens de soumettre une demande de visite sur ImmoCG. Merci de confirmer.`);
+        
+        // Construire la page de succès avec createElement (pas d'innerHTML)
+        box.textContent = '';
+        const successDiv = document.createElement('div');
+        successDiv.style.cssText = 'text-align:center;padding:2rem 1rem;';
+
+        const emoji = document.createElement('div');
+        emoji.style.cssText = 'font-size:48px;margin-bottom:1rem;';
+        emoji.textContent = '✅';
+
+        const titreH2 = document.createElement('h2');
+        titreH2.style.cssText = 'font-size:20px;font-weight:700;color:#1A1A18;margin-bottom:0.5rem;';
+        titreH2.textContent = 'Demande envoyée !';
+
+        const para = document.createElement('p');
+        para.style.cssText = 'color:#555;line-height:1.6;margin-bottom:1rem;';
+        para.innerHTML = `L'agence a <strong>24h</strong> pour valider votre demande.<br>Vous serez contacté au <strong>${tel}</strong>.`;
+
+        const clauses = document.createElement('div');
+        clauses.style.cssText = 'background:#fffdf5;border-radius:10px;padding:1rem;font-size:12px;color:#7A5A1A;line-height:1.8;text-align:left;margin-bottom:1rem;';
+        clauses.innerHTML = '<strong>📋 Rappel des clauses :</strong><br>⏱️ L\'agence a 24h pour vous répondre<br>⏱️ Vous avez 48h pour confirmer votre présence<br>✅ Si le bien ne correspond pas aux critères, annulation sans frais';
+
+        const paraWA = document.createElement('p');
+        paraWA.style.cssText = 'font-size:13px;color:#555;margin-bottom:1rem;';
+        paraWA.textContent = 'Vous pouvez aussi contacter l\'agence directement :';
+
+        const waDiv = document.createElement('div');
+        waDiv.style.cssText = 'display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:1.5rem;';
+        const waLink = document.createElement('a');
+        waLink.href = `https://wa.me/242068834146?text=${msgWA}`;
+        waLink.target = '_blank';
+        waLink.rel = 'noopener noreferrer';
+        waLink.style.cssText = 'background:#25D366;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:600;font-size:13px;';
+        waLink.textContent = '💬 WhatsApp ImmoCG';
+        waDiv.appendChild(waLink);
+
+        const btnFermer = document.createElement('button');
+        btnFermer.style.cssText = 'background:#C9963A;color:#fff;border:none;padding:12px 32px;border-radius:8px;font-weight:600;cursor:pointer;font-size:15px;';
+        btnFermer.textContent = 'Fermer';
+        btnFermer.addEventListener('click', () => modal.remove());
+
+        successDiv.appendChild(emoji);
+        successDiv.appendChild(titreH2);
+        successDiv.appendChild(para);
+        successDiv.appendChild(clauses);
+        successDiv.appendChild(paraWA);
+        successDiv.appendChild(waDiv);
+        successDiv.appendChild(btnFermer);
+        box.appendChild(successDiv);
       } else {
         erreurEl.textContent = data.message || 'Erreur lors de l\'envoi';
         erreurEl.style.display = 'block';

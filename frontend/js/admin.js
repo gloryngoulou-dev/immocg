@@ -215,11 +215,26 @@ async function chargerReservationsAdmin() {
       tdCriteres.textContent = infos.join(' · ') || '—'; tr.appendChild(tdCriteres)
 
       const tdActions = document.createElement('td')
+      if (res.statut === 'confirmee') {
+        const btnPDF = document.createElement('button')
+        btnPDF.className = 'btn-sm'
+        btnPDF.style.cssText = 'background:#1A1A18;color:#C9963A;border:1px solid #C9963A;'
+        btnPDF.textContent = '📄 Contrat PDF'
+        btnPDF.addEventListener('click', () => telechargerContratAdmin(res))
+        tdActions.appendChild(btnPDF)
+      }
       if (res.statut === 'en_attente') {
         const btnV = document.createElement('button'); btnV.className='btn-sm btn-valider'; btnV.textContent='✅ Valider'
         btnV.addEventListener('click', () => traiterResAdmin(res.id, 'confirmee')); tdActions.appendChild(btnV)
         const btnR = document.createElement('button'); btnR.className='btn-sm btn-refuser'; btnR.textContent='❌ Refuser'
         btnR.addEventListener('click', () => traiterResAdmin(res.id, 'annulee')); tdActions.appendChild(btnR)
+      }
+      if (res.statut === 'confirmee') {
+        const btnPDF = document.createElement('button')
+        btnPDF.className = 'btn-sm'; btnPDF.style.cssText = 'background:#1A1A18;color:#C9963A;border:1px solid #C9963A;'
+        btnPDF.textContent = '📄 Contrat PDF'
+        btnPDF.addEventListener('click', () => telechargerContratAdmin(res))
+        tdActions.appendChild(btnPDF)
       }
       tr.appendChild(tdActions)
       tbody.appendChild(tr)
@@ -321,3 +336,30 @@ chargerSignalementsAdmin()
 window.afficherSection = afficherSection
 window.seDeconnecter = seDeconnecter
 window.traiterResAdmin = traiterResAdmin
+
+async function telechargerContratAdmin(reservation) {
+  try {
+    const r = await fetch('/biens/' + reservation.bien_id, { credentials: 'include' })
+    const data = await r.json()
+    const bien = data.bien || {}
+    if (typeof genererContratPDF === 'function') {
+      genererContratPDF(reservation, bien)
+    } else {
+      alert('Chargement du générateur PDF...')
+    }
+  } catch {
+    alert('Erreur lors de la génération du contrat')
+  }
+}
+window.telechargerContratAdmin = telechargerContratAdmin
+
+async function telechargerContratAdmin(reservation) {
+  try {
+    const r = await fetch('/biens/' + reservation.bien_id)
+    const data = await r.json()
+    genererContratPDF(reservation, data.bien || {})
+  } catch {
+    alert('Erreur lors de la génération du contrat')
+  }
+}
+window.telechargerContratAdmin = telechargerContratAdmin
