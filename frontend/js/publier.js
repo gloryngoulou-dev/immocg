@@ -137,9 +137,9 @@ async function publierBien() {
     const r = await fetch('/biens', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        credentials: 'include'
+        'Content-Type': 'application/json'
       },
+      credentials: 'include',
       body: JSON.stringify(bien)
     })
     const data = await r.json()

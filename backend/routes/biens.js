@@ -31,7 +31,7 @@ const bienCreationSchema = Joi.object({
   quartier: Joi.string().max(100).required(),
   ville: Joi.string().max(100).required(),
   prix: Joi.number().positive().required(),
-  unite: Joi.string().valid('FCFA', 'EUR', 'USD').default('FCFA'),
+  unite: Joi.string().valid('FCFA', 'EUR', 'USD', 'FCFA/mois', 'FCFA/an', 'FCFA/jour').default('FCFA'),
   mode: Joi.string().valid('vente', 'location', 'viager', 'jour').required(),
   prix_jour: Joi.number().positive().optional(), // Prix par nuit pour location/jour
   duree_min_jours: Joi.number().integer().min(1).max(30).default(1), // Durée min en jours
