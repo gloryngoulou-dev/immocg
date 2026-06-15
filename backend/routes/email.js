@@ -1,25 +1,70 @@
 const { Resend } = require('resend')
 const resend = new Resend(process.env.RESEND_API_KEY)
 
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || process.env.CONTACT_EMAIL || 'gloryngoulou@gmail.com'
+const SITE_URL = (process.env.SITE_URL || 'https://immocg.onrender.com').replace(/\/$/, '')
+
+function buildWhatsAppUrl(telephone, message) {
+  const num = String(telephone || '').replace(/[^0-9]/g, '')
+  if (!num) return null
+  return `https://wa.me/${num}?text=${encodeURIComponent(message)}`
+}
+
 async function envoyerEmailActivation(agence) {
+  if (!process.env.RESEND_API_KEY) return false
+
+  const htmlAgence = `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+    <div style="background:#1A1A18;padding:20px;border-radius:10px 10px 0 0;text-align:center;">
+      <h1 style="color:#C9963A;margin:0;">ImmoCG</h1>
+    </div>
+    <div style="background:#fff;padding:30px;border:1px solid #eee;border-radius:0 0 10px 10px;">
+      <h2 style="color:#2d6e2d;">✅ Votre compte est activé !</h2>
+      <p>Bonjour <strong>${agence.nom_agence}</strong>,</p>
+      <p>Votre demande de partenariat a été <strong>validée</strong>. Vous pouvez dès maintenant publier vos annonces sur ImmoCG.</p>
+      <div style="text-align:center;margin:24px 0;">
+        <a href="${SITE_URL}/login.html" style="background:#C9963A;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;">
+          Accéder à mon espace agence →
+        </a>
+      </div>
+      <p style="color:#666;font-size:13px;">Identifiant : <strong>${agence.email}</strong></p>
+      <p style="color:#888;font-size:13px;">Besoin d'aide ? Contactez-nous à contact@immocg.com</p>
+    </div>
+    <div style="text-align:center;padding:15px;color:#aaa;font-size:12px;">
+      ImmoCG · Brazzaville, Congo
+    </div>
+  </div>`
+
+  const htmlAdmin = `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+    <div style="background:#1A1A18;padding:20px;border-radius:10px 10px 0 0;text-align:center;">
+      <h1 style="color:#C9963A;margin:0;">ImmoCG</h1>
+      <p style="color:#aaa;margin:5px 0 0;">Notification admin</p>
+    </div>
+    <div style="background:#fff;padding:30px;border:1px solid #eee;">
+      <h2 style="color:#2d6e2d;">✅ Agence activée</h2>
+      <p><strong>Agence :</strong> ${agence.nom_agence}</p>
+      <p><strong>Contact :</strong> ${agence.nom}</p>
+      <p><strong>Email :</strong> ${agence.email}</p>
+      <p><strong>Téléphone :</strong> ${agence.telephone || '—'}</p>
+    </div>
+  </div>`
+
   try {
+    if (agence.email) {
+      await resend.emails.send({
+        from: 'ImmoCG <onboarding@resend.dev>',
+        to: agence.email,
+        subject: '✅ Votre compte partenaire ImmoCG est activé !',
+        html: htmlAgence,
+      })
+    }
+
     await resend.emails.send({
       from: 'ImmoCG <onboarding@resend.dev>',
-      to: 'gloryngoulou@gmail.com',
+      to: ADMIN_EMAIL,
       subject: `✅ Agence activée : ${agence.nom_agence}`,
-      html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
-        <div style="background:#1A1A18;padding:20px;border-radius:10px 10px 0 0;text-align:center;">
-          <h1 style="color:#C9963A;margin:0;">ImmoCG</h1>
-        </div>
-        <div style="background:#fff;padding:30px;border:1px solid #eee;">
-          <h2 style="color:#2d6e2d;">✅ Agence activée</h2>
-          <p><strong>Agence :</strong> ${agence.nom_agence}</p>
-          <p><strong>Contact :</strong> ${agence.nom}</p>
-          <p><strong>Email :</strong> ${agence.email}</p>
-          <p><strong>Téléphone :</strong> ${agence.telephone || '—'}</p>
-        </div>
-      </div>`
+      html: htmlAdmin,
     })
+
     return true
   } catch (err) {
     console.error('Erreur email activation:', err.message)
@@ -120,4 +165,4 @@ async function envoyerEmailReservation(reservation, statut) {
   }
 }
 
-module.exports = { envoyerEmailActivation, envoyerEmailRefus, envoyerEmailReservation }
+module.exports = { envoyerEmailActivation, envoyerEmailRefus, envoyerEmailReservation, buildWhatsAppUrl }

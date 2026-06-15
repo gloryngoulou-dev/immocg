@@ -16,7 +16,7 @@ if (!JWT_SECRET) {
   process.exit(1)
 }
 
-const { envoyerEmailActivation, envoyerEmailRefus } = require('./email')
+const { envoyerEmailActivation, envoyerEmailRefus, buildWhatsAppUrl } = require('./email')
 
 // ========== SCHÉMAS DE VALIDATION ==========
 
@@ -285,15 +285,24 @@ router.patch('/users/:id', verifierToken, async (req, res) => {
     if (updateError) throw updateError
 
     // 6. Envoyer les emails (ne pas bloquer la réponse)
+    let whatsapp_url = null
     if (agence) {
       if (actif) {
         await envoyerEmailActivation(agence).catch(err => console.error('Email activation échoué:', err))
+        whatsapp_url = buildWhatsAppUrl(
+          agence.telephone,
+          `Bonjour ${agence.nom_agence}, votre compte partenaire ImmoCG a été activé ! Connectez-vous sur ${(process.env.SITE_URL || 'https://immocg.onrender.com').replace(/\/$/, '')}/login.html pour publier vos annonces.`
+        )
       } else {
         await envoyerEmailRefus(agence).catch(err => console.error('Email refus échoué:', err))
       }
     }
 
-    res.json({ success: true, message: `Utilisateur ${actif ? 'activé' : 'désactivé'} avec succès` })
+    res.json({
+      success: true,
+      message: `Utilisateur ${actif ? 'activé' : 'désactivé'} avec succès`,
+      whatsapp_url,
+    })
   } catch (err) {
     console.error('Erreur update user:', err)
     res.status(500).json({ success: false, message: 'Erreur lors de la mise à jour' })

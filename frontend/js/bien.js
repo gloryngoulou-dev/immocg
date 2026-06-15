@@ -9,6 +9,9 @@ const FRAIS_VISITE = 5000;
 const params = new URLSearchParams(window.location.search);
 const id = params.get('id');
 
+let bienContactWhatsapp = '';
+let bienContactTel = '';
+
 function showToast(message) {
   const toast = document.createElement('div');
   toast.className = 'toast';
@@ -103,6 +106,8 @@ function afficherBien(b) {
   const contactNom = b.contact_nom || 'Agence ImmoCG';
   const contactTel = b.contact_tel || b.Téléphone || '+242 05 123 4567';
   const contactWhatsapp = b.contact_whatsapp || '';
+  bienContactWhatsapp = contactWhatsapp;
+  bienContactTel = contactTel;
   const contactEmail = b.contact_email || 'contact@immocg.com';
   const contactInitiales = contactNom !== 'Agence ImmoCG' 
     ? contactNom.split(' ').map(n => n[0]).join('').substring(0, 2) 
@@ -639,12 +644,13 @@ function ouvrirModalReservation(bienId, mode) {
 
         const waDiv = document.createElement('div');
         waDiv.style.cssText = 'display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:1.5rem;';
+        const waNum = (bienContactWhatsapp || bienContactTel || '').replace(/[^0-9]/g, '') || '242068834146';
         const waLink = document.createElement('a');
-        waLink.href = `https://wa.me/242068834146?text=${msgWA}`;
+        waLink.href = `https://wa.me/${waNum}?text=${msgWA}`;
         waLink.target = '_blank';
         waLink.rel = 'noopener noreferrer';
         waLink.style.cssText = 'background:#25D366;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:600;font-size:13px;';
-        waLink.textContent = '💬 WhatsApp ImmoCG';
+        waLink.textContent = waNum === '242068834146' ? '💬 WhatsApp ImmoCG' : '💬 WhatsApp agence';
         waDiv.appendChild(waLink);
 
         const btnFermer = document.createElement('button');

@@ -153,7 +153,13 @@ async function chargerAgences() {
 }
 
 async function activerUser(id, actif) {
-  await fetch('/auth/users/' + id, { method:'PATCH', headers:{'Content-Type':'application/json'}, credentials:'include', body: JSON.stringify({actif}) })
+  const r = await fetch('/auth/users/' + id, { method:'PATCH', headers:{'Content-Type':'application/json'}, credentials:'include', body: JSON.stringify({actif}) })
+  const data = await r.json().catch(() => ({}))
+  if (data.success && actif && data.whatsapp_url) {
+    if (confirm('Agence activée ! Ouvrir WhatsApp pour notifier l\'agence ?')) {
+      window.open(data.whatsapp_url, '_blank', 'noopener,noreferrer')
+    }
+  }
   chargerAgences()
 }
 
