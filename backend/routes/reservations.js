@@ -31,6 +31,17 @@ const reservationSchema = Joi.object({
   message: Joi.string().max(1000).optional().allow('')
 })
 
+const updateReservationSchema = Joi.object({
+  statut: Joi.string().valid('confirmee', 'annulee').required(),
+  paiement: Joi.object({
+    mode: Joi.string().min(2).max(80).required(),
+    montant_fcfa: Joi.number().integer().min(0).required(),
+    reference: Joi.string().max(120).optional().allow(''),
+    details: Joi.string().max(500).optional().allow(''),
+    telephone: Joi.string().max(30).optional().allow(''),
+  }).optional(),
+})
+
 // ========== ROUTES ==========
 
 // POST /reservations — créer une réservation
@@ -172,29 +183,41 @@ router.get('/mes', verifierToken, async (req, res) => {
 
 // PATCH /reservations/:id — confirmer ou annuler (agence)
 router.patch('/:id', verifierToken, async (req, res) => {
-  const { statut } = req.body
-  if (!['confirmee', 'annulee'].includes(statut)) {
-    return res.status(400).json({ success: false, message: 'Statut invalide' })
+  const { error, value } = updateReservationSchema.validate(req.body)
+  if (error) {
+    return res.status(400).json({
+      success: false,
+      message: 'Données invalides',
+      details: error.details[0].message,
+    })
   }
 
+  const { statut, paiement } = value
+
   try {
-    // Mettre à jour directement sans SELECT préalable
-    const { data, error } = await supabase
+    const { data, error: updateError } = await supabase
       .from('reservations')
       .update({
         statut,
-        confirmed_at: statut === 'confirmee' ? new Date().toISOString() : null
+        confirmed_at: statut === 'confirmee' ? new Date().toISOString() : null,
       })
       .eq('id', req.params.id)
       .select()
 
-    if (error) throw error
+    if (updateError) throw updateError
     if (!data || data.length === 0) {
       return res.status(404).json({ success: false, message: 'Réservation introuvable' })
     }
 
-    // Envoyer email de notification au client (non bloquant)
-    envoyerEmailReservation(data[0], statut).catch(() => {})
+    const reservation = data[0]
+
+    const { data: bien } = await supabase
+      .from('biens')
+      .select('*')
+      .eq('id', reservation.bien_id)
+      .maybeSingle()
+
+    envoyerEmailReservation(reservation, statut, bien, paiement).catch(() => {})
 
     res.json({ success: true, message: `Réservation ${statut === 'confirmee' ? 'confirmée' : 'annulée'}` })
   } catch (err) {

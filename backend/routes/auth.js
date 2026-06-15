@@ -34,7 +34,7 @@ const registerSchema = Joi.object({
 })
 
 const updateUserSchema = Joi.object({
-  actif: Joi.boolean().required()
+  actif: Joi.boolean().required(),
 })
 
 const userIdParamSchema = Joi.object({
@@ -291,7 +291,7 @@ router.patch('/users/:id', verifierToken, async (req, res) => {
         await envoyerEmailActivation(agence).catch(err => console.error('Email activation échoué:', err))
         whatsapp_url = buildWhatsAppUrl(
           agence.telephone,
-          `Bonjour ${agence.nom_agence}, votre compte partenaire ImmoCG a été activé ! Connectez-vous sur ${(process.env.SITE_URL || 'https://immocg.onrender.com').replace(/\/$/, '')}/login.html pour publier vos annonces.`
+          `Bonjour ${agence.nom_agence}, votre compte partenaire ImmoCG a ete active ! Connectez-vous sur ${(process.env.SITE_URL || 'https://immocg.onrender.com').replace(/\/$/, '')}/login.html pour publier vos annonces.`
         )
       } else {
         await envoyerEmailRefus(agence).catch(err => console.error('Email refus échoué:', err))

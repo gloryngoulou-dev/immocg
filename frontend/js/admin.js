@@ -153,8 +153,12 @@ async function chargerAgences() {
 }
 
 async function activerUser(id, actif) {
-  const r = await fetch('/auth/users/' + id, { method:'PATCH', headers:{'Content-Type':'application/json'}, credentials:'include', body: JSON.stringify({actif}) })
+  const r = await fetch('/auth/users/' + id, { method:'PATCH', headers:{'Content-Type':'application/json'}, credentials:'include', body: JSON.stringify({ actif }) })
   const data = await r.json().catch(() => ({}))
+  if (!data.success) {
+    alert(data.message || 'Erreur lors de la mise à jour de l\'agence')
+    return
+  }
   if (data.success && actif && data.whatsapp_url) {
     if (confirm('Agence activée ! Ouvrir WhatsApp pour notifier l\'agence ?')) {
       window.open(data.whatsapp_url, '_blank', 'noopener,noreferrer')
@@ -231,9 +235,9 @@ async function chargerReservationsAdmin() {
       }
       if (res.statut === 'en_attente') {
         const btnV = document.createElement('button'); btnV.className='btn-sm btn-valider'; btnV.textContent='✅ Valider'
-        btnV.addEventListener('click', () => traiterResAdmin(res.id, 'confirmee')); tdActions.appendChild(btnV)
+        btnV.addEventListener('click', () => traiterResAdmin(res.id, 'confirmee', res)); tdActions.appendChild(btnV)
         const btnR = document.createElement('button'); btnR.className='btn-sm btn-refuser'; btnR.textContent='❌ Refuser'
-        btnR.addEventListener('click', () => traiterResAdmin(res.id, 'annulee')); tdActions.appendChild(btnR)
+        btnR.addEventListener('click', () => traiterResAdmin(res.id, 'annulee', res)); tdActions.appendChild(btnR)
       }
       if (res.statut === 'confirmee') {
         const btnPDF = document.createElement('button')
@@ -250,17 +254,51 @@ async function chargerReservationsAdmin() {
   }
 }
 
-async function traiterResAdmin(id, statut) {
+async function traiterResAdmin(id, statut, reservation) {
   const action = statut === 'confirmee' ? 'confirmer' : 'refuser'
   if (!confirm(`Voulez-vous ${action} cette réservation ?`)) return
+
+  const payload = { statut }
+
+  if (statut === 'confirmee') {
+    let montantSuggere = 0
+    if (reservation?.bien_id) {
+      try {
+        const rBien = await fetch('/biens/' + reservation.bien_id, { credentials: 'include' })
+        const dBien = await rBien.json()
+        const bien = dBien.bien || {}
+        const prix = Number(bien.prix) || 0
+        if (reservation.type_reservation === 'achat') montantSuggere = Math.max(Math.round(prix * 0.1), 50000)
+        else if (reservation.type_reservation === 'location_jour') montantSuggere = Number(bien.prix_jour || 0) * 2
+        else if (prix >= 100000) montantSuggere = prix < 300000 ? 5000 : prix < 500000 ? 10000 : 15000
+        else montantSuggere = Math.round(prix * 0.05)
+      } catch {}
+    }
+
+    const paiement = typeof saisirInfosPaiement === 'function'
+      ? saisirInfosPaiement(montantSuggere)
+      : null
+    if (!paiement) {
+      alert('Validation annulée : informations de paiement requises.')
+      return
+    }
+    payload.paiement = paiement
+  }
+
   try {
     const r = await fetch('/reservations/' + id, {
       method: 'PATCH', headers: {'Content-Type':'application/json'},
-      credentials: 'include', body: JSON.stringify({ statut })
+      credentials: 'include', body: JSON.stringify(payload)
     })
     const data = await r.json()
-    if (data.success) chargerReservationsAdmin()
-  } catch {}
+    if (!data.success) {
+      alert(data.message || 'Erreur lors du traitement')
+      return
+    }
+    chargerReservationsAdmin()
+  } catch {
+    alert('Erreur lors du traitement de la réservation')
+  }
 }
 
 // ========== SIGNALEMENTS ==========
@@ -353,17 +391,6 @@ async function telechargerContratAdmin(reservation) {
     } else {
       alert('Chargement du générateur PDF...')
     }
-  } catch {
-    alert('Erreur lors de la génération du contrat')
-  }
-}
-window.telechargerContratAdmin = telechargerContratAdmin
-
-async function telechargerContratAdmin(reservation) {
-  try {
-    const r = await fetch('/biens/' + reservation.bien_id)
-    const data = await r.json()
-    genererContratPDF(reservation, data.bien || {})
   } catch {
     alert('Erreur lors de la génération du contrat')
   }

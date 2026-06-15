@@ -232,11 +232,11 @@ async function chargerReservations() {
         const btnConfirmer = document.createElement('button')
         btnConfirmer.className = 'btn-sm btn-valider'
         btnConfirmer.textContent = '✅ Valider'
-        btnConfirmer.addEventListener('click', () => traiterReservation(res.id, 'confirmee'))
+        btnConfirmer.addEventListener('click', () => traiterReservation(res.id, 'confirmee', res))
         const btnRefuser = document.createElement('button')
         btnRefuser.className = 'btn-sm btn-refuser'
         btnRefuser.textContent = '❌ Refuser'
-        btnRefuser.addEventListener('click', () => traiterReservation(res.id, 'annulee'))
+        btnRefuser.addEventListener('click', () => traiterReservation(res.id, 'annulee', res))
         tdActions.appendChild(btnConfirmer)
         tdActions.appendChild(btnRefuser)
       }
@@ -255,18 +255,53 @@ async function chargerReservations() {
   }
 }
 
-async function traiterReservation(id, statut) {
+async function traiterReservation(id, statut, reservation) {
   const action = statut === 'confirmee' ? 'confirmer' : 'refuser'
   if (!confirm(`Voulez-vous ${action} cette réservation ?`)) return
+
+  const payload = { statut }
+
+  if (statut === 'confirmee') {
+    let montantSuggere = 0
+    if (reservation?.bien_id) {
+      try {
+        const rBien = await fetch('/biens/' + reservation.bien_id, { credentials: 'include' })
+        const dBien = await rBien.json()
+        const bien = dBien.bien || {}
+        const prix = Number(bien.prix) || 0
+        if (reservation.type_reservation === 'achat') montantSuggere = Math.max(Math.round(prix * 0.1), 50000)
+        else if (reservation.type_reservation === 'location_jour') montantSuggere = Number(bien.prix_jour || 0) * 2
+        else if (prix >= 100000) montantSuggere = prix < 300000 ? 5000 : prix < 500000 ? 10000 : 15000
+        else montantSuggere = Math.round(prix * 0.05)
+      } catch {}
+    }
+
+    const paiement = typeof saisirInfosPaiement === 'function'
+      ? saisirInfosPaiement(montantSuggere)
+      : null
+    if (!paiement) {
+      alert('Validation annulée : informations de paiement requises.')
+      return
+    }
+    payload.paiement = paiement
+  }
+
   try {
-    await fetch('/reservations/' + id, {
+    const r = await fetch('/reservations/' + id, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({ statut })
+      body: JSON.stringify(payload),
     })
+    const data = await r.json()
+    if (!data.success) {
+      alert(data.message || 'Erreur lors du traitement')
+      return
+    }
     chargerReservations()
-  } catch {}
+  } catch {
+    alert('Erreur lors du traitement de la réservation')
+  }
 }
 
 function afficherCriteres(res) {

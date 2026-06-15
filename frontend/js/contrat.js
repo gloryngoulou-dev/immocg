@@ -1,17 +1,30 @@
 // ========== GÉNÉRATEUR DE CONTRAT PDF PROFESSIONNEL ==========
 
-function genererContratPDF(reservation, bien) {
-  if (typeof window.jsPDF === 'undefined') {
+let jsPdfLoaderPromise = null
+
+function chargerJsPdf() {
+  if (typeof window.jsPDF !== 'undefined') return Promise.resolve()
+  if (jsPdfLoaderPromise) return jsPdfLoaderPromise
+
+  jsPdfLoaderPromise = new Promise((resolve, reject) => {
     const script = document.createElement('script')
     script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'
-    script.onload = () => _genererPDF(reservation, bien)
+    script.onload = () => resolve()
+    script.onerror = () => reject(new Error('Impossible de charger jsPDF'))
     document.head.appendChild(script)
-  } else {
-    _genererPDF(reservation, bien)
-  }
+  })
+  return jsPdfLoaderPromise
 }
 
-function _genererPDF(reservation, bien) {
+function genererContratPDF(reservation, bien, paiement) {
+  chargerJsPdf()
+    .then(() => _genererPDF(reservation, bien, paiement))
+    .catch(() => {
+      alert('Le générateur PDF est bloqué par le navigateur. Désactivez temporairement la protection anti-tracking ou utilisez Chrome/Firefox pour ce téléchargement.')
+    })
+}
+
+function _genererPDF(reservation, bien, paiement) {
   const { jsPDF } = window.jspdf
   const doc = new jsPDF({ unit: 'mm', format: 'a4' })
   const pageW = 210
@@ -50,7 +63,7 @@ function _genererPDF(reservation, bien) {
   doc.setFont('helvetica', 'normal')
   doc.setTextColor(180, 180, 180)
   doc.text('Plateforme Immobilière de Brazzaville', marge, 40)
-  doc.text('immocg.onrender.com · contact@immocg.com', marge, 46)
+  doc.text('immocg.onrender.com', marge, 46)
 
   // Infos document (droite)
   doc.setTextColor(200, 200, 200)
@@ -160,35 +173,51 @@ function _genererPDF(reservation, bien) {
   doc.setTextColor(201, 150, 58)
   doc.setFontSize(9)
   doc.setFont('helvetica', 'bold')
-  doc.text('CONDITIONS FINANCIÈRES', marge + 3, y + 5)
+  doc.text('CONDITIONS FINANCIÈRES ET PAIEMENT', marge + 3, y + 5)
   y += 10
 
   doc.setTextColor(60, 60, 60)
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(9)
 
+  const paiementInfo = {
+    mode: paiement?.mode || 'Mobile Money',
+    montant: Number.isFinite(Number(paiement?.montant_fcfa)) ? Number(paiement.montant_fcfa) : null,
+    reference: paiement?.reference || `IMC-${String(reservation.id || '').substring(0, 8).toUpperCase()}`,
+    telephone: paiement?.telephone || '+242 06 883 4146',
+    details: paiement?.details || 'Airtel Money / MTN Mobile Money',
+  }
+
   const prixLabel = reservation.type_reservation === 'location_jour'
     ? `${parseInt(bien.prix_jour || 0).toLocaleString('fr-FR')} FCFA / nuit`
-    : `${parseInt(bien.prix || 0).toLocaleString('fr-FR')} FCFA / mois`
+    : `${parseInt(bien.prix || 0).toLocaleString('fr-FR')} FCFA`
+
+  const montantAffiche = paiementInfo.montant != null
+    ? `${paiementInfo.montant.toLocaleString('fr-FR')} FCFA`
+    : (reservation.type_reservation === 'location_jour'
+      ? `${parseInt((bien.prix_jour || 0) * 2).toLocaleString('fr-FR')} FCFA`
+      : `${parseInt((bien.prix || 0) * 2).toLocaleString('fr-FR')} FCFA (caution)`)
 
   const conditions = [
-    ['Loyer mensuel / Prix:', prixLabel],
-    ['Caution:', reservation.type_reservation === 'location_jour'
-      ? `${parseInt((bien.prix_jour || 0) * 2).toLocaleString('fr-FR')} FCFA`
-      : `${parseInt((bien.prix || 0) * 2).toLocaleString('fr-FR')} FCFA (2 mois)`],
+    ['Prix / Loyer:', prixLabel],
+    ['Montant à régler:', montantAffiche],
+    ['Mode de paiement:', paiementInfo.mode],
+    ['Référence:', paiementInfo.reference],
+    ['Numéro Mobile Money:', paiementInfo.telephone],
+    ['Instructions:', paiementInfo.details],
     ['Date d\'entrée / Visite:', reservation.date_souhaitee
       ? new Date(reservation.date_souhaitee).toLocaleDateString('fr-FR') : '___________'],
     ['Date de départ:', reservation.date_depart
       ? new Date(reservation.date_depart).toLocaleDateString('fr-FR') : '___________'],
-    ['Mode de paiement:', 'Espèces / Mobile Money'],
   ]
 
   conditions.forEach(([label, val]) => {
     doc.setFont('helvetica', 'bold'); doc.setTextColor(100,100,100)
     doc.text(label, marge, y)
     doc.setFont('helvetica', 'normal'); doc.setTextColor(26,26,24)
-    doc.text(val, marge + 55, y)
-    y += 7
+    const lines = doc.splitTextToSize(String(val), 105)
+    doc.text(lines, marge + 55, y)
+    y += Math.max(lines.length * 5, 7)
   })
 
   y += 3
