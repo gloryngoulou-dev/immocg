@@ -233,6 +233,13 @@ async function chargerReservationsAdmin() {
         btnPDF.addEventListener('click', () => telechargerContratAdmin(res))
         tdActions.appendChild(btnPDF)
       }
+      if (res.statut === 'confirmee') {
+        const btnDeclarer = document.createElement('button')
+        btnDeclarer.className = 'btn-sm btn-valider'
+        btnDeclarer.textContent = '💰 Déclarer'
+        btnDeclarer.addEventListener('click', () => declarerTransactionAdmin(res))
+        tdActions.appendChild(btnDeclarer)
+      }
       if (res.statut === 'en_attente') {
         const btnV = document.createElement('button'); btnV.className='btn-sm btn-valider'; btnV.textContent='✅ Valider'
         btnV.addEventListener('click', () => traiterResAdmin(res.id, 'confirmee', res)); tdActions.appendChild(btnV)
@@ -371,11 +378,118 @@ async function chargerSignalementsAdmin() {
   }
 }
 
+// ========== COMMISSIONS ==========
+async function chargerCommissionsAdmin() {
+  try {
+    const r = await fetch('/transactions/admin', { credentials: 'include' })
+    if (!r.ok) return
+    const data = await r.json()
+    const transactions = data.transactions || []
+
+    document.getElementById('total-commission-admin').textContent =
+      `${(data.total_commission_fcfa || 0).toLocaleString('fr-FR')} FCFA`
+
+    const tbody = document.getElementById('tbody-commissions')
+    tbody.textContent = ''
+
+    if (transactions.length === 0) {
+      const tr = document.createElement('tr')
+      const td = document.createElement('td')
+      td.setAttribute('colspan', '8')
+      td.className = 'empty'
+      td.textContent = 'Aucune transaction déclarée pour le moment'
+      tr.appendChild(td)
+      tbody.appendChild(tr)
+      return
+    }
+
+    transactions.forEach((t) => {
+      const tr = document.createElement('tr')
+
+      const tdRef = document.createElement('td')
+      tdRef.style.fontSize = '12px'
+      tdRef.textContent = t.reference_immocg || '—'
+      tr.appendChild(tdRef)
+
+      const tdClient = document.createElement('td')
+      tdClient.textContent = t.client_nom || '—'
+      tr.appendChild(tdClient)
+
+      const tdType = document.createElement('td')
+      tdType.textContent = t.type_transaction || '—'
+      tr.appendChild(tdType)
+
+      const tdMontant = document.createElement('td')
+      tdMontant.textContent = `${Number(t.montant_fcfa || 0).toLocaleString('fr-FR')} FCFA`
+      tr.appendChild(tdMontant)
+
+      const tdComm = document.createElement('td')
+      tdComm.style.fontWeight = '600'
+      tdComm.style.color = '#C9963A'
+      tdComm.textContent = `${Number(t.commission_fcfa || 0).toLocaleString('fr-FR')} FCFA`
+      tr.appendChild(tdComm)
+
+      const tdStatut = document.createElement('td')
+      const sp = document.createElement('span')
+      sp.className = `badge ${t.statut === 'verifiee' ? 'valide' : t.statut === 'contestee' ? 'refuse' : 'attente'}`
+      sp.textContent = t.statut === 'verifiee' ? 'Vérifiée' : t.statut === 'contestee' ? 'Contestée' : 'Déclarée'
+      tdStatut.appendChild(sp)
+      tr.appendChild(tdStatut)
+
+      const tdDate = document.createElement('td')
+      tdDate.style.fontSize = '12px'
+      tdDate.textContent = new Date(t.created_at).toLocaleDateString('fr-FR')
+      tr.appendChild(tdDate)
+
+      const tdAction = document.createElement('td')
+      if (t.statut === 'declaree') {
+        const btn = document.createElement('button')
+        btn.className = 'btn-sm btn-valider'
+        btn.textContent = '✅ Vérifier'
+        btn.addEventListener('click', async () => {
+          await fetch('/transactions/' + t.id + '/verifier', { method: 'PATCH', credentials: 'include' })
+          chargerCommissionsAdmin()
+        })
+        tdAction.appendChild(btn)
+      }
+      tr.appendChild(tdAction)
+      tbody.appendChild(tr)
+    })
+  } catch (err) {
+    console.error('Erreur commissions admin', err)
+  }
+}
+
+async function declarerTransactionAdmin(reservation) {
+  const type = (prompt('Type (location, vente, location_jour, visite):', reservation.type_reservation === 'achat' ? 'vente' : (reservation.type_reservation || 'location')) || '').trim()
+  const montantInput = (prompt('Montant transaction (FCFA):', '') || '').trim()
+  const montant = parseInt(montantInput, 10)
+  if (!type || Number.isNaN(montant) || montant < 1) {
+    alert('Déclaration annulée.')
+    return
+  }
+  const r = await fetch('/transactions/declarer', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ reservation_id: reservation.id, montant_fcfa: montant, type_transaction: type }),
+  })
+  const data = await r.json()
+  if (data.success) {
+    alert(`Commission ImmoCG : ${data.commission_fcfa.toLocaleString('fr-FR')} FCFA`)
+    chargerCommissionsAdmin()
+    chargerReservationsAdmin()
+  } else {
+    alert(data.message || 'Erreur')
+  }
+}
+
 // ========== INIT ==========
 chargerBiens()
 chargerAgences()
 chargerReservationsAdmin()
 chargerSignalementsAdmin()
+chargerCommissionsAdmin()
 
 window.afficherSection = afficherSection
 window.seDeconnecter = seDeconnecter

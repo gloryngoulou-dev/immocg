@@ -11,6 +11,26 @@ const id = params.get('id');
 
 let bienContactWhatsapp = '';
 let bienContactTel = '';
+let currentBienId = '';
+let currentBienMode = '';
+
+function getLeadsImmocg() {
+  try { return JSON.parse(sessionStorage.getItem('immocg_leads') || '{}') } catch { return {} }
+}
+
+function enregistrerLead(bienId, reservationId, ref) {
+  const leads = getLeadsImmocg()
+  leads[String(bienId)] = {
+    reservationId,
+    ref: ref || `IMC-${String(reservationId).substring(0, 8).toUpperCase()}`,
+    at: Date.now(),
+  }
+  sessionStorage.setItem('immocg_leads', JSON.stringify(leads))
+}
+
+function leadAutorise(bienId) {
+  return !!getLeadsImmocg()[String(bienId)]
+}
 
 function showToast(message) {
   const toast = document.createElement('div');
@@ -108,6 +128,18 @@ function afficherBien(b) {
   const contactWhatsapp = b.contact_whatsapp || '';
   bienContactWhatsapp = contactWhatsapp;
   bienContactTel = contactTel;
+  currentBienId = String(b.id);
+  currentBienMode = mode;
+
+  const lead = getLeadsImmocg()[currentBienId];
+  const contactAutorise = leadAutorise(currentBienId);
+  const refImmocg = lead?.ref || '';
+  const waMsg = encodeURIComponent(`Bonjour, je vous contacte via ImmoCG (Ref: ${refImmocg}). Je suis intéressé(e) par ce bien.`);
+  const waHref = contactWhatsapp
+    ? `https://wa.me/${contactWhatsapp.replace(/[^0-9]/g, '')}?text=${waMsg}`
+    : (contactTel && contactTel !== '+242 05 123 4567'
+      ? `https://wa.me/${contactTel.replace(/[^0-9]/g, '')}?text=${waMsg}`
+      : '');
   const contactEmail = b.contact_email || 'contact@immocg.com';
   const contactInitiales = contactNom !== 'Agence ImmoCG' 
     ? contactNom.split(' ').map(n => n[0]).join('').substring(0, 2) 
@@ -357,9 +389,17 @@ function afficherBien(b) {
         <div>
           <div class="agent-nom">${esc(contactNom)}</div>
           <div class="agent-role">Agent immobilier</div>
-          ${contactTel && contactTel !== '+242 05 123 4567' ? `<a href="tel:${esc(contactTel)}" class="agent-phone">📞 ${esc(contactTel)}</a>` : ''}
-          ${contactWhatsapp ? `<a href="https://wa.me/${contactWhatsapp.replace(/[^0-9]/g, '')}" class="agent-phone" target="_blank" rel="noopener">💬 WhatsApp</a>` : ''}
-          ${contactEmail ? `<a href="mailto:${esc(contactEmail)}" class="agent-email">✉️ ${esc(contactEmail)}</a>` : ''}
+          ${contactAutorise ? `
+            ${refImmocg ? `<div style="font-size:11px;color:#C9963A;font-weight:600;margin:4px 0;">Réf. ImmoCG : ${esc(refImmocg)}</div>` : ''}
+            ${contactTel && contactTel !== '+242 05 123 4567' ? `<a href="tel:${esc(contactTel)}" class="agent-phone">📞 ${esc(contactTel)}</a>` : ''}
+            ${waHref ? `<a href="${waHref}" class="agent-phone" target="_blank" rel="noopener">💬 WhatsApp (Ref ImmoCG)</a>` : ''}
+            ${contactEmail ? `<a href="mailto:${esc(contactEmail)}" class="agent-email">✉️ ${esc(contactEmail)}</a>` : ''}
+          ` : `
+            <div style="background:#fffdf5;border:1px solid #f0d98a;border-radius:8px;padding:10px;font-size:12px;color:#7A5A1A;margin-top:8px;line-height:1.6;">
+              🔒 <strong>Contact via ImmoCG</strong><br>
+              Envoyez d'abord une demande officielle pour obtenir une référence unique et tracer votre dossier.
+            </div>
+          `}
         </div>
       </div>
 
@@ -367,7 +407,10 @@ function afficherBien(b) {
         ${detailsHTML}
       </div>
 
-      <button class="btn btn-primary" data-nom="${esc(contactNom)}" data-tel="${esc(contactTel)}" id="btn-contacter">📞 Contacter ${esc(contactNom.split(' ')[0])}</button>
+      ${contactAutorise
+        ? `<button class="btn btn-primary" data-nom="${esc(contactNom)}" data-tel="${esc(contactTel)}" data-id="${esc(currentBienId)}" data-mode="${esc(mode)}" id="btn-contacter">📞 Contacter ${esc(contactNom.split(' ')[0])}</button>`
+        : `<button class="btn btn-primary" data-id="${esc(currentBienId)}" data-mode="${esc(mode)}" id="btn-contacter">📝 Demander via ImmoCG</button>`
+      }
       <button class="btn btn-reserve" data-id="${esc(String(b.id))}" data-mode="${esc(mode)}" id="btn-reserver">📅 ${estParJour ? 'Réserver ce logement' : 'Demander une visite'}</button>
       <button class="btn btn-outline" data-id="${esc(String(b.id))}" id="btn-sauver">❤️ Sauvegarder</button>
       <button class="btn btn-signaler" data-id="${esc(String(b.id))}" id="btn-signaler" style="background:none;border:1px solid #ddd;color:#888;font-size:12px;padding:8px 16px;border-radius:8px;cursor:pointer;margin-top:4px;">⚠️ Signaler une erreur</button>
@@ -387,7 +430,7 @@ function afficherBien(b) {
   const btnContacter = document.getElementById('btn-contacter');
   if (btnContacter) {
     btnContacter.addEventListener('click', () =>
-      contacterAgence(btnContacter.dataset.nom, btnContacter.dataset.tel));
+      contacterAgence(btnContacter.dataset.nom, btnContacter.dataset.tel, btnContacter.dataset.id, btnContacter.dataset.mode));
   }
   const btnReserver = document.getElementById('btn-reserver');
   if (btnReserver) {
@@ -405,9 +448,13 @@ function afficherBien(b) {
 }
 
 // Fonctions interactives
-function contacterAgence(nom, phone) {
+function contacterAgence(nom, phone, bienId, mode) {
+  if (!leadAutorise(bienId)) {
+    ouvrirModalReservation(bienId, mode);
+    return;
+  }
   if (!phone || phone === '+242 05 123 4567') {
-    showToast(`📞 Contactez ${nom} via le formulaire de contact`);
+    showToast(`📞 Contactez ${nom} via WhatsApp avec votre référence ImmoCG`);
     return;
   }
   if (confirm(`Voulez-vous appeler ${nom} au ${phone} ?`)) {
@@ -614,8 +661,10 @@ function ouvrirModalReservation(bienId, mode) {
       const data = await r.json();
 
       if (data.success) {
-        // Envoyer notification WhatsApp à l'agence si disponible
-        const msgWA = encodeURIComponent(`Bonjour, je suis ${nom} (${tel}). Je viens de soumettre une demande de visite sur ImmoCG. Merci de confirmer.`);
+        const ref = data.reservation.reference_immocg || `IMC-${String(data.reservation.id).substring(0, 8).toUpperCase()}`
+        enregistrerLead(bienId, data.reservation.id, ref)
+
+        const msgWA = encodeURIComponent(`Bonjour, je suis ${nom} (${tel}). Demande ImmoCG Ref: ${ref}. Merci de confirmer.`);
         
         // Construire la page de succès avec createElement (pas d'innerHTML)
         box.textContent = '';
@@ -632,7 +681,7 @@ function ouvrirModalReservation(bienId, mode) {
 
         const para = document.createElement('p');
         para.style.cssText = 'color:#555;line-height:1.6;margin-bottom:1rem;';
-        para.innerHTML = `L'agence a <strong>24h</strong> pour valider votre demande.<br>Vous serez contacté au <strong>${tel}</strong>.`;
+        para.innerHTML = `L'agence a <strong>24h</strong> pour valider votre demande.<br>Votre référence ImmoCG : <strong>${ref}</strong>`;
 
         const clauses = document.createElement('div');
         clauses.style.cssText = 'background:#fffdf5;border-radius:10px;padding:1rem;font-size:12px;color:#7A5A1A;line-height:1.8;text-align:left;margin-bottom:1rem;';
@@ -656,7 +705,7 @@ function ouvrirModalReservation(bienId, mode) {
         const btnFermer = document.createElement('button');
         btnFermer.style.cssText = 'background:#C9963A;color:#fff;border:none;padding:12px 32px;border-radius:8px;font-weight:600;cursor:pointer;font-size:15px;';
         btnFermer.textContent = 'Fermer';
-        btnFermer.addEventListener('click', () => modal.remove());
+        btnFermer.addEventListener('click', () => { modal.remove(); location.reload(); });
 
         successDiv.appendChild(emoji);
         successDiv.appendChild(titreH2);

@@ -14,14 +14,15 @@ let tousLesBiens = []
       chercheur: [
         { icon: '🔍', num: '1', title: 'Recherchez', desc: 'Filtrez par quartier, budget, type de bien' },
         { icon: '📸', num: '2', title: 'Consultez', desc: 'Photos, vidéos, équipements, localisation exacte' },
-        { icon: '📞', num: '3', title: 'Contactez', desc: 'Appelez ou WhatsApp directement l\'agence' },
-        { icon: '🏠', num: '4', title: 'Emménagez', desc: 'Visitez, signez et emménagez dans votre nouveau logement' }
+        { icon: '📝', num: '3', title: 'Demandez', desc: 'Envoyez une demande officielle ImmoCG (référence unique)' },
+        { icon: '💳', num: '4', title: 'Validez & payez', desc: 'Contrat PDF + modalités de paiement sécurisées' },
+        { icon: '🏠', num: '5', title: 'Emménagez', desc: 'Visitez, signez et emménagez en toute confiance' }
       ],
       agence: [
         { icon: '📝', num: '1', title: 'Inscrivez-vous', desc: 'Créez votre compte agence en 2 minutes' },
         { icon: '✅', num: '2', title: 'Validation', desc: 'Notre équipe valide votre partenariat sous 24h' },
         { icon: '📝', num: '3', title: 'Publiez', desc: 'Ajoutez vos biens avec photos et détails' },
-        { icon: '💰', num: '4', title: 'Encaissez', desc: 'Recevez des contacts qualifiés et concluez vos transactions' }
+        { icon: '💰', num: '4', title: 'Déclarez', desc: 'Signalez les transactions conclues — commission 10% ImmoCG' }
       ]
     }
 

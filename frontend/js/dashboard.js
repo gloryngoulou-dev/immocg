@@ -228,6 +228,14 @@ async function chargerReservations() {
         tdActions.appendChild(btnPDF)
       }
 
+      if (res.statut === 'confirmee') {
+        const btnDeclarer = document.createElement('button')
+        btnDeclarer.className = 'btn-sm btn-valider'
+        btnDeclarer.textContent = '💰 Déclarer transaction'
+        btnDeclarer.addEventListener('click', () => declarerTransaction(res))
+        tdActions.appendChild(btnDeclarer)
+      }
+
       if (res.statut === 'en_attente') {
         const btnConfirmer = document.createElement('button')
         btnConfirmer.className = 'btn-sm btn-valider'
@@ -254,6 +262,48 @@ async function chargerReservations() {
     console.error('Erreur chargement réservations')
   }
 }
+
+async function declarerTransaction(reservation) {
+  const typeMap = {
+    visite: 'visite',
+    location_jour: 'location_jour',
+    achat: 'vente',
+  }
+  const typeDefaut = typeMap[reservation.type_reservation] || 'location'
+  const type = (prompt('Type de transaction (location, vente, location_jour, visite):', typeDefaut) || '').trim()
+  const montantInput = (prompt('Montant total de la transaction (FCFA):', '') || '').trim()
+  const notes = (prompt('Notes (optionnel):', '') || '').trim()
+  const montant = parseInt(montantInput, 10)
+
+  if (!type || Number.isNaN(montant) || montant < 1) {
+    alert('Déclaration annulée : type ou montant invalide.')
+    return
+  }
+
+  try {
+    const r = await fetch('/transactions/declarer', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({
+        reservation_id: reservation.id,
+        montant_fcfa: montant,
+        type_transaction: type,
+        notes,
+      }),
+    })
+    const data = await r.json()
+    if (!data.success) {
+      alert(data.message || 'Erreur lors de la déclaration')
+      return
+    }
+    alert(`Transaction déclarée.\nCommission ImmoCG (${data.commission_pct}%) : ${data.commission_fcfa.toLocaleString('fr-FR')} FCFA\nÀ payer sous 7 jours.`)
+  } catch {
+    alert('Erreur de connexion')
+  }
+}
+
+window.declarerTransaction = declarerTransaction
 
 async function traiterReservation(id, statut, reservation) {
   const action = statut === 'confirmee' ? 'confirmer' : 'refuser'

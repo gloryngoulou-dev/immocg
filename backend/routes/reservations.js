@@ -3,6 +3,7 @@ const router = express.Router()
 const { createClient } = require('@supabase/supabase-js')
 const Joi = require('joi')
 const { verifierToken } = require('./auth')
+const { buildReferenceImmocg } = require('../utils/commissions')
 const { envoyerEmailReservation } = require('./email')
 
 const supabase = createClient(
@@ -104,6 +105,7 @@ router.post('/', async (req, res) => {
       message: 'Réservation créée avec succès',
       reservation: {
         id: reservation.id,
+        reference_immocg: buildReferenceImmocg(reservation.id),
         statut: reservation.statut,
         expire_at: reservation.expire_at,
         clauses: {

@@ -40,7 +40,7 @@ function _genererPDF(reservation, bien, paiement) {
     ? 'CONTRAT DE LOCATION COURTE DURÉE'
     : 'CONTRAT DE BAIL D\'HABITATION'
 
-  const refDoc = `IMC-${String(reservation.id || '').substring(0,8).toUpperCase()}`
+  const refDoc = `IMC-${String(reservation.id || '').substring(0, 8).toUpperCase()}`
 
   // ===== BORDURE DE PAGE =====
   doc.setDrawColor(201, 150, 58)
@@ -236,13 +236,15 @@ function _genererPDF(reservation, bien, paiement) {
   y += 10
 
   const clauses = [
-    'Art. 1 — Le bailleur s\'engage à remettre le bien dans l\'état décrit dans l\'annonce publiée sur ImmoCG.',
-    'Art. 2 — Le locataire dispose d\'un délai de 48 heures pour confirmer sa présence après validation de la demande.',
-    'Art. 3 — L\'agence dispose d\'un délai de 24 heures pour valider ou refuser toute demande de visite ou réservation.',
-    'Art. 4 — En cas de non-correspondance du bien avec les critères annoncés, la résiliation est prononcée sans frais.',
-    'Art. 5 — La caution sera restituée dans un délai de 15 jours après l\'état des lieux de sortie, déduction faite des éventuels dommages.',
-    'Art. 6 — Tout sous-location est strictement interdite sans accord écrit du bailleur.',
-    'Art. 7 — Le présent contrat est soumis au droit congolais en vigueur. Tout litige sera porté devant les juridictions compétentes de Brazzaville.',
+    `Art. 1 — Référence ImmoCG obligatoire : ${refDoc}. Toute transaction issue de cette demande est tracée par ImmoCG.`,
+    'Art. 2 — Le bailleur s\'engage à remettre le bien dans l\'état décrit dans l\'annonce publiée sur ImmoCG.',
+    'Art. 3 — Le locataire dispose d\'un délai de 48 heures pour confirmer sa présence après validation de la demande.',
+    'Art. 4 — L\'agence dispose d\'un délai de 24 heures pour valider ou refuser toute demande de visite ou réservation.',
+    'Art. 5 — Le paiement doit être effectué selon les modalités ci-dessus avant la visite ou l\'entrée.',
+    'Art. 6 — En cas de non-correspondance du bien avec les critères annoncés, la résiliation est prononcée sans frais.',
+    'Art. 7 — ImmoCG est apporteur d\'affaires. Commission plateforme : 10% sur le montant de la transaction, payable sous 7 jours.',
+    'Art. 8 — L\'agence s\'engage à déclarer toute transaction conclue via ImmoCG dans les 7 jours.',
+    'Art. 9 — Le présent contrat est soumis au droit congolais en vigueur. Tout litige sera porté devant les juridictions compétentes de Brazzaville.',
   ]
 
   doc.setTextColor(50, 50, 50)

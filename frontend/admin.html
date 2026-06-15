@@ -222,6 +222,7 @@
     <button class="tab active" onclick="afficherSection('biens', this)">Annonces</button>
     <button class="tab" onclick="afficherSection('agences', this)">Agences</button>
     <button class="tab" onclick="afficherSection('reservations', this)">📅 Réservations</button>
+    <button class="tab" onclick="afficherSection('commissions', this)">💰 Commissions</button>
   </div>
 
   <!-- SECTION BIENS -->
@@ -293,6 +294,33 @@
         </thead>
         <tbody id="tbody-reservations-admin">
           <tr><td colspan="7" class="empty">Chargement...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SECTION COMMISSIONS -->
+  <div class="section" id="section-commissions">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+      <div class="section-title">Transactions déclarées</div>
+      <span id="total-commission-admin" style="background:#1A1A18;color:#C9963A;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:600;">0 FCFA</span>
+    </div>
+    <div class="table-box">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Réf.</th>
+            <th>Client</th>
+            <th>Type</th>
+            <th>Montant</th>
+            <th>Commission 10%</th>
+            <th>Statut</th>
+            <th>Date</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-commissions">
+          <tr><td colspan="8" class="empty">Chargement...</td></tr>
         </tbody>
       </table>
     </div>

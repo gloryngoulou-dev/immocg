@@ -28,6 +28,8 @@ function calculerMontantReservation(reservation, bien) {
   return Math.round(prix * 0.05)
 }
 
+const { buildReferenceImmocg, COMMISSION_IMMOCG_PCT } = require('./commissions')
+
 function buildPaymentInfo(paiement, reservation, bien) {
   const montantAuto = calculerMontantReservation(reservation, bien)
   const mode = paiement?.mode || process.env.DEFAULT_PAYMENT_MODE || 'Mobile Money'
@@ -37,7 +39,7 @@ function buildPaymentInfo(paiement, reservation, bien) {
   return {
     mode,
     montant,
-    reference: paiement?.reference || `IMC-${String(reservation.id || '').substring(0, 8).toUpperCase()}`,
+    reference: paiement?.reference || buildReferenceImmocg(reservation.id),
     details: paiement?.details || PAYMENT_DETAILS,
     telephone: paiement?.telephone || PAYMENT_PHONE,
   }
@@ -61,7 +63,7 @@ function genererContratReservationPdf(reservation, bien, paiement) {
         ? 'CONTRAT DE VISITE ET RESERVATION'
         : 'CONTRAT DE BAIL D\'HABITATION'
 
-  const refDoc = `IMC-${String(reservation.id || '').substring(0, 8).toUpperCase()}`
+  const refDoc = buildReferenceImmocg(reservation.id)
 
   doc.setDrawColor(201, 150, 58)
   doc.setLineWidth(0.8)
@@ -216,12 +218,15 @@ function genererContratReservationPdf(reservation, bien, paiement) {
   y += 10
 
   const clauses = [
-    'Art. 1 — Le bailleur s\'engage a remettre le bien conforme a l\'annonce ImmoCG.',
-    'Art. 2 — Le client dispose de 48h pour confirmer sa presence apres validation.',
-    'Art. 3 — L\'agence dispose de 24h pour valider ou refuser la demande.',
-    'Art. 4 — Le paiement doit etre effectue selon les modalites ci-dessus avant la visite ou l\'entree.',
-    'Art. 5 — En cas de non-correspondance du bien, annulation sans frais.',
-    'Art. 6 — Contrat soumis au droit congolais. Litiges devant les juridictions de Brazzaville.',
+    `Art. 1 — Reference ImmoCG obligatoire : ${refDoc}. Toute transaction issue de cette demande est tracee par ImmoCG.`,
+    'Art. 2 — Le bailleur s\'engage a remettre le bien conforme a l\'annonce ImmoCG.',
+    'Art. 3 — Le client dispose de 48h pour confirmer sa presence apres validation.',
+    'Art. 4 — L\'agence dispose de 24h pour valider ou refuser la demande.',
+    'Art. 5 — Le paiement doit etre effectue selon les modalites ci-dessus avant la visite ou l\'entree.',
+    'Art. 6 — En cas de non-correspondance du bien, annulation sans frais.',
+    `Art. 7 — ImmoCG est apporteur d\'affaires. Commission plateforme : ${COMMISSION_IMMOCG_PCT}% sur le montant de la transaction, payable sous 7 jours.`,
+    'Art. 8 — L\'agence s\'engage a declarer toute transaction conclue via ImmoCG dans les 7 jours.',
+    'Art. 9 — Contrat soumis au droit congolais. Litiges devant les juridictions de Brazzaville.',
   ]
 
   doc.setFont('helvetica', 'normal')
@@ -300,10 +305,14 @@ function genererContratPartenairePdf(agence) {
     '- Publier des annonces exactes et conformes.',
     '- Repondre aux demandes de visite sous 24h.',
     '- Respecter les clauses ImmoCG vis-a-vis des clients.',
+    `- Declarer toute transaction conclue via ImmoCG sous 7 jours.`,
+    `- Payer la commission ImmoCG de ${COMMISSION_IMMOCG_PCT}% sur chaque location ou vente.`,
+    '- Ne pas detourner les clients hors plateforme apres contact ImmoCG.',
     '',
     'Engagements ImmoCG:',
     '- Mettre a disposition la plateforme de publication.',
     '- Assurer la visibilite des annonces validees.',
+    '- Tracer les demandes avec reference unique (IMC-XXXX).',
     '',
     `Espace agence: ${SITE_URL}/login.html`,
     '',
