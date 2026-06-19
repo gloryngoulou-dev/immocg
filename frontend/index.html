@@ -15,9 +15,9 @@
 <meta property="og:title" content="ImmoCG — Immobilier au Congo">
 <meta property="og:description" content="La plateforme immobilière de Brazzaville. Trouvez votre logement en toute confiance.">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://immocg-production.up.railway.app">
-<meta property="og:image" content="https://immocg-production.up.railway.app/og-image.jpg">
-<link rel="canonical" href="https://immocg-production.up.railway.app">
+<meta property="og:url" content="https://immocg.onrender.com">
+<meta property="og:image" content="https://immocg.onrender.com/og-image.jpg">
+<link rel="canonical" href="https://immocg.onrender.com">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -96,14 +96,14 @@
       padding: 8px;
       display: flex;
       gap: 8px;
-      max-width: 680px;
+      max-width: 900px;
       margin: 0 auto 1.5rem;
       flex-wrap: wrap;
       box-shadow: 0 8px 32px rgba(0,0,0,0.3);
     }
     .search-box input, .search-box select {
       flex: 1;
-      min-width: 140px;
+      min-width: 120px;
       border: none;
       outline: none;
       padding: 10px 14px;
@@ -125,6 +125,18 @@
       white-space: nowrap;
     }
     .search-box button:hover { background: #b8842e; }
+
+    .hero-steps {
+      display: flex;
+      gap: 2rem;
+      justify-content: center;
+      margin-top: 2rem;
+      flex-wrap: wrap;
+    }
+    .hero-step { text-align: center; color: rgba(255,255,255,0.7); }
+    .hero-step-icon { font-size: 24px; margin-bottom: 4px; }
+    .hero-step-label { font-size: 12px; font-weight: 600; }
+    .hero-step-arrow { color: rgba(255,255,255,0.3); align-self: center; font-size: 18px; }
 
     .hero-tags { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
     .hero-tag {
@@ -181,6 +193,29 @@
     .card-feats { display: flex; gap: 12px; font-size: 12px; color: #888780; margin-bottom: 12px; }
     .card-btn { display: block; width: 100%; padding: 10px; background: #1A1A18; color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-family: 'Segoe UI', sans-serif; }
     .card-btn:hover { background: #C9963A; }
+
+    /* NOUVEAUTÉS */
+    .nouveautes-section { background: linear-gradient(135deg, #faf8f5, #f5f0e8); padding: 3rem 2rem; margin: 0; }
+    .nouveautes-section .section { margin: 0 auto; }
+
+    /* TÉMOIGNAGES */
+    .temoignages-section { max-width: 1080px; margin: 4rem auto; padding: 0 2rem; }
+    .temoignage-card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 1.5rem;
+      border: 1px solid rgba(0,0,0,0.08);
+    }
+    .temoignage-header { display: flex; gap: 10px; align-items: center; margin-bottom: 1rem; }
+    .temoignage-avatar {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: #F0D9A8; display: flex; align-items: center; justify-content: center;
+      font-weight: 700; color: #7A5A1A; font-size: 14px;
+    }
+    .temoignage-nom { font-weight: 600; font-size: 14px; color: #1A1A18; }
+    .temoignage-quartier { font-size: 12px; color: #888780; }
+    .temoignage-text { font-size: 14px; color: #444; line-height: 1.6; }
+    .temoignage-stars { margin-top: 10px; color: #C9963A; font-size: 16px; }
 
     /* COMMENT CA MARCHE */
     .how-section { background: #1A1A18; padding: 4rem 2rem; margin: 3rem 0; }
@@ -239,10 +274,14 @@
     }
     .whatsapp-float:hover { transform: scale(1.1); }
 
-    footer { text-align: center; padding: 3rem 2rem; font-size: 13px; color: #888780; border-top: 1px solid rgba(0,0,0,0.08); }
+    footer { text-align: center; padding: 3rem 2rem 2rem; font-size: 13px; color: #888780; border-top: 1px solid rgba(0,0,0,0.08); }
     .footer-links { display: flex; justify-content: center; gap: 2rem; margin-bottom: 1rem; flex-wrap: wrap; }
     .footer-links a { color: #888780; text-decoration: none; font-size: 13px; }
     .footer-links a:hover { color: #C9963A; }
+    .footer-contact { margin-top: 1rem; }
+    .footer-contact a { color: #888; text-decoration: none; font-size: 14px; margin: 0 8px; }
+    .footer-contact a:hover { color: #C9963A; }
+    .footer-copy { margin-top: 1rem; font-size: 12px; color: #aaa; }
 
     /* HAMBURGER */
 .hamburger {
@@ -281,6 +320,8 @@
   .search-box { flex-direction: column; }
   .search-box input, .search-box select { width: 100%; min-width: unset; }
   .hero-tags { overflow-x: auto; flex-wrap: nowrap; justify-content: flex-start; padding-bottom: 6px; }
+  .hero-steps { gap: 1rem; }
+  .hero-step-arrow { display: none; }
   .stats { gap: 1.5rem; padding: 1.2rem; }
   .cards { grid-template-columns: 1fr; }
   .how-steps { grid-template-columns: 1fr 1fr; }
@@ -292,6 +333,7 @@
   .how-steps { grid-template-columns: 1fr; }
 }
   </style>
+<base target="_blank">
 </head>
 <body>
 
@@ -301,7 +343,7 @@
     <div class="logo">Immo<span>CG</span></div>
   </a>
   <div class="nav-links" id="nav-menu">
-    <span style="position:absolute;top:1.5rem;right:1.5rem;color:#fff;font-size:28px;cursor:pointer;display:none;" id="close-btn" onclick="toggleMenu()">✕</span>
+    <span style="position:absolute;top:1.5rem;right:1.5rem;color:#fff;font-size:28px;cursor:pointer;display:none;" id="close-btn" onclick="closeMenu()">✕</span>
     <a href="index.html#biens" onclick="closeMenu()">Biens</a>
     <a href="index.html#comment" onclick="closeMenu()">Comment ça marche</a>
     <a href="conditions.html">Partenariat</a>
@@ -321,7 +363,7 @@
     <p>La plateforme immobilière de Brazzaville — appartements, villas, studios vérifiés par notre équipe.</p>
 
     <form class="search-box" id="search-form" role="search">
-      <input type="text" id="search-quartier" placeholder="Quartier à Brazzaville..." list="liste-quartiers" autocomplete="off">
+      <input type="text" id="search-quartier" placeholder="Quartier..." list="liste-quartiers" autocomplete="off">
       <datalist id="liste-quartiers"></datalist>
       <select id="search-type">
         <option value="">Tous les types</option>
@@ -338,9 +380,35 @@
         <option value="acheter">Acheter</option>
         <option value="jour">📅 Par jour</option>
       </select>
+      <select id="search-budget">
+        <option value="">Tous les budgets</option>
+        <option value="0-100000">Moins de 100K</option>
+        <option value="100000-300000">100K - 300K</option>
+        <option value="300000-500000">300K - 500K</option>
+        <option value="500000-1000000">500K - 1M</option>
+        <option value="1000000+">Plus de 1M</option>
+      </select>
       <button type="submit" id="search-btn">🔍 Rechercher</button>
     </form>
     <p class="search-hint" id="search-hint"></p>
+
+    <!-- MINI-PROCESSUS -->
+    <div class="hero-steps">
+      <div class="hero-step">
+        <div class="hero-step-icon">🔍</div>
+        <div class="hero-step-label">Recherchez</div>
+      </div>
+      <div class="hero-step-arrow">→</div>
+      <div class="hero-step">
+        <div class="hero-step-icon">📸</div>
+        <div class="hero-step-label">Visitez</div>
+      </div>
+      <div class="hero-step-arrow">→</div>
+      <div class="hero-step">
+        <div class="hero-step-icon">🏠</div>
+        <div class="hero-step-label">Emménagez</div>
+      </div>
+    </div>
 
     <div class="hero-tags" id="hero-tags">
       <div class="hero-tag" data-quartier="Bacongo" onclick="filtrerParQuartier('Bacongo')">Bacongo</div>
@@ -354,11 +422,26 @@
 
   <!-- STATS -->
   <div class="stats">
-    <div class="stat"><div class="stat-num" id="stat-biens">—</div><div class="stat-lbl">Biens disponibles</div></div>
-    <div class="stat"><div class="stat-num" id="stat-agences">—</div><div class="stat-lbl">Agences partenaires</div></div>
-    <div class="stat"><div class="stat-num">100%</div><div class="stat-lbl">Biens vérifiés</div></div>
-    <div class="stat"><div class="stat-num">24h</div><div class="stat-lbl">Délai de réponse</div></div>
+    <div class="stat"><div class="stat-num" id="stat-biens">0</div><div class="stat-lbl">Biens disponibles</div></div>
+    <div class="stat"><div class="stat-num" id="stat-agences">0</div><div class="stat-lbl">Agences partenaires</div></div>
+    <div class="stat"><div class="stat-num" id="stat-verifies">100%</div><div class="stat-lbl">Biens vérifiés</div></div>
+    <div class="stat"><div class="stat-num" id="stat-delai">24h</div><div class="stat-lbl">Délai de réponse</div></div>
   </div>
+
+  <!-- NOUVEAUTÉS -->
+  <section class="nouveautes-section">
+    <div class="section">
+      <div class="section-header">
+        <div>
+          <h2>🔥 Nouveautés à Brazzaville</h2>
+          <p class="section-sub">Les derniers biens vérifiés par notre équipe</p>
+        </div>
+      </div>
+      <div class="cards" id="liste-nouveautes">
+        <div class="loading">Chargement...</div>
+      </div>
+    </div>
+  </section>
 
   <!-- BIENS -->
   <section class="section" id="biens">
@@ -387,6 +470,51 @@
     </div>
   </section>
 
+  <!-- TÉMOIGNAGES -->
+  <section class="temoignages-section">
+    <div class="section-header">
+      <div>
+        <h2>⭐ Ce que disent nos clients</h2>
+        <p class="section-sub">Des Congolais qui ont trouvé leur logement avec ImmoCG</p>
+      </div>
+    </div>
+    <div class="cards" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+      <div class="temoignage-card">
+        <div class="temoignage-header">
+          <div class="temoignage-avatar">JM</div>
+          <div>
+            <div class="temoignage-nom">Jean Moukala</div>
+            <div class="temoignage-quartier">Bacongo</div>
+          </div>
+        </div>
+        <div class="temoignage-text">"J'ai trouvé mon appartement en 2 jours. Les biens sont vraiment vérifiés, pas d'arnaque comme sur d'autres sites. La référence ImmoCG m'a rassuré."</div>
+        <div class="temoignage-stars">★★★★★</div>
+      </div>
+      <div class="temoignage-card">
+        <div class="temoignage-header">
+          <div class="temoignage-avatar">SM</div>
+          <div>
+            <div class="temoignage-nom">Sarah Mabiala</div>
+            <div class="temoignage-quartier">Poto-Poto</div>
+          </div>
+        </div>
+        <div class="temoignage-text">"En tant qu'agence, ImmoCG nous apporte des clients qualifiés. Le système de commission est clair et les contrats PDF sont professionnels."</div>
+        <div class="temoignage-stars">★★★★★</div>
+      </div>
+      <div class="temoignage-card">
+        <div class="temoignage-header">
+          <div class="temoignage-avatar">PK</div>
+          <div>
+            <div class="temoignage-nom">Patrick Kibala</div>
+            <div class="temoignage-quartier">Centre-ville</div>
+          </div>
+        </div>
+        <div class="temoignage-text">"J'ai loué une villa meublée pour ma famille. Le processus de réservation avec la référence unique m'a donné confiance. Je recommande !"</div>
+        <div class="temoignage-stars">★★★★★</div>
+      </div>
+    </div>
+  </section>
+
   <!-- CTA PARTENAIRE -->
   <section class="cta-section">
     <div class="cta-card">
@@ -406,18 +534,27 @@
 
   <!-- FOOTER -->
   <footer>
-  <div class="footer-links">
-    <a href="apropos.html">À propos</a>
-    <a href="contact.html">Contact</a>
-    <a href="conditions.html">Partenariat</a>
-    <a href="register.html">Devenir partenaire</a>
-    <a href="login.html">Connexion</a>
-    <a href="blog.html">Blog</a>
-  </div>
-  ImmoCG · Brazzaville, Congo · 2026 · Tous droits réservés
-</footer>
+    <div class="footer-links">
+      <a href="apropos.html">À propos</a>
+      <a href="contact.html">Contact</a>
+      <a href="conditions.html">Partenariat</a>
+      <a href="register.html">Devenir partenaire</a>
+      <a href="login.html">Connexion</a>
+      <a href="blog.html">Blog</a>
+    </div>
+    <div class="footer-contact">
+      <a href="https://wa.me/242068834146" target="_blank">💬 WhatsApp</a>
+      <span style="color:#888;">|</span>
+      <a href="mailto:contact@immocg.com">✉️ contact@immocg.com</a>
+      <span style="color:#888;">|</span>
+      <a href="tel:+242068834146">📞 +242 06 883 4146</a>
+    </div>
+    <div class="footer-copy">
+      ImmoCG · Brazzaville, Congo · 2026 · Tous droits réservés
+    </div>
+  </footer>
 
   <script src="js/config.js"></script>
-<script src="js/index.js"></script>
+  <script src="js/index.js"></script>
 </body>
 </html>

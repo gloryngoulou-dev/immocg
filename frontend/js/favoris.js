@@ -2,6 +2,16 @@ function esc(v) {
       return String(v == null ? '' : v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#x27;')
     }
 
+    function retirerFavori(id, btn) {
+      let favoris = JSON.parse(localStorage.getItem('favoris_immocg') || '[]')
+      favoris = favoris.filter(f => f !== id)
+      localStorage.setItem('favoris_immocg', JSON.stringify(favoris))
+      btn.closest('.card').remove()
+      const restant = document.querySelectorAll('.card').length
+      document.getElementById('nb-favoris').textContent = `${restant} bien(s) sauvegardé(s)`
+      if (restant === 0) chargerFavoris()
+    }
+
     async function chargerFavoris() {
       const favoris = JSON.parse(localStorage.getItem('favoris_immocg') || '[]')
       const container = document.getElementById('liste-favoris')
@@ -15,7 +25,8 @@ function esc(v) {
         const h2 = document.createElement('h2')
         h2.textContent = 'Aucun favori'
         const p = document.createElement('p')
-        p.textContent = 'Vous n\'avez pas encore sauvegardé de biens. Explorez nos annonces et cliquez sur ❤️ pour sauvegarder.'
+        // CORRECTION : apostrophe échappée avec backslash
+        p.textContent = "Vous n\'avez pas encore sauvegardé de biens. Explorez nos annonces et cliquez sur ❤️ pour sauvegarder."
         const btn = document.createElement('button')
         btn.className = 'btn-explorer'
         btn.textContent = 'Explorer les biens'
@@ -61,7 +72,6 @@ function esc(v) {
         const card = document.createElement('div')
         card.className = 'card'
 
-        // Image
         const cardImg = document.createElement('div')
         cardImg.className = 'card-img'
         const imgSafe = safeUrl(b.image_url)
@@ -81,7 +91,6 @@ function esc(v) {
         cardImg.appendChild(badge)
         cardImg.appendChild(btnRetirer)
 
-        // Body
         const cardBody = document.createElement('div')
         cardBody.className = 'card-body'
         cardBody.addEventListener('click', () => window.location.href = 'bien.html?id=' + encodeURIComponent(b.id))
@@ -119,15 +128,6 @@ function esc(v) {
         card.appendChild(cardBody)
         container.appendChild(card)
       })
-
-    function retirerFavori(id, btn) {
-      let favoris = JSON.parse(localStorage.getItem('favoris_immocg') || '[]')
-      favoris = favoris.filter(f => f !== id)
-      localStorage.setItem('favoris_immocg', JSON.stringify(favoris))
-      btn.closest('.card').remove()
-      const restant = document.querySelectorAll('.card').length
-      document.getElementById('nb-favoris').textContent = `${restant} bien(s) sauvegardé(s)`
-      if (restant === 0) chargerFavoris()
-    } }
+    }
 
     chargerFavoris()

@@ -1,4 +1,4 @@
-const photosAUploader = [] // tableau global
+const photosAUploader = []
 const files = new Array(5).fill(null)
 
 const grid = document.getElementById('photos-grid')
@@ -55,7 +55,7 @@ function removePhoto(e, index) {
 async function uploaderPhoto(file) {
   const formData = new FormData()
   formData.append('image', file)
-  
+
   const r = await fetch('/upload', {
     method: 'POST',
     credentials: 'include',
@@ -100,40 +100,43 @@ async function publierBien() {
     const mode = document.getElementById('mode').value
     const estParJour = mode === 'jour'
 
+    // Récupérer l'utilisateur connecté avec l'ID
+    const userData = JSON.parse(localStorage.getItem('immocg_user') || 'null')
+
     const bien = {
-  type: document.getElementById('type').value,
-  mode: estParJour ? 'jour' : mode,
-  prix: estParJour ? 0 : (parseInt(document.getElementById('prix').value) || 0),
-  prix_jour: estParJour ? (parseInt(document.getElementById('prix_jour').value) || 0) : null,
-  duree_min_jours: estParJour ? parseInt(document.getElementById('duree_min_jours').value) : null,
-  unite: document.getElementById('unite').value,
-  quartier: document.getElementById('quartier').value,
-  ville: document.getElementById('ville').value,
-  titre: document.getElementById('titre').value,
-  adresse: document.getElementById('adresse').value,
-  chambres: parseInt(document.getElementById('chambres').value) || 0,
-  salles_bain: parseInt(document.getElementById('salles_bain').value) || 0,
-  surface: parseInt(document.getElementById('surface').value) || 0,
-  surface_terrain: parseInt(document.getElementById('surface_terrain').value) || 0,
-  etat: document.getElementById('etat').value,
-  meuble: document.getElementById('meuble').value,
-  etage: document.getElementById('etage').value,
-  parking: document.getElementById('parking').value,
-  contact_nom: document.getElementById('contact_nom').value,
-  contact_tel: document.getElementById('contact_tel').value,
-  contact_whatsapp: document.getElementById('contact_whatsapp').value,
-  contact_email: document.getElementById('contact_email').value,
-  description: document.getElementById('description').value,
-  image_url: urls[0] || null,
-  user_id: JSON.parse(localStorage.getItem('immocg_user') || 'null')?.id || null,
-  images: urls,
-  equipements: equipements,
-  video_url: await uploaderVideo()
-}
+      type: document.getElementById('type').value,
+      mode: estParJour ? 'jour' : mode,
+      prix: estParJour ? 0 : (parseInt(document.getElementById('prix').value) || 0),
+      prix_jour: estParJour ? (parseInt(document.getElementById('prix_jour').value) || 0) : null,
+      duree_min_jours: estParJour ? parseInt(document.getElementById('duree_min_jours').value) : null,
+      unite: document.getElementById('unite').value,
+      quartier: document.getElementById('quartier').value,
+      ville: document.getElementById('ville').value,
+      titre: document.getElementById('titre').value,
+      adresse: document.getElementById('adresse').value,
+      chambres: parseInt(document.getElementById('chambres').value) || 0,
+      salles_bain: parseInt(document.getElementById('salles_bain').value) || 0,
+      surface: parseInt(document.getElementById('surface').value) || 0,
+      surface_terrain: parseInt(document.getElementById('surface_terrain').value) || 0,
+      etat: document.getElementById('etat').value,
+      meuble: document.getElementById('meuble').value,
+      etage: document.getElementById('etage').value,
+      parking: document.getElementById('parking').value,
+      contact_nom: document.getElementById('contact_nom').value,
+      contact_tel: document.getElementById('contact_tel').value,
+      contact_whatsapp: document.getElementById('contact_whatsapp').value,
+      contact_email: document.getElementById('contact_email').value,
+      description: document.getElementById('description').value,
+      image_url: urls[0] || null,
+      user_id: userData?.id || null,
+      images: urls,
+      equipements: equipements,
+      video_url: await uploaderVideo()
+    }
 
     setProgress(85)
 
-    
+
     const r = await fetch('/biens', {
       method: 'POST',
       headers: {
@@ -170,17 +173,17 @@ function afficherMessage(msg, type) {
 function verifierVideo(input) {
   const file = input.files[0]
   if (!file) return
-  
+
   const maxSize = 50 * 1024 * 1024 // 50MB
   const errEl = document.getElementById('video-error')
-  
+
   if (file.size > maxSize) {
     errEl.textContent = `⚠️ Vidéo trop lourde (${(file.size/1024/1024).toFixed(1)}MB). Maximum 50MB. Utilisez plutôt un lien YouTube.`
     errEl.style.display = 'block'
     input.value = ''
     return
   }
-  
+
   errEl.style.display = 'none'
   const preview = document.getElementById('video-preview')
   preview.src = URL.createObjectURL(file)
@@ -195,7 +198,7 @@ async function uploaderVideo() {
   const formData = new FormData()
   formData.append('video', input.files[0])
 
-  
+
   const r = await fetch('/upload-video', {
     method: 'POST',
     credentials: 'include',

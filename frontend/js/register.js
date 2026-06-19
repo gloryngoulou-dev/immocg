@@ -5,6 +5,7 @@ async function sInscrire() {
       const email = document.getElementById('email').value
       const mot_de_passe = document.getElementById('mot_de_passe').value
       const btn = document.getElementById('btn-register')
+      const conditions = document.getElementById('conditions').checked
 
       if (!nom_agence || !nom || !email || !mot_de_passe || !telephone) {
         afficherMessage('Veuillez remplir tous les champs.', 'error')
@@ -13,6 +14,11 @@ async function sInscrire() {
 
       if (mot_de_passe.length < 6) {
         afficherMessage('Le mot de passe doit faire au moins 6 caractères.', 'error')
+        return
+      }
+
+      if (!conditions) {
+        afficherMessage('Veuillez accepter les conditions du partenariat.', 'error')
         return
       }
 
@@ -40,13 +46,6 @@ async function sInscrire() {
         btn.disabled = false
         btn.textContent = 'Envoyer ma demande'
       }
-
-      const conditions = document.getElementById('conditions').checked
-if (!conditions) {
-  afficherMessage('Veuillez accepter les conditions du partenariat.', 'error')
-  return
-}
-
     }
 
     function afficherMessage(msg, type) {
@@ -54,6 +53,6 @@ if (!conditions) {
       el.textContent = msg
       el.className = 'message ' + type
     }
-  
+
 
 window.sInscrire = sInscrire

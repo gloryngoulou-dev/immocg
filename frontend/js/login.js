@@ -1,5 +1,5 @@
 // Si déjà connecté, rediriger
-    
+
     const user = JSON.parse(localStorage.getItem('immocg_user') || 'null')
     if (user) {
       if (user.role === 'admin') window.location.href = 'admin.html'
@@ -28,12 +28,13 @@
         const data = await r.json()
 
         if (data.success) {
-          // Le token JWT est géré côté serveur via cookie HttpOnly
-          // On stocke uniquement les infos non-sensibles pour l'UI
+          // Stocker l'ID aussi pour le publier.js
           localStorage.setItem('immocg_user', JSON.stringify({
+            id: data.user.id,
             nom: data.user.nom,
             email: data.user.email,
-            role: data.user.role
+            role: data.user.role,
+            nom_agence: data.user.nom_agence
           }))
           afficherMessage('✅ Connexion réussie ! Redirection...', 'success')
           setTimeout(() => {
@@ -62,6 +63,6 @@
     document.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') seConnecter()
     })
-  
+
 
 window.seConnecter = seConnecter
