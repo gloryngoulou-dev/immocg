@@ -1,3 +1,4 @@
+﻿
 const CONTACT_FIELDS = [
   'contact_nom',
   'contact_tel',
