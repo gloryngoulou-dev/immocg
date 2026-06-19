@@ -16,7 +16,9 @@ const queryParamsSchema = Joi.object({
   quartier: Joi.string().max(100).optional(),
   type: Joi.string().valid('appartement', 'maison', 'terrain', 'local', 'bureau').optional(),
   mode: Joi.string().valid('vente', 'location', 'viager', 'jour').optional(),
-  admin: Joi.boolean().optional()
+  budget: Joi.string().valid('0-100000', '100000-300000', '300000-500000', '500000-1000000', '1000000+').optional(),
+  admin: Joi.boolean().optional(),
+  limit: Joi.number().integer().min(1).max(50).optional()
 })
 
 const idParamSchema = Joi.object({
@@ -33,8 +35,8 @@ const bienCreationSchema = Joi.object({
   prix: Joi.number().positive().required(),
   unite: Joi.string().valid('FCFA', 'EUR', 'USD', 'FCFA/mois', 'FCFA/an', 'FCFA/jour').default('FCFA'),
   mode: Joi.string().valid('vente', 'location', 'viager', 'jour').required(),
-  prix_jour: Joi.number().positive().optional(), // Prix par nuit pour location/jour
-  duree_min_jours: Joi.number().integer().min(1).max(30).default(1), // Durée min en jours
+  prix_jour: Joi.number().positive().optional(),
+  duree_min_jours: Joi.number().integer().min(1).max(30).default(1),
   chambres: Joi.number().integer().min(0).max(20).optional(),
   salles_bain: Joi.number().integer().min(0).max(20).optional(),
   surface: Joi.number().positive().optional(),
@@ -70,13 +72,12 @@ function requireAdmin(req, res, next) {
 // ========== ROUTES ==========
 
 router.get('/', async (req, res) => {
-  // Validation des paramètres de requête
   const { error, value } = queryParamsSchema.validate(req.query)
   if (error) {
     return res.status(400).json({ success: false, message: 'Paramètres invalides' })
   }
 
-  const { quartier, type, mode, admin } = value
+  const { quartier, type, mode, budget, admin, limit } = value
   const isAdmin = admin === true
 
   try {
@@ -87,11 +88,23 @@ router.get('/', async (req, res) => {
     }
 
     if (quartier) {
-      const searchTerm = `%${quartier.replace(/[%_]/g, '\\$&')}%`
+      const searchTerm = `%${quartier.replace(/[%_]/g, '\$&')}%`
       query = query.or(`quartier.ilike.${searchTerm},titre.ilike.${searchTerm},description.ilike.${searchTerm}`)
     }
     if (type) query = query.eq('type', type)
     if (mode) query = query.eq('mode', mode)
+
+    // Filtre budget
+    if (budget) {
+      if (budget === '1000000+') {
+        query = query.gte('prix', 1000000)
+      } else {
+        const [min, max] = budget.split('-').map(v => parseInt(v))
+        query = query.gte('prix', min).lte('prix', max)
+      }
+    }
+
+    if (limit) query = query.limit(limit)
 
     const { data, error: dbError } = await query
     if (dbError) throw dbError
@@ -121,7 +134,6 @@ router.get('/mine', verifierToken, async (req, res) => {
 })
 
 router.get('/:id', async (req, res) => {
-  // Validation de l'ID
   const { error: idError } = idParamSchema.validate({ id: req.params.id })
   if (idError) {
     return res.status(400).json({ success: false, message: 'ID invalide' })
@@ -150,7 +162,6 @@ router.get('/:id', async (req, res) => {
 })
 
 router.post('/', verifierToken, async (req, res) => {
-  // Validation des données du bien
   const { error, value } = bienCreationSchema.validate(req.body)
   if (error) {
     return res.status(400).json({ 
@@ -180,7 +191,6 @@ router.post('/', verifierToken, async (req, res) => {
 })
 
 router.delete('/:id', verifierToken, requireAdmin, async (req, res) => {
-  // Validation de l'ID
   const { error: idError } = idParamSchema.validate({ id: req.params.id })
   if (idError) {
     return res.status(400).json({ success: false, message: 'ID invalide' })
@@ -201,13 +211,11 @@ router.delete('/:id', verifierToken, requireAdmin, async (req, res) => {
 })
 
 router.patch('/:id/statut', verifierToken, requireAdmin, async (req, res) => {
-  // Validation de l'ID
   const { error: idError } = idParamSchema.validate({ id: req.params.id })
   if (idError) {
     return res.status(400).json({ success: false, message: 'ID invalide' })
   }
 
-  // Validation du statut
   const { error, value } = statutUpdateSchema.validate(req.body)
   if (error) {
     return res.status(400).json({ success: false, message: 'Statut invalide' })
@@ -227,7 +235,6 @@ router.patch('/:id/statut', verifierToken, requireAdmin, async (req, res) => {
   }
 })
 
-module.exports = router
 // PATCH /biens/:id/verifier — agence confirme que le bien est toujours disponible
 router.patch('/:id/verifier', verifierToken, async (req, res) => {
   const { error: idError } = idParamSchema.validate({ id: req.params.id })
@@ -238,7 +245,7 @@ router.patch('/:id/verifier', verifierToken, async (req, res) => {
       .from('biens')
       .update({ derniere_verification: new Date().toISOString() })
       .eq('id', req.params.id)
-      .eq('user_id', req.user.id) // Seul le propriétaire peut vérifier
+      .eq('user_id', req.user.id)
 
     if (error) throw error
     res.json({ success: true, message: 'Disponibilité confirmée ✅' })
@@ -246,3 +253,5 @@ router.patch('/:id/verifier', verifierToken, async (req, res) => {
     res.status(500).json({ success: false, message: 'Erreur interne' })
   }
 })
+
+module.exports = router
