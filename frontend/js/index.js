@@ -195,10 +195,25 @@ async function chargerNouveautes() {
       cardImg.className = 'card-img'
       const imgSafe = safeUrl(b.image_url)
       if (imgSafe) {
-        cardImg.style.backgroundImage = `url(${imgSafe})`
+        if (imgSafe) {
+    cardImg.dataset.src = imgSafe
+    cardImg.classList.add('lazy')
+    observer.observe(cardImg)
+}
       } else {
         cardImg.textContent = icones[b.type] || '🏠'
       }
+
+      // Ajouter l'IntersectionObserver
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.style.backgroundImage = `url(${entry.target.dataset.src})`
+            observer.unobserve(entry.target)
+        }
+    })
+})
+
       const badge = document.createElement('div')
       badge.className = 'card-badge' + (b.mode === 'louer' ? ' louer' : b.mode === 'jour' ? ' jour' : '')
       badge.textContent = b.mode === 'louer' ? 'À louer' : b.mode === 'jour' ? '📅 Par jour' : 'À vendre'
