@@ -277,7 +277,12 @@ const observer = new IntersectionObserver((entries) => {
       container.appendChild(card)
     })
   } catch {
-    document.getElementById('liste-nouveautes').innerHTML = '<div class="empty-state">Erreur de chargement</div>'
+    const el = document.getElementById('liste-nouveautes')
+    el.textContent = ''
+    const div = document.createElement('div')
+    div.className = 'empty-state'
+    div.textContent = 'Erreur de chargement'
+    el.appendChild(div)
   }
 }
 
