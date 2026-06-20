@@ -176,7 +176,10 @@ async function chargerNouveautes() {
     container.textContent = ''
 
     if (biens.length === 0) {
-      container.innerHTML = '<div class="empty-state">Aucune nouveauté pour le moment</div>'
+      const div = document.createElement('div')
+      div.className = 'empty-state'
+      div.textContent = 'Aucune nouveauté pour le moment'
+      container.appendChild(div)
       return
     }
 

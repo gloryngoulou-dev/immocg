@@ -681,11 +681,25 @@ function ouvrirModalReservation(bienId, mode) {
 
         const para = document.createElement('p');
         para.style.cssText = 'color:#555;line-height:1.6;margin-bottom:1rem;';
-        para.innerHTML = `L'agence a <strong>24h</strong> pour valider votre demande.<br>Votre référence ImmoCG : <strong>${ref}</strong>`;
+        para.appendChild(document.createTextNode("L'agence a "));
+        const strongDelai = document.createElement('strong'); strongDelai.textContent = '24h'; para.appendChild(strongDelai);
+        para.appendChild(document.createTextNode(' pour valider votre demande.'));
+        para.appendChild(document.createElement('br'));
+        para.appendChild(document.createTextNode('Votre référence ImmoCG : '));
+        const strongRef = document.createElement('strong'); strongRef.textContent = ref; para.appendChild(strongRef);
 
         const clauses = document.createElement('div');
         clauses.style.cssText = 'background:#fffdf5;border-radius:10px;padding:1rem;font-size:12px;color:#7A5A1A;line-height:1.8;text-align:left;margin-bottom:1rem;';
-        clauses.innerHTML = '<strong>📋 Rappel des clauses :</strong><br>⏱️ L\'agence a 24h pour vous répondre<br>⏱️ Vous avez 48h pour confirmer votre présence<br>✅ Si le bien ne correspond pas aux critères, annulation sans frais';
+        const titreClauses = document.createElement('strong'); titreClauses.textContent = '📋 Rappel des clauses :';
+        clauses.appendChild(titreClauses);
+        ;[
+          '⏱️ L\'agence a 24h pour vous répondre',
+          '⏱️ Vous avez 48h pour confirmer votre présence',
+          '✅ Si le bien ne correspond pas aux critères, annulation sans frais'
+        ].forEach(ligne => {
+          clauses.appendChild(document.createElement('br'))
+          clauses.appendChild(document.createTextNode(ligne))
+        });
 
         const paraWA = document.createElement('p');
         paraWA.style.cssText = 'font-size:13px;color:#555;margin-bottom:1rem;';
