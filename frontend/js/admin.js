@@ -488,15 +488,18 @@ function ouvrirModalClotureAdmin(reservation) {
 
   const btnPris = document.createElement('button')
   btnPris.style.cssText = 'width:100%;background:#d4edda;color:#155724;border:none;padding:13px;border-radius:10px;font-weight:600;font-size:14px;cursor:pointer;margin-bottom:8px;text-align:left;'
-  btnPris.innerHTML = '✅ <strong>Le client a pris le bien</strong>'
+  const strongPris = document.createElement('strong'); strongPris.textContent = 'Le client a pris le bien'
+  btnPris.appendChild(document.createTextNode('✅ ')); btnPris.appendChild(strongPris)
 
   const btnRefuse = document.createElement('button')
   btnRefuse.style.cssText = 'width:100%;background:#fff3cd;color:#856404;border:none;padding:13px;border-radius:10px;font-weight:600;font-size:14px;cursor:pointer;margin-bottom:8px;text-align:left;'
-  btnRefuse.innerHTML = '🙅 <strong>Le client n\'a pas voulu</strong>'
+  const strongRefuse = document.createElement('strong'); strongRefuse.textContent = 'Le client n\'a pas voulu'
+  btnRefuse.appendChild(document.createTextNode('🙅 ')); btnRefuse.appendChild(strongRefuse)
 
   const btnAbsent = document.createElement('button')
   btnAbsent.style.cssText = 'width:100%;background:#f8d7da;color:#721c24;border:none;padding:13px;border-radius:10px;font-weight:600;font-size:14px;cursor:pointer;margin-bottom:8px;text-align:left;'
-  btnAbsent.innerHTML = '👻 <strong>Le client ne s\'est pas présenté</strong>'
+  const strongAbsent = document.createElement('strong'); strongAbsent.textContent = 'Le client ne s\'est pas présenté'
+  btnAbsent.appendChild(document.createTextNode('👻 ')); btnAbsent.appendChild(strongAbsent)
 
   const btnAnnuler = document.createElement('button')
   btnAnnuler.style.cssText = 'width:100%;background:none;border:1px solid #ddd;color:#555;padding:10px;border-radius:10px;font-size:14px;cursor:pointer;margin-top:4px;'

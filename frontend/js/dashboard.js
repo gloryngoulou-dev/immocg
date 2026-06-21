@@ -315,15 +315,21 @@ function ouvrirModalCloture(reservation) {
 
   const btnPris = document.createElement('button')
   btnPris.style.cssText = 'width:100%;background:#d4edda;color:#155724;border:none;padding:13px;border-radius:10px;font-weight:600;font-size:14px;cursor:pointer;margin-bottom:8px;text-align:left;'
-  btnPris.innerHTML = '✅ <strong>Le client a pris le bien</strong><br><span style="font-size:12px;font-weight:400;">Le bien reste loué/vendu — déclarez la transaction ensuite</span>'
+  const strongPris = document.createElement('strong'); strongPris.textContent = 'Le client a pris le bien'
+  const spanPris = document.createElement('span'); spanPris.style.cssText = 'font-size:12px;font-weight:400;'; spanPris.textContent = 'Le bien reste loué/vendu — déclarez la transaction ensuite'
+  btnPris.appendChild(document.createTextNode('✅ ')); btnPris.appendChild(strongPris); btnPris.appendChild(document.createElement('br')); btnPris.appendChild(spanPris)
 
   const btnRefuse = document.createElement('button')
   btnRefuse.style.cssText = 'width:100%;background:#fff3cd;color:#856404;border:none;padding:13px;border-radius:10px;font-weight:600;font-size:14px;cursor:pointer;margin-bottom:8px;text-align:left;'
-  btnRefuse.innerHTML = '🙅 <strong>Le client n\'a pas voulu</strong><br><span style="font-size:12px;font-weight:400;">Le bien redevient disponible immédiatement</span>'
+  const strongRefuse = document.createElement('strong'); strongRefuse.textContent = 'Le client n\'a pas voulu'
+  const spanRefuse = document.createElement('span'); spanRefuse.style.cssText = 'font-size:12px;font-weight:400;'; spanRefuse.textContent = 'Le bien redevient disponible immédiatement'
+  btnRefuse.appendChild(document.createTextNode('🙅 ')); btnRefuse.appendChild(strongRefuse); btnRefuse.appendChild(document.createElement('br')); btnRefuse.appendChild(spanRefuse)
 
   const btnAbsent = document.createElement('button')
   btnAbsent.style.cssText = 'width:100%;background:#f8d7da;color:#721c24;border:none;padding:13px;border-radius:10px;font-weight:600;font-size:14px;cursor:pointer;margin-bottom:8px;text-align:left;'
-  btnAbsent.innerHTML = '👻 <strong>Le client ne s\'est pas présenté</strong><br><span style="font-size:12px;font-weight:400;">Le bien redevient disponible immédiatement</span>'
+  const strongAbsent = document.createElement('strong'); strongAbsent.textContent = 'Le client ne s\'est pas présenté'
+  const spanAbsent = document.createElement('span'); spanAbsent.style.cssText = 'font-size:12px;font-weight:400;'; spanAbsent.textContent = 'Le bien redevient disponible immédiatement'
+  btnAbsent.appendChild(document.createTextNode('👻 ')); btnAbsent.appendChild(strongAbsent); btnAbsent.appendChild(document.createElement('br')); btnAbsent.appendChild(spanAbsent)
 
   const btnAnnuler = document.createElement('button')
   btnAnnuler.style.cssText = 'width:100%;background:none;border:1px solid #ddd;color:#555;padding:10px;border-radius:10px;font-size:14px;cursor:pointer;margin-top:4px;'
