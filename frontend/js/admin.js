@@ -283,7 +283,7 @@ async function traiterResAdmin(id, statut, reservation) {
     }
 
     const paiement = typeof saisirInfosPaiement === 'function'
-      ? saisirInfosPaiement(montantSuggere)
+      ? await saisirInfosPaiement(montantSuggere)
       : null
     if (!paiement) {
       alert('Validation annulée : informations de paiement requises.')
