@@ -370,107 +370,174 @@ function ouvrirModalCloture(reservation) {
 }
 
 function ouvrirModalDeclaration(reservation) {
-  // Supprimer modal existant
-  const existant = document.getElementById('modal-declaration')
-  if (existant) existant.remove()
+  const ancien = document.getElementById('modal-declaration')
+  if (ancien) ancien.remove()
 
-  // Calculer le montant suggéré
-  const typeMap = {
-    visite: 'visite',
-    location_jour: 'location_jour',
-    achat: 'vente',
-  }
+  const typeMap = { visite: 'visite', location_jour: 'location_jour', achat: 'vente' }
   const typeDefaut = typeMap[reservation.type_reservation] || 'location'
 
   const modal = document.createElement('div')
   modal.id = 'modal-declaration'
-  modal.style.cssText = `
-    position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.6);
-    display:flex;align-items:center;justify-content:center;padding:1rem;
-  `
+  modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(20,18,15,0.55);backdrop-filter:blur(2px);display:flex;align-items:center;justify-content:center;padding:1rem;'
 
   const box = document.createElement('div')
   box.style.cssText = `
-    background:#fff;border-radius:16px;padding:2rem;max-width:480px;width:100%;
-    max-height:90vh;overflow-y:auto;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.3);
+    background:#fff;border-radius:18px;padding:2rem;max-width:460px;width:100%;
+    max-height:90vh;overflow-y:auto;position:relative;box-shadow:0 24px 64px rgba(0,0,0,0.25);
+    font-family:'Segoe UI',sans-serif;
   `
 
-  box.innerHTML = DOMPurify.sanitize(`
-    <button id="decl-close" style="position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:22px;cursor:pointer;color:#888;">✕</button>
-    <h2 style="font-size:20px;font-weight:700;color:#1A1A18;margin-bottom:0.3rem;">💰 Déclarer une transaction</h2>
-    <p style="color:#888780;font-size:13px;margin-bottom:1.5rem;">Réservation #${esc(String(reservation.id).substring(0, 8).toUpperCase())} · ${esc(reservation.client_nom)}</p>
+  // ===== En-tête =====
+  const btnClose = document.createElement('button')
+  btnClose.id = 'decl-close'
+  btnClose.style.cssText = 'position:absolute;top:1rem;right:1rem;background:#F7F3EC;border:none;width:32px;height:32px;border-radius:50%;font-size:16px;cursor:pointer;color:#888;line-height:1;'
+  btnClose.textContent = '✕'
 
-    <div style="background:#f8f8f8;border-radius:10px;padding:1rem;margin-bottom:1.5rem;font-size:13px;color:#555;line-height:1.6;">
-      <strong>Client:</strong> ${esc(reservation.client_nom)}<br>
-      <strong>Téléphone:</strong> ${esc(reservation.client_tel)}<br>
-      <strong>Type:</strong> ${reservation.type_reservation === 'achat' ? 'Achat' : reservation.type_reservation === 'location_jour' ? 'Location courte durée' : 'Location'}
-    </div>
+  const titre = document.createElement('h2')
+  titre.style.cssText = 'font-size:19px;font-weight:700;color:#1A1A18;margin:0 0 4px;padding-right:2rem;'
+  titre.textContent = '💰 Déclarer une transaction'
 
-    <div style="display:flex;flex-direction:column;gap:1rem;">
-      <div>
-        <label style="font-size:12px;font-weight:600;color:#555;display:block;margin-bottom:6px;">Type de transaction *</label>
-        <select id="decl-type" style="width:100%;padding:11px 14px;border:1px solid rgba(0,0,0,0.12);border-radius:8px;font-size:14px;font-family:'Segoe UI',sans-serif;background:#F7F3EC;outline:none;color:#2C2C28;">
-          <option value="location" ${typeDefaut === 'location' ? 'selected' : ''}>Location mensuelle</option>
-          <option value="vente" ${typeDefaut === 'vente' ? 'selected' : ''}>Vente</option>
-          <option value="location_jour" ${typeDefaut === 'location_jour' ? 'selected' : ''}>Location par jour</option>
-          <option value="visite" ${typeDefaut === 'visite' ? 'selected' : ''}>Visite uniquement</option>
-        </select>
-      </div>
+  const refLine = document.createElement('p')
+  refLine.style.cssText = 'color:#9a9690;font-size:13px;margin:0 0 1.4rem;'
+  refLine.textContent = `Réservation #${String(reservation.id).substring(0, 8).toUpperCase()} · ${reservation.client_nom}`
 
-      <div>
-        <label style="font-size:12px;font-weight:600;color:#555;display:block;margin-bottom:6px;">Montant total de la transaction (FCFA) *</label>
-        <input id="decl-montant" type="number" placeholder="Ex: 200000" style="width:100%;padding:11px 14px;border:1px solid rgba(0,0,0,0.12);border-radius:8px;font-size:14px;font-family:'Segoe UI',sans-serif;background:#F7F3EC;outline:none;color:#2C2C28;">
-        <p style="font-size:11px;color:#888;margin-top:4px;">Commission ImmoCG (10%): <strong id="decl-commission" style="color:#C9963A;">0 FCFA</strong></p>
-      </div>
+  // ===== Carte récap client =====
+  const recapBox = document.createElement('div')
+  recapBox.style.cssText = 'background:#F7F3EC;border-radius:12px;padding:14px 16px;margin-bottom:1.4rem;font-size:13px;color:#555;line-height:1.9;'
 
-      <div>
-        <label style="font-size:12px;font-weight:600;color:#555;display:block;margin-bottom:6px;">Notes (optionnel)</label>
-        <textarea id="decl-notes" placeholder="Détails sur la transaction..." rows="2" style="width:100%;padding:11px 14px;border:1px solid rgba(0,0,0,0.12);border-radius:8px;font-size:14px;font-family:'Segoe UI',sans-serif;background:#F7F3EC;outline:none;color:#2C2C28;resize:vertical;"></textarea>
-      </div>
+  function ligneRecap(label, valeur) {
+    const p = document.createElement('p')
+    p.style.margin = '0'
+    const strong = document.createElement('strong')
+    strong.style.color = '#1A1A18'
+    strong.textContent = label + ' '
+    p.appendChild(strong)
+    p.appendChild(document.createTextNode(valeur))
+    return p
+  }
 
-      <div id="decl-erreur" style="color:#c0392b;font-size:13px;display:none;padding:10px;background:#fdf0f0;border-radius:8px;"></div>
+  const typeLabel = reservation.type_reservation === 'achat' ? 'Achat'
+    : reservation.type_reservation === 'location_jour' ? 'Location courte durée' : 'Location'
 
-      <button id="decl-soumettre" style="background:#C9963A;color:#fff;border:none;padding:13px;border-radius:10px;font-weight:700;font-size:15px;cursor:pointer;margin-top:0.5rem;transition:background 0.2s;">
-        ✅ Confirmer la déclaration
-      </button>
-      <button id="decl-annuler" style="background:transparent;border:1px solid rgba(0,0,0,0.12);color:#888;padding:11px;border-radius:10px;font-weight:600;font-size:14px;cursor:pointer;">
-        Annuler
-      </button>
-    </div>
-  `)
+  recapBox.appendChild(ligneRecap('Client :', reservation.client_nom))
+  recapBox.appendChild(ligneRecap('Téléphone :', reservation.client_tel))
+  recapBox.appendChild(ligneRecap('Type :', typeLabel))
 
+  // ===== Formulaire =====
+  const form = document.createElement('div')
+  form.style.cssText = 'display:flex;flex-direction:column;gap:1.1rem;'
+
+  function champLabel(texte) {
+    const lbl = document.createElement('label')
+    lbl.style.cssText = 'font-size:12px;font-weight:600;color:#555;display:block;margin-bottom:6px;letter-spacing:0.2px;'
+    lbl.textContent = texte
+    return lbl
+  }
+
+  const inputStyle = 'width:100%;padding:11px 14px;border:1.5px solid rgba(0,0,0,0.10);border-radius:10px;font-size:14px;font-family:inherit;background:#FBFAF7;outline:none;color:#2C2C28;box-sizing:border-box;transition:border-color 0.15s;'
+
+  // -- Type de transaction
+  const blocType = document.createElement('div')
+  blocType.appendChild(champLabel('Type de transaction *'))
+  const selType = document.createElement('select')
+  selType.id = 'decl-type'
+  selType.style.cssText = inputStyle + 'cursor:pointer;'
+  ;[
+    ['location', 'Location mensuelle'],
+    ['vente', 'Vente'],
+    ['location_jour', 'Location par jour'],
+    ['visite', 'Visite uniquement']
+  ].forEach(([val, label]) => {
+    const opt = document.createElement('option')
+    opt.value = val
+    opt.textContent = label
+    if (val === typeDefaut) opt.selected = true
+    selType.appendChild(opt)
+  })
+  blocType.appendChild(selType)
+
+  // -- Montant
+  const blocMontant = document.createElement('div')
+  blocMontant.appendChild(champLabel('Montant total de la transaction (FCFA) *'))
+  const inpMontant = document.createElement('input')
+  inpMontant.id = 'decl-montant'
+  inpMontant.type = 'number'
+  inpMontant.placeholder = 'Ex: 200000'
+  inpMontant.style.cssText = inputStyle
+  blocMontant.appendChild(inpMontant)
+
+  const hintCommission = document.createElement('p')
+  hintCommission.style.cssText = 'font-size:11.5px;color:#9a9690;margin:6px 0 0;'
+  hintCommission.appendChild(document.createTextNode('Commission ImmoCG (10%) : '))
+  const commissionValeur = document.createElement('strong')
+  commissionValeur.id = 'decl-commission'
+  commissionValeur.style.color = '#C9963A'
+  commissionValeur.textContent = '0 FCFA'
+  hintCommission.appendChild(commissionValeur)
+  blocMontant.appendChild(hintCommission)
+
+  inpMontant.addEventListener('input', () => {
+    const m = parseInt(inpMontant.value) || 0
+    commissionValeur.textContent = `${Math.round(m * 0.10).toLocaleString('fr-FR')} FCFA`
+  })
+
+  // -- Notes
+  const blocNotes = document.createElement('div')
+  blocNotes.appendChild(champLabel('Notes (optionnel)'))
+  const inpNotes = document.createElement('textarea')
+  inpNotes.id = 'decl-notes'
+  inpNotes.rows = 2
+  inpNotes.placeholder = 'Détails sur la transaction...'
+  inpNotes.style.cssText = inputStyle + 'resize:vertical;'
+  blocNotes.appendChild(inpNotes)
+
+  // -- Erreur
+  const erreurEl = document.createElement('div')
+  erreurEl.id = 'decl-erreur'
+  erreurEl.style.cssText = 'color:#b3331f;font-size:13px;display:none;padding:10px 12px;background:#FBEAE7;border-radius:8px;'
+
+  // -- Boutons
+  const btnSoumettre = document.createElement('button')
+  btnSoumettre.id = 'decl-soumettre'
+  btnSoumettre.style.cssText = 'background:#C9963A;color:#fff;border:none;padding:13px;border-radius:10px;font-weight:700;font-size:15px;cursor:pointer;margin-top:0.3rem;'
+  btnSoumettre.textContent = '✅ Confirmer la déclaration'
+
+  const btnAnnuler = document.createElement('button')
+  btnAnnuler.id = 'decl-annuler'
+  btnAnnuler.style.cssText = 'background:transparent;border:1.5px solid rgba(0,0,0,0.10);color:#888;padding:11px;border-radius:10px;font-weight:600;font-size:14px;cursor:pointer;'
+  btnAnnuler.textContent = 'Annuler'
+
+  form.appendChild(blocType)
+  form.appendChild(blocMontant)
+  form.appendChild(blocNotes)
+  form.appendChild(erreurEl)
+  form.appendChild(btnSoumettre)
+  form.appendChild(btnAnnuler)
+
+  box.appendChild(btnClose)
+  box.appendChild(titre)
+  box.appendChild(refLine)
+  box.appendChild(recapBox)
+  box.appendChild(form)
   modal.appendChild(box)
   document.body.appendChild(modal)
 
-  // Calcul commission en temps réel
-  document.getElementById('decl-montant').addEventListener('input', (e) => {
-    const montant = parseInt(e.target.value) || 0
-    const commission = Math.round(montant * 0.10)
-    document.getElementById('decl-commission').textContent = `${commission.toLocaleString('fr-FR')} FCFA`
-  })
-
-  // Fermer
-  document.getElementById('decl-close').addEventListener('click', () => modal.remove())
-  document.getElementById('decl-annuler').addEventListener('click', () => modal.remove())
+  // ===== Comportement =====
+  btnClose.addEventListener('click', () => modal.remove())
+  btnAnnuler.addEventListener('click', () => modal.remove())
   modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove() })
 
-  // Soumettre
-  document.getElementById('decl-soumettre').addEventListener('click', async () => {
-    const type = document.getElementById('decl-type').value
-    const montant = parseInt(document.getElementById('decl-montant').value)
-    const notes = document.getElementById('decl-notes').value.trim()
-    const erreurEl = document.getElementById('decl-erreur')
-    const btn = document.getElementById('decl-soumettre')
-
+  btnSoumettre.addEventListener('click', async () => {
+    const montant = parseInt(inpMontant.value)
     if (!montant || montant < 1) {
-      erreurEl.textContent = 'Veuillez entrer un montant valide'
+      erreurEl.textContent = 'Veuillez entrer un montant valide.'
       erreurEl.style.display = 'block'
       return
     }
 
     erreurEl.style.display = 'none'
-    btn.textContent = 'Envoi en cours...'
-    btn.disabled = true
+    btnSoumettre.textContent = 'Envoi en cours...'
+    btnSoumettre.disabled = true
 
     try {
       const r = await fetch('/transactions/declarer', {
@@ -480,29 +547,29 @@ function ouvrirModalDeclaration(reservation) {
         body: JSON.stringify({
           reservation_id: reservation.id,
           montant_fcfa: montant,
-          type_transaction: type,
-          notes: notes || undefined,
-        }),
+          type_transaction: selType.value,
+          notes: inpNotes.value.trim()
+        })
       })
       const data = await r.json()
 
       if (data.success) {
-        // Succès — reconstruction avec createElement (pas d'innerHTML)
+        // ===== Écran de succès =====
         box.textContent = ''
         const successDiv = document.createElement('div')
-        successDiv.style.cssText = 'text-align:center;padding:2rem 1rem;'
+        successDiv.style.cssText = 'text-align:center;padding:1.5rem 1rem;'
 
         const emoji = document.createElement('div')
-        emoji.style.cssText = 'font-size:48px;margin-bottom:1rem;'
+        emoji.style.cssText = 'font-size:46px;margin-bottom:1rem;'
         emoji.textContent = '✅'
 
         const h3 = document.createElement('h3')
-        h3.style.cssText = 'font-size:20px;font-weight:700;color:#1A1A18;margin-bottom:0.5rem;'
+        h3.style.cssText = 'font-size:19px;font-weight:700;color:#1A1A18;margin:0 0 8px;'
         h3.textContent = 'Transaction déclarée !'
 
         const p = document.createElement('p')
-        p.style.cssText = 'color:#555;line-height:1.6;margin-bottom:1rem;'
-        p.appendChild(document.createTextNode('Commission ImmoCG (10%): '))
+        p.style.cssText = 'color:#555;line-height:1.7;margin:0 0 1.4rem;font-size:14px;'
+        p.appendChild(document.createTextNode('Commission ImmoCG (10%) : '))
         const strongComm = document.createElement('strong')
         strongComm.style.color = '#C9963A'
         strongComm.textContent = `${data.commission_fcfa.toLocaleString('fr-FR')} FCFA`
@@ -511,7 +578,7 @@ function ouvrirModalDeclaration(reservation) {
         p.appendChild(document.createTextNode('À régler sous 7 jours.'))
 
         const btnFermer = document.createElement('button')
-        btnFermer.style.cssText = 'background:#C9963A;color:#fff;border:none;padding:12px 32px;border-radius:8px;font-weight:600;cursor:pointer;font-size:15px;'
+        btnFermer.style.cssText = 'background:#C9963A;color:#fff;border:none;padding:12px 32px;border-radius:10px;font-weight:600;cursor:pointer;font-size:14.5px;'
         btnFermer.textContent = 'Fermer'
         btnFermer.addEventListener('click', () => {
           modal.remove()
@@ -524,19 +591,20 @@ function ouvrirModalDeclaration(reservation) {
         successDiv.appendChild(btnFermer)
         box.appendChild(successDiv)
       } else {
-        erreurEl.textContent = data.message || 'Erreur lors de la déclaration'
+        erreurEl.textContent = data.message || 'Erreur lors de la déclaration.'
         erreurEl.style.display = 'block'
-        btn.textContent = '✅ Confirmer la déclaration'
-        btn.disabled = false
+        btnSoumettre.textContent = '✅ Confirmer la déclaration'
+        btnSoumettre.disabled = false
       }
     } catch {
       erreurEl.textContent = 'Erreur de connexion. Réessayez.'
       erreurEl.style.display = 'block'
-      btn.textContent = '✅ Confirmer la déclaration'
-      btn.disabled = false
+      btnSoumettre.textContent = '✅ Confirmer la déclaration'
+      btnSoumettre.disabled = false
     }
   })
 }
+
 
 async function traiterReservation(id, statut, reservation) {
   const action = statut === 'confirmee' ? 'confirmer' : 'refuser'
