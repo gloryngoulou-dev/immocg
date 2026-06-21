@@ -395,14 +395,14 @@ function ouvrirModalDeclaration(reservation) {
     max-height:90vh;overflow-y:auto;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.3);
   `
 
-  box.innerHTML = `
+  box.innerHTML = DOMPurify.sanitize(`
     <button id="decl-close" style="position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:22px;cursor:pointer;color:#888;">✕</button>
     <h2 style="font-size:20px;font-weight:700;color:#1A1A18;margin-bottom:0.3rem;">💰 Déclarer une transaction</h2>
-    <p style="color:#888780;font-size:13px;margin-bottom:1.5rem;">Réservation #${String(reservation.id).substring(0, 8).toUpperCase()} · ${reservation.client_nom}</p>
+    <p style="color:#888780;font-size:13px;margin-bottom:1.5rem;">Réservation #${esc(String(reservation.id).substring(0, 8).toUpperCase())} · ${esc(reservation.client_nom)}</p>
 
     <div style="background:#f8f8f8;border-radius:10px;padding:1rem;margin-bottom:1.5rem;font-size:13px;color:#555;line-height:1.6;">
-      <strong>Client:</strong> ${reservation.client_nom}<br>
-      <strong>Téléphone:</strong> ${reservation.client_tel}<br>
+      <strong>Client:</strong> ${esc(reservation.client_nom)}<br>
+      <strong>Téléphone:</strong> ${esc(reservation.client_tel)}<br>
       <strong>Type:</strong> ${reservation.type_reservation === 'achat' ? 'Achat' : reservation.type_reservation === 'location_jour' ? 'Location courte durée' : 'Location'}
     </div>
 
@@ -437,7 +437,7 @@ function ouvrirModalDeclaration(reservation) {
         Annuler
       </button>
     </div>
-  `
+  `)
 
   modal.appendChild(box)
   document.body.appendChild(modal)
@@ -487,21 +487,42 @@ function ouvrirModalDeclaration(reservation) {
       const data = await r.json()
 
       if (data.success) {
-        // Succès
-        box.innerHTML = `
-          <div style="text-align:center;padding:2rem 1rem;">
-            <div style="font-size:48px;margin-bottom:1rem;">✅</div>
-            <h3 style="font-size:20px;font-weight:700;color:#1A1A18;margin-bottom:0.5rem;">Transaction déclarée !</h3>
-            <p style="color:#555;line-height:1.6;margin-bottom:1rem;">
-              Commission ImmoCG (10%): <strong style="color:#C9963A;">${data.commission_fcfa.toLocaleString('fr-FR')} FCFA</strong><br>
-              À régler sous 7 jours.
-            </p>
-            <button onclick="document.getElementById('modal-declaration').remove();chargerReservations();" 
-              style="background:#C9963A;color:#fff;border:none;padding:12px 32px;border-radius:8px;font-weight:600;cursor:pointer;font-size:15px;">
-              Fermer
-            </button>
-          </div>
-        `
+        // Succès — reconstruction avec createElement (pas d'innerHTML)
+        box.textContent = ''
+        const successDiv = document.createElement('div')
+        successDiv.style.cssText = 'text-align:center;padding:2rem 1rem;'
+
+        const emoji = document.createElement('div')
+        emoji.style.cssText = 'font-size:48px;margin-bottom:1rem;'
+        emoji.textContent = '✅'
+
+        const h3 = document.createElement('h3')
+        h3.style.cssText = 'font-size:20px;font-weight:700;color:#1A1A18;margin-bottom:0.5rem;'
+        h3.textContent = 'Transaction déclarée !'
+
+        const p = document.createElement('p')
+        p.style.cssText = 'color:#555;line-height:1.6;margin-bottom:1rem;'
+        p.appendChild(document.createTextNode('Commission ImmoCG (10%): '))
+        const strongComm = document.createElement('strong')
+        strongComm.style.color = '#C9963A'
+        strongComm.textContent = `${data.commission_fcfa.toLocaleString('fr-FR')} FCFA`
+        p.appendChild(strongComm)
+        p.appendChild(document.createElement('br'))
+        p.appendChild(document.createTextNode('À régler sous 7 jours.'))
+
+        const btnFermer = document.createElement('button')
+        btnFermer.style.cssText = 'background:#C9963A;color:#fff;border:none;padding:12px 32px;border-radius:8px;font-weight:600;cursor:pointer;font-size:15px;'
+        btnFermer.textContent = 'Fermer'
+        btnFermer.addEventListener('click', () => {
+          modal.remove()
+          chargerReservations()
+        })
+
+        successDiv.appendChild(emoji)
+        successDiv.appendChild(h3)
+        successDiv.appendChild(p)
+        successDiv.appendChild(btnFermer)
+        box.appendChild(successDiv)
       } else {
         erreurEl.textContent = data.message || 'Erreur lors de la déclaration'
         erreurEl.style.display = 'block'
