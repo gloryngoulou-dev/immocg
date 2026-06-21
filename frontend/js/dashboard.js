@@ -1,3 +1,9 @@
+function esc(val) {
+  return String(val == null ? '' : val)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#x27;')
+}
+
 const user = JSON.parse(localStorage.getItem('immocg_user') || 'null')
 
 if (!user) {
@@ -236,6 +242,29 @@ async function chargerReservations() {
         tdActions.appendChild(btnDeclarer)
       }
 
+      // Clôture du résultat de visite — uniquement si confirmée et pas déjà clôturée
+      if (res.statut === 'confirmee' && !res.resultat_visite) {
+        const btnCloturer = document.createElement('button')
+        btnCloturer.className = 'btn-sm'
+        btnCloturer.style.cssText = 'background:#fff3cd;color:#856404;border:1px solid #ffe69c;'
+        btnCloturer.textContent = '🏁 Clôturer visite'
+        btnCloturer.addEventListener('click', () => ouvrirModalCloture(res))
+        tdActions.appendChild(btnCloturer)
+      }
+
+      // Afficher le résultat si déjà clôturé
+      if (res.resultat_visite) {
+        const badgeResultat = document.createElement('span')
+        const labels = {
+          pris: '✅ Bien attribué',
+          refuse_client: '🙅 Client a refusé',
+          absent: '👻 Client absent'
+        }
+        badgeResultat.style.cssText = 'font-size:11px;color:#888;padding:2px 8px;background:#f0f0f0;border-radius:10px;'
+        badgeResultat.textContent = labels[res.resultat_visite] || res.resultat_visite
+        tdActions.appendChild(badgeResultat)
+      }
+
       if (res.statut === 'en_attente') {
         const btnConfirmer = document.createElement('button')
         btnConfirmer.className = 'btn-sm btn-valider'
@@ -264,6 +293,75 @@ async function chargerReservations() {
 }
 
 // ========== MODAL DÉCLARATION PROFESSIONNEL ==========
+
+function ouvrirModalCloture(reservation) {
+  const ancien = document.getElementById('modal-cloture')
+  if (ancien) ancien.remove()
+
+  const modal = document.createElement('div')
+  modal.id = 'modal-cloture'
+  modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;padding:1rem;'
+
+  const box = document.createElement('div')
+  box.style.cssText = 'background:#fff;border-radius:16px;padding:2rem;max-width:420px;width:100%;position:relative;'
+
+  const titre = document.createElement('h2')
+  titre.style.cssText = 'font-size:18px;font-weight:700;color:#1A1A18;margin-bottom:0.3rem;'
+  titre.textContent = '🏁 Résultat de la visite'
+
+  const sous = document.createElement('p')
+  sous.style.cssText = 'font-size:13px;color:#888;margin-bottom:1.2rem;'
+  sous.textContent = `Client : ${esc(reservation.client_nom)} · Que s'est-il passé ?`
+
+  const btnPris = document.createElement('button')
+  btnPris.style.cssText = 'width:100%;background:#d4edda;color:#155724;border:none;padding:13px;border-radius:10px;font-weight:600;font-size:14px;cursor:pointer;margin-bottom:8px;text-align:left;'
+  btnPris.innerHTML = '✅ <strong>Le client a pris le bien</strong><br><span style="font-size:12px;font-weight:400;">Le bien reste loué/vendu — déclarez la transaction ensuite</span>'
+
+  const btnRefuse = document.createElement('button')
+  btnRefuse.style.cssText = 'width:100%;background:#fff3cd;color:#856404;border:none;padding:13px;border-radius:10px;font-weight:600;font-size:14px;cursor:pointer;margin-bottom:8px;text-align:left;'
+  btnRefuse.innerHTML = '🙅 <strong>Le client n\'a pas voulu</strong><br><span style="font-size:12px;font-weight:400;">Le bien redevient disponible immédiatement</span>'
+
+  const btnAbsent = document.createElement('button')
+  btnAbsent.style.cssText = 'width:100%;background:#f8d7da;color:#721c24;border:none;padding:13px;border-radius:10px;font-weight:600;font-size:14px;cursor:pointer;margin-bottom:8px;text-align:left;'
+  btnAbsent.innerHTML = '👻 <strong>Le client ne s\'est pas présenté</strong><br><span style="font-size:12px;font-weight:400;">Le bien redevient disponible immédiatement</span>'
+
+  const btnAnnuler = document.createElement('button')
+  btnAnnuler.style.cssText = 'width:100%;background:none;border:1px solid #ddd;color:#555;padding:10px;border-radius:10px;font-size:14px;cursor:pointer;margin-top:4px;'
+  btnAnnuler.textContent = 'Annuler'
+  btnAnnuler.addEventListener('click', () => modal.remove())
+
+  async function cloturerAvec(resultat) {
+    try {
+      const r = await fetch('/reservations/' + reservation.id + '/cloturer', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ resultat })
+      })
+      const data = await r.json()
+      if (data.success) {
+        modal.remove()
+        chargerReservations()
+        chargerMesBiens()
+      } else {
+        alert(data.message || 'Erreur lors de la clôture')
+      }
+    } catch {
+      alert('Erreur de connexion')
+    }
+  }
+
+  btnPris.addEventListener('click', () => cloturerAvec('pris'))
+  btnRefuse.addEventListener('click', () => cloturerAvec('refuse_client'))
+  btnAbsent.addEventListener('click', () => cloturerAvec('absent'))
+
+  box.appendChild(titre); box.appendChild(sous)
+  box.appendChild(btnPris); box.appendChild(btnRefuse); box.appendChild(btnAbsent)
+  box.appendChild(btnAnnuler)
+  modal.appendChild(box)
+  document.body.appendChild(modal)
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove() })
+}
 
 function ouvrirModalDeclaration(reservation) {
   // Supprimer modal existant
