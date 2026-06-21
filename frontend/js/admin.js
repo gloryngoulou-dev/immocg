@@ -89,7 +89,7 @@ async function chargerBiens() {
       btnR.addEventListener('click', () => changerStatutBien(b.id, 'refuse')); tdActions.appendChild(btnR)
     }
     const btnVoir = document.createElement('button'); btnVoir.className = 'btn-sm btn-voir'; btnVoir.textContent = 'Voir'
-    btnVoir.addEventListener('click', () => window.open('bien.html?id=' + encodeURIComponent(b.id))); tdActions.appendChild(btnVoir)
+    btnVoir.addEventListener('click', () => window.location.href = 'bien.html?id=' + encodeURIComponent(b.id)); tdActions.appendChild(btnVoir)
     const btnSupp = document.createElement('button'); btnSupp.className = 'btn-sm btn-supprimer'; btnSupp.textContent = 'Supprimer'
     btnSupp.addEventListener('click', () => supprimerBien(b.id)); tdActions.appendChild(btnSupp)
     tr.appendChild(tdActions); tbody.appendChild(tr)
@@ -366,7 +366,7 @@ async function chargerSignalementsAdmin() {
           btn.addEventListener('click', async () => { await fetch('/signalements/'+s.id+'/traiter',{method:'PATCH',credentials:'include'}); chargerSignalementsAdmin() })
           tdA.appendChild(btn)
           const btnV = document.createElement('button'); btnV.className='btn-sm btn-voir'; btnV.textContent='Voir bien'
-          btnV.addEventListener('click', () => window.open('bien.html?id='+s.bien_id)); tdA.appendChild(btnV)
+          btnV.addEventListener('click', () => window.location.href = 'bien.html?id='+s.bien_id); tdA.appendChild(btnV)
         }
         tr.appendChild(tdA); tbody.appendChild(tr)
       })

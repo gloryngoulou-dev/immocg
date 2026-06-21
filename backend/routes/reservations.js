@@ -213,6 +213,30 @@ router.patch('/:id', verifierToken, async (req, res) => {
 
     const reservation = data[0]
 
+    // Si confirmée : annuler automatiquement les autres demandes en attente sur ce bien
+    if (statut === 'confirmee') {
+      const { data: autresEnAttente } = await supabase
+        .from('reservations')
+        .update({ statut: 'expiree' })
+        .eq('bien_id', reservation.bien_id)
+        .eq('statut', 'en_attente')
+        .neq('id', reservation.id)
+        .select()
+
+      // Notifier les clients dont la demande vient d'expirer
+      if (autresEnAttente && autresEnAttente.length > 0) {
+        const { data: bienPourNotif } = await supabase
+          .from('biens')
+          .select('*')
+          .eq('id', reservation.bien_id)
+          .maybeSingle()
+
+        autresEnAttente.forEach(autre => {
+          envoyerEmailReservation(autre, 'expiree', bienPourNotif, null).catch(() => {})
+        })
+      }
+    }
+
     const { data: bien } = await supabase
       .from('biens')
       .select('*')
@@ -229,3 +253,45 @@ router.patch('/:id', verifierToken, async (req, res) => {
 })
 
 module.exports = router
+
+// PATCH /reservations/:id/cloturer — déclarer le résultat de la visite
+// resultat: 'pris' (le client a pris le bien) | 'refuse_client' (client n'a pas voulu) | 'absent' (no-show)
+router.patch('/:id/cloturer', verifierToken, async (req, res) => {
+  const { resultat } = req.body
+  if (!['pris', 'refuse_client', 'absent'].includes(resultat)) {
+    return res.status(400).json({ success: false, message: 'Résultat invalide' })
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('reservations')
+      .update({ resultat_visite: resultat, cloture_at: new Date().toISOString() })
+      .eq('id', req.params.id)
+      .select()
+
+    if (error) throw error
+    if (!data || data.length === 0) {
+      return res.status(404).json({ success: false, message: 'Réservation introuvable' })
+    }
+
+    const reservation = data[0]
+
+    // Si le client n'a pas pris le bien ou ne s'est pas présenté → remettre le bien disponible
+    if (resultat !== 'pris') {
+      await supabase
+        .from('biens')
+        .update({ statut: 'disponible' })
+        .eq('id', reservation.bien_id)
+    }
+
+    res.json({
+      success: true,
+      message: resultat === 'pris'
+        ? 'Visite clôturée — bien attribué. Pensez à déclarer la transaction.'
+        : 'Visite clôturée — le bien repasse disponible.'
+    })
+  } catch (err) {
+    console.error('Erreur cloture reservation:', err.message)
+    res.status(500).json({ success: false, message: 'Erreur interne' })
+  }
+})

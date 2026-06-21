@@ -126,7 +126,7 @@ async function chargerMesBiens() {
       const btnVoir = document.createElement('button')
       btnVoir.className = 'btn-sm btn-voir'
       btnVoir.textContent = 'Voir'
-      btnVoir.addEventListener('click', () => window.open('bien.html?id=' + encodeURIComponent(b.id)))
+      btnVoir.addEventListener('click', () => window.location.href = 'bien.html?id=' + encodeURIComponent(b.id))
       const btnSupp = document.createElement('button')
       btnSupp.className = 'btn-sm btn-supprimer'
       btnSupp.textContent = 'Supprimer'

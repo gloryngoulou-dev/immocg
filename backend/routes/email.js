@@ -125,6 +125,8 @@ async function envoyerEmailReservation(reservation, statut, bien, paiement) {
 
     const sujet = estConfirmee
       ? '✅ Votre réservation est confirmée — Contrat et paiement ImmoCG'
+      : statut === 'expiree'
+      ? '⌛ Ce bien a été réservé par un autre client — ImmoCG'
       : '❌ Votre demande n\'a pas été retenue — ImmoCG'
 
     const blocPaiement = estConfirmee ? `
@@ -167,9 +169,11 @@ async function envoyerEmailReservation(reservation, statut, bien, paiement) {
           <h1 style="color:#C9963A;margin:0;">ImmoCG</h1>
         </div>
         <div style="background:#fff;padding:30px;border:1px solid #eee;">
-          <h2 style="color:#721c24;">Demande non retenue</h2>
+          <h2 style="color:#721c24;">${statut === 'expiree' ? 'Bien déjà réservé' : 'Demande non retenue'}</h2>
           <p>Bonjour <strong>${reservation.client_nom}</strong>,</p>
-          <p>Votre demande n'a pas pu être confirmée par l'agence.</p>
+          <p>${statut === 'expiree'
+            ? 'Ce bien a été réservé par un autre client avant la confirmation de votre demande. Nous sommes désolés pour le désagrément.'
+            : 'Votre demande n\'a pas pu être confirmée par l\'agence.'}</p>
           <div style="text-align:center;margin:20px 0;">
             <a href="${SITE_URL}" style="background:#C9963A;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;">
               Voir d'autres biens →
