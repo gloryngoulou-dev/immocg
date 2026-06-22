@@ -1,5 +1,11 @@
 // ========== GÉNÉRATEUR DE CONTRAT PDF PROFESSIONNEL ==========
 
+// jsPDF (police helvetica) ne supporte pas l'espace fine insécable utilisée par
+// toLocaleString('fr-FR') pour les milliers — on la remplace par un espace normal.
+function formatFCFA(nombre) {
+  return Math.round(nombre || 0).toLocaleString('fr-FR').replace(/\u202F|\u00A0/g, ' ')
+}
+
 let jsPdfLoaderPromise = null
 
 function chargerJsPdf() {
@@ -189,14 +195,14 @@ function _genererPDF(reservation, bien, paiement) {
   }
 
   const prixLabel = reservation.type_reservation === 'location_jour'
-    ? `${parseInt(bien.prix_jour || 0).toLocaleString('fr-FR')} FCFA / nuit`
-    : `${parseInt(bien.prix || 0).toLocaleString('fr-FR')} FCFA`
+    ? `${formatFCFA(bien.prix_jour)} FCFA / nuit`
+    : `${formatFCFA(bien.prix)} FCFA`
 
   const montantAffiche = paiementInfo.montant != null
-    ? `${paiementInfo.montant.toLocaleString('fr-FR')} FCFA`
+    ? `${formatFCFA(paiementInfo.montant)} FCFA`
     : (reservation.type_reservation === 'location_jour'
-      ? `${parseInt((bien.prix_jour || 0) * 2).toLocaleString('fr-FR')} FCFA`
-      : `${parseInt((bien.prix || 0) * 2).toLocaleString('fr-FR')} FCFA (caution)`)
+      ? `${formatFCFA((bien.prix_jour || 0) * 2)} FCFA`
+      : `${formatFCFA((bien.prix || 0) * 2)} FCFA (caution)`)
 
   const conditions = [
     ['Prix / Loyer:', prixLabel],

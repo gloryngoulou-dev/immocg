@@ -539,28 +539,207 @@ function ouvrirModalClotureAdmin(reservation) {
   modal.addEventListener('click', e => { if (e.target === modal) modal.remove() })
 }
 
-async function declarerTransactionAdmin(reservation) {
-  const type = (prompt('Type (location, vente, location_jour, visite):', reservation.type_reservation === 'achat' ? 'vente' : (reservation.type_reservation || 'location')) || '').trim()
-  const montantInput = (prompt('Montant transaction (FCFA):', '') || '').trim()
-  const montant = parseInt(montantInput, 10)
-  if (!type || Number.isNaN(montant) || montant < 1) {
-    alert('Déclaration annulée.')
-    return
+function declarerTransactionAdmin(reservation) {
+  const ancien = document.getElementById('modal-declaration-admin')
+  if (ancien) ancien.remove()
+
+  const typeMap = { visite: 'visite', location_jour: 'location_jour', achat: 'vente' }
+  const typeDefaut = typeMap[reservation.type_reservation] || 'location'
+
+  const modal = document.createElement('div')
+  modal.id = 'modal-declaration-admin'
+  modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(20,18,15,0.55);backdrop-filter:blur(2px);display:flex;align-items:center;justify-content:center;padding:1rem;'
+
+  const box = document.createElement('div')
+  box.style.cssText = 'background:#fff;border-radius:18px;padding:2rem;max-width:460px;width:100%;max-height:90vh;overflow-y:auto;position:relative;box-shadow:0 24px 64px rgba(0,0,0,0.25);font-family:"Segoe UI",sans-serif;'
+
+  const btnClose = document.createElement('button')
+  btnClose.style.cssText = 'position:absolute;top:1rem;right:1rem;background:#F7F3EC;border:none;width:32px;height:32px;border-radius:50%;font-size:16px;cursor:pointer;color:#888;line-height:1;'
+  btnClose.textContent = '✕'
+
+  const titre = document.createElement('h2')
+  titre.style.cssText = 'font-size:19px;font-weight:700;color:#1A1A18;margin:0 0 4px;padding-right:2rem;'
+  titre.textContent = '💰 Déclarer une transaction'
+
+  const refLine = document.createElement('p')
+  refLine.style.cssText = 'color:#9a9690;font-size:13px;margin:0 0 1.4rem;'
+  refLine.textContent = `Réservation #${esc(String(reservation.id).substring(0, 8).toUpperCase())} · ${esc(reservation.client_nom)}`
+
+  const recapBox = document.createElement('div')
+  recapBox.style.cssText = 'background:#F7F3EC;border-radius:12px;padding:14px 16px;margin-bottom:1.4rem;font-size:13px;color:#555;line-height:1.9;'
+
+  function ligneRecap(label, valeur) {
+    const p = document.createElement('p')
+    p.style.margin = '0'
+    const strong = document.createElement('strong')
+    strong.style.color = '#1A1A18'
+    strong.textContent = label + ' '
+    p.appendChild(strong)
+    p.appendChild(document.createTextNode(valeur))
+    return p
   }
-  const r = await fetch('/transactions/declarer', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify({ reservation_id: reservation.id, montant_fcfa: montant, type_transaction: type }),
+
+  const typeLabel = reservation.type_reservation === 'achat' ? 'Achat'
+    : reservation.type_reservation === 'location_jour' ? 'Location courte durée' : 'Location'
+
+  recapBox.appendChild(ligneRecap('Client :', reservation.client_nom))
+  recapBox.appendChild(ligneRecap('Téléphone :', reservation.client_tel))
+  recapBox.appendChild(ligneRecap('Type :', typeLabel))
+
+  const form = document.createElement('div')
+  form.style.cssText = 'display:flex;flex-direction:column;gap:1.1rem;'
+
+  function champLabel(texte) {
+    const lbl = document.createElement('label')
+    lbl.style.cssText = 'font-size:12px;font-weight:600;color:#555;display:block;margin-bottom:6px;letter-spacing:0.2px;'
+    lbl.textContent = texte
+    return lbl
+  }
+
+  const inputStyle = 'width:100%;padding:11px 14px;border:1.5px solid rgba(0,0,0,0.10);border-radius:10px;font-size:14px;font-family:inherit;background:#FBFAF7;outline:none;color:#2C2C28;box-sizing:border-box;'
+
+  const blocType = document.createElement('div')
+  blocType.appendChild(champLabel('Type de transaction *'))
+  const selType = document.createElement('select')
+  selType.style.cssText = inputStyle + 'cursor:pointer;'
+  ;[
+    ['location', 'Location mensuelle'],
+    ['vente', 'Vente'],
+    ['location_jour', 'Location par jour'],
+    ['visite', 'Visite uniquement']
+  ].forEach(([val, label]) => {
+    const opt = document.createElement('option')
+    opt.value = val
+    opt.textContent = label
+    if (val === typeDefaut) opt.selected = true
+    selType.appendChild(opt)
   })
-  const data = await r.json()
-  if (data.success) {
-    alert(`Commission ImmoCG : ${data.commission_fcfa.toLocaleString('fr-FR')} FCFA`)
-    chargerCommissionsAdmin()
-    chargerReservationsAdmin()
-  } else {
-    alert(data.message || 'Erreur')
-  }
+  blocType.appendChild(selType)
+
+  const blocMontant = document.createElement('div')
+  blocMontant.appendChild(champLabel('Montant total de la transaction (FCFA) *'))
+  const inpMontant = document.createElement('input')
+  inpMontant.type = 'number'
+  inpMontant.placeholder = 'Ex: 200000'
+  inpMontant.style.cssText = inputStyle
+  blocMontant.appendChild(inpMontant)
+
+  const hintCommission = document.createElement('p')
+  hintCommission.style.cssText = 'font-size:11.5px;color:#9a9690;margin:6px 0 0;'
+  hintCommission.appendChild(document.createTextNode('Commission ImmoCG (10%) : '))
+  const commissionValeur = document.createElement('strong')
+  commissionValeur.style.color = '#C9963A'
+  commissionValeur.textContent = '0 FCFA'
+  hintCommission.appendChild(commissionValeur)
+  blocMontant.appendChild(hintCommission)
+
+  inpMontant.addEventListener('input', () => {
+    const m = parseInt(inpMontant.value) || 0
+    commissionValeur.textContent = `${Math.round(m * 0.10).toLocaleString('fr-FR')} FCFA`
+  })
+
+  const erreurEl = document.createElement('div')
+  erreurEl.style.cssText = 'color:#b3331f;font-size:13px;display:none;padding:10px 12px;background:#FBEAE7;border-radius:8px;'
+
+  const btnSoumettre = document.createElement('button')
+  btnSoumettre.style.cssText = 'background:#C9963A;color:#fff;border:none;padding:13px;border-radius:10px;font-weight:700;font-size:15px;cursor:pointer;margin-top:0.3rem;'
+  btnSoumettre.textContent = '✅ Confirmer la déclaration'
+
+  const btnAnnuler = document.createElement('button')
+  btnAnnuler.style.cssText = 'background:transparent;border:1.5px solid rgba(0,0,0,0.10);color:#888;padding:11px;border-radius:10px;font-weight:600;font-size:14px;cursor:pointer;'
+  btnAnnuler.textContent = 'Annuler'
+
+  form.appendChild(blocType)
+  form.appendChild(blocMontant)
+  form.appendChild(erreurEl)
+  form.appendChild(btnSoumettre)
+  form.appendChild(btnAnnuler)
+
+  box.appendChild(btnClose)
+  box.appendChild(titre)
+  box.appendChild(refLine)
+  box.appendChild(recapBox)
+  box.appendChild(form)
+  modal.appendChild(box)
+  document.body.appendChild(modal)
+
+  btnClose.addEventListener('click', () => modal.remove())
+  btnAnnuler.addEventListener('click', () => modal.remove())
+  modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove() })
+
+  btnSoumettre.addEventListener('click', async () => {
+    const montant = parseInt(inpMontant.value)
+    if (!montant || montant < 1) {
+      erreurEl.textContent = 'Veuillez entrer un montant valide.'
+      erreurEl.style.display = 'block'
+      return
+    }
+
+    erreurEl.style.display = 'none'
+    btnSoumettre.textContent = 'Envoi en cours...'
+    btnSoumettre.disabled = true
+
+    try {
+      const r = await fetch('/transactions/declarer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          reservation_id: reservation.id,
+          montant_fcfa: montant,
+          type_transaction: selType.value
+        })
+      })
+      const data = await r.json()
+
+      if (data.success) {
+        box.textContent = ''
+        const successDiv = document.createElement('div')
+        successDiv.style.cssText = 'text-align:center;padding:1.5rem 1rem;'
+
+        const emoji = document.createElement('div')
+        emoji.style.cssText = 'font-size:46px;margin-bottom:1rem;'
+        emoji.textContent = '✅'
+
+        const h3 = document.createElement('h3')
+        h3.style.cssText = 'font-size:19px;font-weight:700;color:#1A1A18;margin:0 0 8px;'
+        h3.textContent = 'Transaction déclarée !'
+
+        const p = document.createElement('p')
+        p.style.cssText = 'color:#555;line-height:1.7;margin:0 0 1.4rem;font-size:14px;'
+        p.appendChild(document.createTextNode('Commission ImmoCG (10%) : '))
+        const strongComm = document.createElement('strong')
+        strongComm.style.color = '#C9963A'
+        strongComm.textContent = `${data.commission_fcfa.toLocaleString('fr-FR')} FCFA`
+        p.appendChild(strongComm)
+
+        const btnFermer = document.createElement('button')
+        btnFermer.style.cssText = 'background:#C9963A;color:#fff;border:none;padding:12px 32px;border-radius:10px;font-weight:600;cursor:pointer;font-size:14.5px;'
+        btnFermer.textContent = 'Fermer'
+        btnFermer.addEventListener('click', () => {
+          modal.remove()
+          chargerCommissionsAdmin()
+          chargerReservationsAdmin()
+        })
+
+        successDiv.appendChild(emoji)
+        successDiv.appendChild(h3)
+        successDiv.appendChild(p)
+        successDiv.appendChild(btnFermer)
+        box.appendChild(successDiv)
+      } else {
+        erreurEl.textContent = data.message || 'Erreur lors de la déclaration.'
+        erreurEl.style.display = 'block'
+        btnSoumettre.textContent = '✅ Confirmer la déclaration'
+        btnSoumettre.disabled = false
+      }
+    } catch {
+      erreurEl.textContent = 'Erreur de connexion. Réessayez.'
+      erreurEl.style.display = 'block'
+      btnSoumettre.textContent = '✅ Confirmer la déclaration'
+      btnSoumettre.disabled = false
+    }
+  })
 }
 
 // ========== INIT ==========
