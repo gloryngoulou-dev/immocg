@@ -97,6 +97,7 @@ const { router: authRoutes } = require('./routes/auth')
 const contactRoutes = require('./routes/contact')
 const reservationsRoutes = require('./routes/reservations')
 const signalementsRoutes = require('./routes/signalements')
+const avisRoutes = require('./routes/avis')
 const transactionsRoutes = require('./routes/transactions')
 
 app.use('/biens', biensRoutes)
@@ -106,6 +107,7 @@ app.use('/auth', authRoutes)
 app.use('/contact', contactRoutes)
 app.use('/reservations', reservationsRoutes)
 app.use('/signalements', signalementsRoutes)
+app.use('/avis', avisRoutes)
 app.use('/transactions', transactionsRoutes)
 
 app.get('/og-image.jpg', (req, res) => {

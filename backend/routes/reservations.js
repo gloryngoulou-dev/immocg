@@ -4,7 +4,7 @@ const { createClient } = require('@supabase/supabase-js')
 const Joi = require('joi')
 const { verifierToken } = require('./auth')
 const { buildReferenceImmocg } = require('../utils/commissions')
-const { envoyerEmailReservation } = require('./email')
+const { envoyerEmailReservation, envoyerEmailInvitationAvis } = require('./email')
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -312,6 +312,9 @@ router.patch('/:id/cloturer', verifierToken, async (req, res) => {
         .from('biens')
         .update({ statut: 'disponible' })
         .eq('id', reservation.bien_id)
+    } else {
+      // Client a pris le bien → inviter à laisser un avis
+      envoyerEmailInvitationAvis(reservation).catch(() => {})
     }
 
     res.json({

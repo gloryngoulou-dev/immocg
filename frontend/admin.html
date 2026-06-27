@@ -223,6 +223,7 @@
     <button class="tab" onclick="afficherSection('agences', this)">Agences</button>
     <button class="tab" onclick="afficherSection('reservations', this)">📅 Réservations</button>
     <button class="tab" onclick="afficherSection('commissions', this)">💰 Commissions</button>
+    <button class="tab" onclick="afficherSection('avis', this)">⭐ Avis</button>
   </div>
 
   <!-- SECTION BIENS -->
@@ -321,6 +322,31 @@
         </thead>
         <tbody id="tbody-commissions">
           <tr><td colspan="8" class="empty">Chargement...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SECTION AVIS -->
+  <div class="section" id="section-avis">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+      <div class="section-title">Modération des avis</div>
+      <span id="nb-avis-attente" style="background:#fff3cd;color:#856404;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:600;">0 en attente</span>
+    </div>
+    <div class="table-box">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Client</th>
+            <th>Note</th>
+            <th>Commentaire</th>
+            <th>Date</th>
+            <th>Statut</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-avis">
+          <tr><td colspan="6" class="empty">Chargement...</td></tr>
         </tbody>
       </table>
     </div>

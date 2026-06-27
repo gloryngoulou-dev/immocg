@@ -415,6 +415,60 @@ initRecherche()
 chargerBiens()
 chargerNouveautes()
 chargerStats()
+chargerAvis()
+
+async function chargerAvis() {
+  try {
+    const r = await fetch('/avis')
+    const data = await r.json()
+    const avis = data.avis || []
+
+    if (avis.length === 0) return // Section reste masquée (display:none par défaut)
+
+    const section = document.getElementById('section-avis')
+    const container = document.getElementById('liste-avis')
+    container.textContent = ''
+
+    avis.forEach(a => {
+      const card = document.createElement('div')
+      card.className = 'temoignage-card'
+
+      const header = document.createElement('div')
+      header.className = 'temoignage-header'
+
+      const avatar = document.createElement('div')
+      avatar.className = 'temoignage-avatar'
+      const initiales = (a.client_nom || '?').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
+      avatar.textContent = initiales
+
+      const infos = document.createElement('div')
+      const nom = document.createElement('div')
+      nom.className = 'temoignage-nom'
+      nom.textContent = a.client_nom || 'Client ImmoCG'
+      infos.appendChild(nom)
+
+      header.appendChild(avatar)
+      header.appendChild(infos)
+
+      const texte = document.createElement('div')
+      texte.className = 'temoignage-text'
+      texte.textContent = a.commentaire ? `"${a.commentaire}"` : '"Très satisfait de mon expérience avec ImmoCG."'
+
+      const stars = document.createElement('div')
+      stars.className = 'temoignage-stars'
+      stars.textContent = '★'.repeat(a.note) + '☆'.repeat(5 - a.note)
+
+      card.appendChild(header)
+      card.appendChild(texte)
+      card.appendChild(stars)
+      container.appendChild(card)
+    })
+
+    section.style.display = 'block'
+  } catch {
+    // Section reste masquée silencieusement en cas d'erreur
+  }
+}
 
 function toggleMenu() {
   const menu = document.getElementById('nav-menu')

@@ -748,6 +748,102 @@ chargerAgences()
 chargerReservationsAdmin()
 chargerSignalementsAdmin()
 chargerCommissionsAdmin()
+chargerAvisAdmin()
+
+async function chargerAvisAdmin() {
+  try {
+    const r = await fetch('/avis/admin', { credentials: 'include' })
+    if (!r.ok) return
+    const data = await r.json()
+    const tousAvis = data.avis || []
+
+    document.getElementById('nb-avis-attente').textContent =
+      `${tousAvis.filter(a => a.statut === 'en_attente').length} en attente`
+
+    const tbody = document.getElementById('tbody-avis')
+    tbody.textContent = ''
+
+    if (tousAvis.length === 0) {
+      const tr = document.createElement('tr')
+      const td = document.createElement('td')
+      td.setAttribute('colspan', '6')
+      td.className = 'empty'
+      td.textContent = 'Aucun avis pour le moment'
+      tr.appendChild(td)
+      tbody.appendChild(tr)
+      return
+    }
+
+    tousAvis.forEach(a => {
+      const tr = document.createElement('tr')
+
+      const tdClient = document.createElement('td')
+      tdClient.textContent = a.client_nom
+      tr.appendChild(tdClient)
+
+      const tdNote = document.createElement('td')
+      tdNote.textContent = '★'.repeat(a.note) + '☆'.repeat(5 - a.note)
+      tdNote.style.color = '#C9963A'
+      tr.appendChild(tdNote)
+
+      const tdComm = document.createElement('td')
+      tdComm.style.fontSize = '13px'
+      tdComm.style.maxWidth = '280px'
+      tdComm.textContent = a.commentaire || '—'
+      tr.appendChild(tdComm)
+
+      const tdDate = document.createElement('td')
+      tdDate.style.fontSize = '12px'
+      tdDate.textContent = new Date(a.created_at).toLocaleDateString('fr-FR')
+      tr.appendChild(tdDate)
+
+      const tdStatut = document.createElement('td')
+      const span = document.createElement('span')
+      const couleurs = {
+        en_attente: { bg: '#fff3cd', color: '#856404', label: '⏳ En attente' },
+        publie: { bg: '#d4edda', color: '#155724', label: '✅ Publié' },
+        rejete: { bg: '#f8d7da', color: '#721c24', label: '❌ Rejeté' }
+      }
+      const s = couleurs[a.statut] || couleurs.en_attente
+      span.style.cssText = `background:${s.bg};color:${s.color};padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;`
+      span.textContent = s.label
+      tdStatut.appendChild(span)
+      tr.appendChild(tdStatut)
+
+      const tdAction = document.createElement('td')
+      if (a.statut === 'en_attente') {
+        const btnPublier = document.createElement('button')
+        btnPublier.className = 'btn-sm btn-valider'
+        btnPublier.textContent = '✅ Publier'
+        btnPublier.addEventListener('click', () => traiterAvis(a.id, 'publie'))
+        const btnRejeter = document.createElement('button')
+        btnRejeter.className = 'btn-sm btn-refuser'
+        btnRejeter.textContent = '❌ Rejeter'
+        btnRejeter.addEventListener('click', () => traiterAvis(a.id, 'rejete'))
+        tdAction.appendChild(btnPublier)
+        tdAction.appendChild(btnRejeter)
+      }
+      tr.appendChild(tdAction)
+
+      tbody.appendChild(tr)
+    })
+  } catch (err) {
+    console.error('Erreur chargement avis admin')
+  }
+}
+
+async function traiterAvis(id, statut) {
+  try {
+    const r = await fetch('/avis/' + id, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ statut })
+    })
+    const data = await r.json()
+    if (data.success) chargerAvisAdmin()
+  } catch {}
+}
 
 window.afficherSection = afficherSection
 window.seDeconnecter = seDeconnecter

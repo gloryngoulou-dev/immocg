@@ -206,9 +206,48 @@ async function envoyerEmailReservation(reservation, statut, bien, paiement) {
   }
 }
 
+async function envoyerEmailInvitationAvis(reservation) {
+  if (!reservation.client_email) return false
+  if (!process.env.RESEND_API_KEY) return false
+
+  try {
+    const lienAvis = `https://immocg.onrender.com/avis.html?reservation=${reservation.id}`
+
+    await resend.emails.send({
+      from: 'ImmoCG <onboarding@resend.dev>',
+      to: reservation.client_email,
+      subject: '⭐ Comment était votre expérience avec ImmoCG ?',
+      html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;">
+        <div style="background:#1A1A18;padding:20px;text-align:center;border-radius:10px 10px 0 0;">
+          <h1 style="color:#C9963A;margin:0;">ImmoCG</h1>
+        </div>
+        <div style="background:#fff;padding:30px;border:1px solid #eee;">
+          <h2 style="color:#1A1A18;">⭐ Votre avis compte !</h2>
+          <p>Bonjour <strong>${reservation.client_nom}</strong>,</p>
+          <p>Merci d'avoir trouvé votre logement avec ImmoCG. Partagez votre expérience pour aider d'autres Congolais à trouver le bon bien en toute confiance.</p>
+          <div style="text-align:center;margin:24px 0;">
+            <a href="${lienAvis}" style="background:#C9963A;color:#fff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:600;">
+              ⭐ Laisser mon avis
+            </a>
+          </div>
+          <p style="font-size:12px;color:#888;">Cela prend moins d'une minute.</p>
+        </div>
+        <div style="text-align:center;padding:15px;color:#aaa;font-size:12px;">
+          ImmoCG · immocg.onrender.com · Brazzaville, Congo
+        </div>
+      </div>`
+    })
+    return true
+  } catch (err) {
+    console.error('Erreur email invitation avis:', err.message)
+    return false
+  }
+}
+
 module.exports = {
   envoyerEmailActivation,
   envoyerEmailRefus,
   envoyerEmailReservation,
+  envoyerEmailInvitationAvis,
   buildWhatsAppUrl,
 }

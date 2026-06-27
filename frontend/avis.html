@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Laisser un avis — ImmoCG</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #F7F3EC; color: #2C2C28; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
+
+    .card { background: #fff; border-radius: 18px; padding: 2.2rem; max-width: 460px; width: 100%; box-shadow: 0 12px 40px rgba(0,0,0,0.08); }
+
+    .logo { font-size: 22px; font-weight: 700; color: #1A1A18; text-align: center; margin-bottom: 1.5rem; }
+    .logo span { color: #C9963A; }
+
+    h1 { font-size: 19px; font-weight: 700; color: #1A1A18; margin-bottom: 6px; text-align: center; }
+    .sous { font-size: 13px; color: #888780; text-align: center; margin-bottom: 1.6rem; }
+
+    .stars { display: flex; justify-content: center; gap: 8px; margin-bottom: 1.6rem; }
+    .star { font-size: 38px; cursor: pointer; color: #ddd; transition: color 0.15s, transform 0.1s; user-select: none; }
+    .star.active { color: #C9963A; }
+    .star:hover { transform: scale(1.1); }
+
+    label { font-size: 12px; font-weight: 600; color: #555; display: block; margin-bottom: 6px; }
+    textarea {
+      width: 100%; padding: 11px 14px; border: 1.5px solid rgba(0,0,0,0.10); border-radius: 10px;
+      font-size: 14px; font-family: inherit; background: #FBFAF7; outline: none; resize: vertical;
+      margin-bottom: 1.4rem; box-sizing: border-box;
+    }
+
+    button#btn-envoyer {
+      width: 100%; background: #C9963A; color: #fff; border: none; padding: 13px;
+      border-radius: 10px; font-weight: 700; font-size: 15px; cursor: pointer;
+    }
+    button#btn-envoyer:disabled { opacity: 0.6; cursor: default; }
+
+    .erreur { color: #b3331f; font-size: 13px; background: #FBEAE7; border-radius: 8px; padding: 10px 12px; margin-bottom: 1rem; display: none; }
+
+    .etat { text-align: center; padding: 1rem 0; }
+    .etat-emoji { font-size: 46px; margin-bottom: 1rem; }
+    .etat h2 { font-size: 19px; font-weight: 700; color: #1A1A18; margin-bottom: 8px; }
+    .etat p { color: #555; font-size: 14px; line-height: 1.6; }
+  </style>
+</head>
+<body>
+
+  <div class="card" id="card">
+    <div class="logo">Immo<span>CG</span></div>
+    <div id="contenu">
+      <p style="text-align:center;color:#888;">Chargement...</p>
+    </div>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search)
+    const reservationId = params.get('reservation')
+    let noteChoisie = 0
+
+    function esc(val) {
+      return String(val == null ? '' : val)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#x27;')
+    }
+
+    function afficherErreur(message) {
+      const contenu = document.getElementById('contenu')
+      contenu.textContent = ''
+      const etat = document.createElement('div')
+      etat.className = 'etat'
+      const emoji = document.createElement('div')
+      emoji.className = 'etat-emoji'
+      emoji.textContent = '😕'
+      const h2 = document.createElement('h2')
+      h2.textContent = 'Impossible de continuer'
+      const p = document.createElement('p')
+      p.textContent = message
+      etat.appendChild(emoji); etat.appendChild(h2); etat.appendChild(p)
+      contenu.appendChild(etat)
+    }
+
+    function afficherSucces() {
+      const contenu = document.getElementById('contenu')
+      contenu.textContent = ''
+      const etat = document.createElement('div')
+      etat.className = 'etat'
+      const emoji = document.createElement('div')
+      emoji.className = 'etat-emoji'
+      emoji.textContent = '✅'
+      const h2 = document.createElement('h2')
+      h2.textContent = 'Merci pour votre avis !'
+      const p = document.createElement('p')
+      p.textContent = 'Il sera publié après vérification par notre équipe.'
+      etat.appendChild(emoji); etat.appendChild(h2); etat.appendChild(p)
+      contenu.appendChild(etat)
+    }
+
+    function construireFormulaire(clientNom) {
+      const contenu = document.getElementById('contenu')
+      contenu.textContent = ''
+
+      const h1 = document.createElement('h1')
+      h1.textContent = `Bonjour ${clientNom} 👋`
+      const sous = document.createElement('p')
+      sous.className = 'sous'
+      sous.textContent = 'Comment était votre expérience avec ImmoCG ?'
+
+      const starsDiv = document.createElement('div')
+      starsDiv.className = 'stars'
+      const etoiles = []
+      for (let i = 1; i <= 5; i++) {
+        const star = document.createElement('span')
+        star.className = 'star'
+        star.textContent = '★'
+        star.dataset.valeur = i
+        star.addEventListener('click', () => {
+          noteChoisie = i
+          etoiles.forEach((s, idx) => s.classList.toggle('active', idx < i))
+        })
+        etoiles.push(star)
+        starsDiv.appendChild(star)
+      }
+
+      const lblCommentaire = document.createElement('label')
+      lblCommentaire.textContent = 'Votre commentaire (optionnel)'
+      const textarea = document.createElement('textarea')
+      textarea.id = 'commentaire'
+      textarea.rows = 4
+      textarea.placeholder = 'Partagez votre expérience...'
+
+      const erreurEl = document.createElement('div')
+      erreurEl.className = 'erreur'
+      erreurEl.id = 'erreur'
+
+      const btn = document.createElement('button')
+      btn.id = 'btn-envoyer'
+      btn.textContent = '⭐ Envoyer mon avis'
+
+      btn.addEventListener('click', async () => {
+        if (noteChoisie < 1) {
+          erreurEl.textContent = 'Veuillez choisir une note (1 à 5 étoiles).'
+          erreurEl.style.display = 'block'
+          return
+        }
+        erreurEl.style.display = 'none'
+        btn.textContent = 'Envoi...'
+        btn.disabled = true
+
+        try {
+          const r = await fetch('/avis', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              reservation_id: reservationId,
+              note: noteChoisie,
+              commentaire: textarea.value.trim()
+            })
+          })
+          const data = await r.json()
+          if (data.success) {
+            afficherSucces()
+          } else {
+            erreurEl.textContent = data.message || 'Erreur lors de l\'envoi.'
+            erreurEl.style.display = 'block'
+            btn.textContent = '⭐ Envoyer mon avis'
+            btn.disabled = false
+          }
+        } catch {
+          erreurEl.textContent = 'Erreur de connexion. Réessayez.'
+          erreurEl.style.display = 'block'
+          btn.textContent = '⭐ Envoyer mon avis'
+          btn.disabled = false
+        }
+      })
+
+      contenu.appendChild(h1)
+      contenu.appendChild(sous)
+      contenu.appendChild(starsDiv)
+      contenu.appendChild(lblCommentaire)
+      contenu.appendChild(textarea)
+      contenu.appendChild(erreurEl)
+      contenu.appendChild(btn)
+    }
+
+    async function init() {
+      if (!reservationId) {
+        afficherErreur('Lien invalide — aucune réservation spécifiée.')
+        return
+      }
+      try {
+        const r = await fetch('/avis/verifier/' + encodeURIComponent(reservationId))
+        const data = await r.json()
+        if (!data.success) {
+          afficherErreur(data.message || 'Ce lien n\'est plus valide.')
+          return
+        }
+        construireFormulaire(data.client_nom)
+      } catch {
+        afficherErreur('Erreur de connexion. Vérifiez votre réseau.')
+      }
+    }
+
+    init()
+  </script>
+</body>
+</html>
