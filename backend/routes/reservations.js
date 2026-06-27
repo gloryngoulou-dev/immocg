@@ -252,7 +252,37 @@ router.patch('/:id', verifierToken, async (req, res) => {
   }
 })
 
+// ========== EXPIRATION AUTOMATIQUE ==========
+// Demandes 'en_attente' dont le délai (expire_at) est dépassé → passent à 'expiree'
+async function expirerReservationsDepassees() {
+  try {
+    const { data: expirees } = await supabase
+      .from('reservations')
+      .update({ statut: 'expiree' })
+      .eq('statut', 'en_attente')
+      .lt('expire_at', new Date().toISOString())
+      .select()
+
+    if (expirees && expirees.length > 0) {
+      console.log(`⌛ ${expirees.length} demande(s) expirée(s) automatiquement`)
+
+      // Notifier les clients concernés
+      for (const res of expirees) {
+        const { data: bien } = await supabase
+          .from('biens')
+          .select('*')
+          .eq('id', res.bien_id)
+          .maybeSingle()
+        envoyerEmailReservation(res, 'expiree', bien, null).catch(() => {})
+      }
+    }
+  } catch (err) {
+    console.error('Erreur expiration auto:', err.message)
+  }
+}
+
 module.exports = router
+module.exports.expirerReservationsDepassees = expirerReservationsDepassees
 
 // PATCH /reservations/:id/cloturer — déclarer le résultat de la visite
 // resultat: 'pris' (le client a pris le bien) | 'refuse_client' (client n'a pas voulu) | 'absent' (no-show)

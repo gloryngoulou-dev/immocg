@@ -176,14 +176,20 @@ async function chargerNouveautes() {
     container.textContent = ''
 
     if (biens.length === 0) {
-      const div = document.createElement('div')
-      div.className = 'empty-state'
-      div.textContent = 'Aucune nouveauté pour le moment'
-      container.appendChild(div)
+      container.innerHTML = '<div class="empty-state">Aucune nouveauté pour le moment</div>'
       return
     }
 
     const icones = { 'Villa': '🏡', 'Appartement': '🏢', 'Studio': '🏠', 'Maison': '🏘️', 'Bureau': '🏗️', 'Terrain': '🌳' }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.backgroundImage = `url(${entry.target.dataset.src})`
+          observer.unobserve(entry.target)
+        }
+      })
+    })
 
     biens.forEach(b => {
       function safeUrl(url) {
@@ -198,24 +204,12 @@ async function chargerNouveautes() {
       cardImg.className = 'card-img'
       const imgSafe = safeUrl(b.image_url)
       if (imgSafe) {
-        if (imgSafe) {
-    cardImg.dataset.src = imgSafe
-    cardImg.classList.add('lazy')
-    observer.observe(cardImg)
-}
+        cardImg.dataset.src = imgSafe
+        cardImg.classList.add('lazy')
+        observer.observe(cardImg)
       } else {
         cardImg.textContent = icones[b.type] || '🏠'
       }
-
-      // Ajouter l'IntersectionObserver
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            entry.target.style.backgroundImage = `url(${entry.target.dataset.src})`
-            observer.unobserve(entry.target)
-        }
-    })
-})
 
       const badge = document.createElement('div')
       badge.className = 'card-badge' + (b.mode === 'louer' ? ' louer' : b.mode === 'jour' ? ' jour' : '')
@@ -277,12 +271,7 @@ const observer = new IntersectionObserver((entries) => {
       container.appendChild(card)
     })
   } catch {
-    const el = document.getElementById('liste-nouveautes')
-    el.textContent = ''
-    const div = document.createElement('div')
-    div.className = 'empty-state'
-    div.textContent = 'Erreur de chargement'
-    el.appendChild(div)
+    document.getElementById('liste-nouveautes').innerHTML = '<div class="empty-state">Erreur de chargement</div>'
   }
 }
 

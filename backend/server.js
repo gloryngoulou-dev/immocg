@@ -124,4 +124,10 @@ app.get('/favicon.ico', (req, res) => {
 const PORT = process.env.PORT || 3000
 app.listen(PORT, () => {
   console.log(`Serveur démarré sur http://localhost:${PORT}`)
+
+  // Expiration automatique des réservations en attente — au démarrage puis toutes les heures
+  reservationsRoutes.expirerReservationsDepassees()
+  setInterval(() => {
+    reservationsRoutes.expirerReservationsDepassees()
+  }, 60 * 60 * 1000) // toutes les heures
 })
