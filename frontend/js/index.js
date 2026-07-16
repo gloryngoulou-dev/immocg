@@ -176,7 +176,10 @@ async function chargerNouveautes() {
     container.textContent = ''
 
     if (biens.length === 0) {
-      container.innerHTML = '<div class="empty-state">Aucune nouveauté pour le moment</div>'
+      const div = document.createElement('div')
+      div.className = 'empty-state'
+      div.textContent = 'Aucune nouveauté pour le moment'
+      container.appendChild(div)
       return
     }
 
@@ -271,7 +274,12 @@ async function chargerNouveautes() {
       container.appendChild(card)
     })
   } catch {
-    document.getElementById('liste-nouveautes').innerHTML = '<div class="empty-state">Erreur de chargement</div>'
+    const el = document.getElementById('liste-nouveautes')
+    el.textContent = ''
+    const div = document.createElement('div')
+    div.className = 'empty-state'
+    div.textContent = 'Erreur de chargement'
+    el.appendChild(div)
   }
 }
 

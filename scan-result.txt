@@ -1,0 +1,32 @@
+﻿.\herozion.exe : \u27f3 Running ....
+Au caractère C:\Users\glory\AppData\Local\Temp\ps-script-30110dd7-2e2a-4e2b-a36a-ad2ce85188a8.ps1:7 : 69
++ ... "; if (Test-Path .\herozion.exe) { .\herozion.exe scan . 2>&1 | Out-F ...
++                                        ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (\u27f3 Running ....:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+Traceback (most recent call last):
+  File "app.py", line 3183, in <module>
+  File "app.py", line 3153, in main
+  File "click\core.py", line 1524, in __call__
+  File "click\core.py", line 1445, in main
+  File "app.py", line 141, in invoke
+  File "click\core.py", line 1912, in invoke
+  File "click\core.py", line 1308, in invoke
+  File "click\core.py", line 877, in invoke
+  File "click\decorators.py", line 34, in new_func
+  File "app.py", line 254, in scan
+  File "herozion\cli\formatter.py", line 100, in print_banner
+  File "rich\console.py", line 1704, in print
+  File "rich\console.py", line 864, in __exit__
+  File "rich\console.py", line 820, in _exit_buffer
+  File "rich\console.py", line 2055, in _check_buffer
+  File "rich\console.py", line 2091, in _write_buffer
+  File "rich\_windows_renderer.py", line 17, in legacy_windows_render
+  File "rich\_win32_console.py", line 441, in write_styled
+  File "rich\_win32_console.py", line 402, in write_text
+  File "encodings\cp1252.py", line 19, in encode
+UnicodeEncodeError: 'charmap' codec can't encode characters in position 0-1: character maps to <undefined>
+[PYI-41856:ERROR] Failed to execute script 'app' due to unhandled exception!
+       
