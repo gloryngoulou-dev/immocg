@@ -502,7 +502,7 @@ async function chargerPartenaires() {
       const logo = document.createElement('div')
       logo.className = 'partenaire-logo'
       logo.textContent = initiales
-      logo.style.backgroundColor = '#FF6B35' // couleur primaire ImmoCG
+      logo.style.backgroundColor = '#C9963A' // couleur primaire ImmoCG
       logo.style.color = 'white'
       logo.style.fontSize = '20px'
       logo.style.fontWeight = 'bold'
