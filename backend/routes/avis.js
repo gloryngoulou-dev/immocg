@@ -2,7 +2,8 @@ const express = require('express')
 const router = express.Router()
 const { createClient } = require('@supabase/supabase-js')
 const Joi = require('joi')
-const { verifierToken } = require('./auth')
+const { verifierToken } = require('../middleware/auth')
+const logger = require('../utils/logger')
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY)
 
@@ -105,7 +106,7 @@ router.post('/', async (req, res) => {
 
     res.json({ success: true, message: 'Merci pour votre avis ! Il sera publié après vérification.' })
   } catch (err) {
-    console.error('Erreur création avis:', err.message)
+    logger.error('Erreur création avis', { error: err.message })
     res.status(500).json({ success: false, message: 'Erreur interne' })
   }
 })

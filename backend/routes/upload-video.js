@@ -2,7 +2,7 @@ const express = require('express')
 const router = express.Router()
 const multer = require('multer')
 const { createClient } = require('@supabase/supabase-js')
-const { verifierToken } = require('./auth')
+const { verifierToken } = require('../middleware/auth')
 
 const supabase = createClient(
   process.env.SUPABASE_URL,

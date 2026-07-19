@@ -2,7 +2,8 @@ const express = require('express')
 const router = express.Router()
 const { createClient } = require('@supabase/supabase-js')
 const Joi = require('joi')
-const { verifierToken } = require('./auth')
+const { verifierToken } = require('../middleware/auth')
+const logger = require('../utils/logger')
 const { calculerCommission, buildReferenceImmocg, COMMISSION_IMMOCG_PCT } = require('../utils/commissions')
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY)
@@ -84,7 +85,7 @@ router.post('/declarer', verifierToken, async (req, res) => {
       .single()
 
     if (insertErr) {
-      console.error('Erreur insert transaction:', insertErr.message)
+      logger.error('Erreur insertion transaction', { error: insertErr.message })
       return res.status(500).json({
         success: false,
         message: 'Impossible d\'enregistrer la transaction. Vérifiez que la table transactions existe dans Supabase.',
@@ -99,7 +100,7 @@ router.post('/declarer', verifierToken, async (req, res) => {
       commission_pct: COMMISSION_IMMOCG_PCT,
     })
   } catch (err) {
-    console.error('Erreur déclaration transaction:', err.message)
+    logger.error('Erreur déclaration transaction', { error: err.message })
     res.status(500).json({ success: false, message: 'Erreur interne' })
   }
 })

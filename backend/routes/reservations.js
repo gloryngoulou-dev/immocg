@@ -2,7 +2,8 @@ const express = require('express')
 const router = express.Router()
 const { createClient } = require('@supabase/supabase-js')
 const Joi = require('joi')
-const { verifierToken } = require('./auth')
+const { verifierToken } = require('../middleware/auth')
+const logger = require('../utils/logger')
 const { buildReferenceImmocg } = require('../utils/commissions')
 const { envoyerEmailReservation, envoyerEmailInvitationAvis } = require('./email')
 
@@ -116,7 +117,7 @@ router.post('/', async (req, res) => {
       }
     })
   } catch (err) {
-    console.error('Erreur création réservation')
+    logger.error('Erreur création réservation', { error: err.message })
     res.status(500).json({ success: false, message: 'Erreur interne' })
   }
 })
@@ -247,7 +248,7 @@ router.patch('/:id', verifierToken, async (req, res) => {
 
     res.json({ success: true, message: `Réservation ${statut === 'confirmee' ? 'confirmée' : 'annulée'}` })
   } catch (err) {
-    console.error('Erreur update reservation:', err.message)
+    logger.error('Erreur update réservation', { error: err.message })
     res.status(500).json({ success: false, message: 'Erreur interne' })
   }
 })
@@ -264,7 +265,7 @@ async function expirerReservationsDepassees() {
       .select()
 
     if (expirees && expirees.length > 0) {
-      console.log(`⌛ ${expirees.length} demande(s) expirée(s) automatiquement`)
+      logger.info(`Demandes expirées automatiquement`, { total: expirees.length })
 
       // Notifier les clients concernés
       for (const res of expirees) {
@@ -277,7 +278,7 @@ async function expirerReservationsDepassees() {
       }
     }
   } catch (err) {
-    console.error('Erreur expiration auto:', err.message)
+    logger.error('Erreur expiration automatique', { error: err.message })
   }
 }
 
@@ -324,7 +325,7 @@ router.patch('/:id/cloturer', verifierToken, async (req, res) => {
         : 'Visite clôturée — le bien repasse disponible.'
     })
   } catch (err) {
-    console.error('Erreur cloture reservation:', err.message)
+    logger.error('Erreur clôture réservation', { error: err.message })
     res.status(500).json({ success: false, message: 'Erreur interne' })
   }
 })
