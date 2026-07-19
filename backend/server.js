@@ -2,7 +2,6 @@ const express = require('express')
 const cors = require('cors')
 const path = require('path')
 const cookieParser = require('cookie-parser')
-const rateLimit = require('express-rate-limit')
 const { createClient } = require('@supabase/supabase-js')
 require('dotenv').config()
 const logger = require('./utils/logger')
@@ -40,40 +39,9 @@ app.use((req, res, next) => {
   next()
 })
 
-// ============================================
-// 🪵 LOG STRUCTURÉ DES REQUÊTES (remplace console.log)
-// ============================================
 app.use((req, res, next) => {
   logger.info(`${req.method} ${req.originalUrl}`, { ip: req.ip })
   next()
-})
-
-// ============================================
-// ⏱️ RATE LIMITING — anti brute-force / anti-spam
-// ============================================
-const authLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 heure
-  max: 20, // 20 tentatives / IP / heure sur /auth (login + register confondus)
-  standardHeaders: true,
-  legacyHeaders: false,
-  skipSuccessfulRequests: true,
-  message: { success: false, message: 'Trop de tentatives. Réessayez dans 1 heure.' },
-})
-
-const contactLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000,
-  max: 5, // 5 messages / IP / heure
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { success: false, message: 'Limite de messages atteinte. Réessayez plus tard.' },
-})
-
-const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 300, // large, car cette limite couvre aussi le trafic public (annonces, avis)
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { success: false, message: 'Trop de requêtes, réessayez dans quelques minutes.' },
 })
 
 const supabase = createClient(
@@ -139,15 +107,15 @@ const signalementsRoutes = require('./routes/signalements')
 const avisRoutes = require('./routes/avis')
 const transactionsRoutes = require('./routes/transactions')
 
-app.use('/biens', apiLimiter, biensRoutes)
-app.use('/upload', apiLimiter, uploadRoutes)
-app.use('/upload-video', apiLimiter, uploadVideoRoutes)
-app.use('/auth', authLimiter, authRoutes)
-app.use('/contact', contactLimiter, contactRoutes)
-app.use('/reservations', apiLimiter, reservationsRoutes)
-app.use('/signalements', apiLimiter, signalementsRoutes)
-app.use('/avis', apiLimiter, avisRoutes)
-app.use('/transactions', apiLimiter, transactionsRoutes)
+app.use('/biens', biensRoutes)
+app.use('/upload', uploadRoutes)
+app.use('/upload-video', uploadVideoRoutes)
+app.use('/auth', authRoutes)
+app.use('/contact', contactRoutes)
+app.use('/reservations', reservationsRoutes)
+app.use('/signalements', signalementsRoutes)
+app.use('/avis', avisRoutes)
+app.use('/transactions', transactionsRoutes)
 
 app.get('/og-image.jpg', (req, res) => {
   res.type('image/svg+xml')
@@ -162,9 +130,6 @@ app.get('/favicon.ico', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/favicon.svg'))
 })
 
-// ============================================
-// ❌ GESTIONNAIRE D'ERREURS GLOBAL
-// ============================================
 app.use((err, req, res, next) => {
   logger.error('Erreur serveur non gérée', {
     message: err.message,
@@ -180,9 +145,8 @@ const PORT = process.env.PORT || 3000
 app.listen(PORT, () => {
   logger.info(`Serveur démarré sur http://localhost:${PORT}`, { port: PORT, env: process.env.NODE_ENV || 'development' })
 
-  // Expiration automatique des réservations en attente — au démarrage puis toutes les heures
   reservationsRoutes.expirerReservationsDepassees()
   setInterval(() => {
     reservationsRoutes.expirerReservationsDepassees()
-  }, 60 * 60 * 1000) // toutes les heures
+  }, 60 * 60 * 1000)
 })
