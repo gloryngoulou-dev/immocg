@@ -1,9 +1,10 @@
 const express = require('express')
 const router = express.Router()
 const { createClient } = require('@supabase/supabase-js')
-const { verifierToken } = require('./auth')
+const { verifierToken, requireAdmin } = require('../middleware/auth')
 const { sanitizeBiensPublic } = require('../utils/biens')
 const Joi = require('joi')
+const logger = require('../utils/logger')
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -62,13 +63,6 @@ const statutUpdateSchema = Joi.object({
   statut: Joi.string().valid('disponible', 'vendu', 'loué', 'attente').required()
 })
 
-function requireAdmin(req, res, next) {
-  if (req.user?.role !== 'admin') {
-    return res.status(403).json({ success: false, message: 'Accès refusé' })
-  }
-  next()
-}
-
 // ========== ROUTES ==========
 
 router.get('/', async (req, res) => {
@@ -112,7 +106,7 @@ router.get('/', async (req, res) => {
     const biens = isAdmin ? data : sanitizeBiensPublic(data)
     res.json({ success: true, total: biens.length, biens })
   } catch (err) {
-    console.error('Erreur chargement biens')
+    logger.error('Erreur chargement biens', { error: err.message })
     res.status(500).json({ success: false, message: 'Erreur interne' })
   }
 })
@@ -128,7 +122,7 @@ router.get('/mine', verifierToken, async (req, res) => {
     if (error) throw error
     res.json({ success: true, total: data.length, biens: data })
   } catch (err) {
-    console.error('Erreur chargement biens utilisateur')
+    logger.error('Erreur chargement biens utilisateur', { error: err.message })
     res.status(500).json({ success: false, message: 'Erreur interne' })
   }
 })
@@ -156,7 +150,7 @@ router.get('/:id', async (req, res) => {
 
     res.json({ success: true, bien: data })
   } catch (err) {
-    console.error('Erreur chargement bien')
+    logger.error('Erreur chargement bien', { error: err.message })
     res.status(500).json({ success: false, message: 'Erreur interne' })
   }
 })
@@ -185,7 +179,7 @@ router.post('/', verifierToken, async (req, res) => {
 
     res.json({ success: true, bien: data[0] })
   } catch (err) {
-    console.error('Erreur création bien')
+    logger.error('Erreur création bien', { error: err.message })
     res.status(500).json({ success: false, message: 'Erreur lors de la création' })
   }
 })
@@ -205,7 +199,7 @@ router.delete('/:id', verifierToken, requireAdmin, async (req, res) => {
     if (error) throw error
     res.json({ success: true, message: 'Bien supprimé' })
   } catch (err) {
-    console.error('Erreur suppression bien')
+    logger.error('Erreur suppression bien', { error: err.message })
     res.status(500).json({ success: false, message: 'Erreur interne' })
   }
 })
@@ -230,7 +224,7 @@ router.patch('/:id/statut', verifierToken, requireAdmin, async (req, res) => {
     if (updateError) throw updateError
     res.json({ success: true })
   } catch (err) {
-    console.error('Erreur mise à jour statut')
+    logger.error('Erreur mise à jour statut', { error: err.message })
     res.status(500).json({ success: false, message: 'Erreur interne' })
   }
 })
