@@ -424,6 +424,7 @@ chargerBiens()
 chargerNouveautes()
 chargerStats()
 chargerAvis()
+chargerPartenaires()
 
 async function chargerAvis() {
   try {
@@ -469,6 +470,116 @@ async function chargerAvis() {
       card.appendChild(header)
       card.appendChild(texte)
       card.appendChild(stars)
+      container.appendChild(card)
+    })
+
+    section.style.display = 'block'
+  } catch {
+    // Section reste masquée silencieusement en cas d'erreur
+  }
+}
+
+async function chargerPartenaires() {
+  try {
+    const r = await fetch('/auth/partenaires')
+    const data = await r.json()
+    const partenaires = data.partenaires || []
+
+    if (partenaires.length === 0) return // Section reste masquée (display:none par défaut)
+
+    const section = document.getElementById('section-partenaires')
+    const container = document.getElementById('liste-partenaires')
+    container.textContent = ''
+
+    partenaires.forEach(p => {
+      const card = document.createElement('div')
+      card.className = 'partenaire-card'
+
+      const header = document.createElement('div')
+      header.className = 'partenaire-header'
+
+      const initiales = (p.nom || '?').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
+      const logo = document.createElement('div')
+      logo.className = 'partenaire-logo'
+      logo.textContent = initiales
+      logo.style.backgroundColor = '#FF6B35' // couleur primaire ImmoCG
+      logo.style.color = 'white'
+      logo.style.fontSize = '20px'
+      logo.style.fontWeight = 'bold'
+      logo.style.width = '60px'
+      logo.style.height = '60px'
+      logo.style.borderRadius = '50%'
+      logo.style.display = 'flex'
+      logo.style.alignItems = 'center'
+      logo.style.justifyContent = 'center'
+
+      const infos = document.createElement('div')
+      infos.className = 'partenaire-infos'
+
+      const nom = document.createElement('h3')
+      nom.className = 'partenaire-nom'
+      nom.textContent = p.nom
+      nom.style.margin = '0 0 0.5rem 0'
+      nom.style.fontSize = '1.1rem'
+      nom.style.color = '#1A1A18'
+
+      const contact = document.createElement('div')
+      contact.className = 'partenaire-contact'
+      contact.style.fontSize = '0.9rem'
+      contact.style.color = '#666'
+      contact.style.marginBottom = '0.5rem'
+
+      if (p.email) {
+        const email = document.createElement('p')
+        email.textContent = `📧 ${p.email}`
+        email.style.margin = '0.25rem 0'
+        contact.appendChild(email)
+      }
+
+      if (p.telephone) {
+        const tel = document.createElement('p')
+        tel.textContent = `📞 ${p.telephone}`
+        tel.style.margin = '0.25rem 0'
+        contact.appendChild(tel)
+      }
+
+      const depuis = document.createElement('p')
+      depuis.textContent = `Depuis ${p.depuis}`
+      depuis.style.margin = '0.25rem 0'
+      depuis.style.fontSize = '0.85rem'
+      depuis.style.color = '#999'
+      contact.appendChild(depuis)
+
+      infos.appendChild(nom)
+      infos.appendChild(contact)
+
+      header.appendChild(logo)
+      header.appendChild(infos)
+      card.appendChild(header)
+
+      const actions = document.createElement('div')
+      actions.className = 'partenaire-actions'
+      actions.style.display = 'flex'
+      actions.style.gap = '0.5rem'
+      actions.style.marginTop = '1rem'
+
+      const btnEmail = document.createElement('button')
+      btnEmail.className = 'btn btn-secondary'
+      btnEmail.textContent = 'Contacter'
+      btnEmail.style.flex = '1'
+      btnEmail.onclick = () => window.location.href = `mailto:${p.email}`
+
+      const btnWhatsApp = document.createElement('button')
+      btnWhatsApp.className = 'btn btn-primary'
+      btnWhatsApp.textContent = 'WhatsApp'
+      btnWhatsApp.style.flex = '1'
+      const phoneOnly = p.telephone.replace(/\D/g, '')
+      btnWhatsApp.onclick = () => window.open(`https://wa.me/242${phoneOnly.replace(/^242/, '')}?text=Bonjour, j'ai une demande...`, '_blank')
+
+      actions.appendChild(btnEmail)
+      actions.appendChild(btnWhatsApp)
+      card.appendChild(actions)
+
       container.appendChild(card)
     })
 

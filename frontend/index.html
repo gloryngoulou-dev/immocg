@@ -217,6 +217,31 @@
     .temoignage-text { font-size: 14px; color: #444; line-height: 1.6; }
     .temoignage-stars { margin-top: 10px; color: #C9963A; font-size: 16px; }
 
+    /* AGENCES PARTENAIRES */
+    .partenaire-card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 1.5rem;
+      border: 1px solid rgba(0,0,0,0.08);
+      transition: box-shadow 0.2s;
+    }
+    .partenaire-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.12); }
+    .partenaire-header { display: flex; gap: 1rem; margin-bottom: 1rem; }
+    .partenaire-logo {
+      flex-shrink: 0;
+      font-weight: 700;
+    }
+    .partenaire-infos { flex: 1; }
+    .partenaire-nom { margin: 0; font-weight: 600; font-size: 1.1rem; color: #1A1A18; }
+    .partenaire-contact { font-size: 0.9rem; color: #666; }
+    .partenaire-contact p { margin: 0.25rem 0; }
+    .partenaire-actions { display: flex; gap: 0.5rem; margin-top: 1rem; }
+    .partenaire-actions button { flex: 1; padding: 0.75rem; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 0.95rem; transition: all 0.2s; }
+    .partenaire-actions .btn-primary { background: #FF6B35; color: white; }
+    .partenaire-actions .btn-primary:hover { background: #E55A24; }
+    .partenaire-actions .btn-secondary { background: #F5F5F5; color: #1A1A18; border: 1px solid #DDD; }
+    .partenaire-actions .btn-secondary:hover { background: #EFEFEF; }
+
     /* COMMENT CA MARCHE */
     .how-section { background: #1A1A18; padding: 4rem 2rem; margin: 3rem 0; }
     .how-inner { max-width: 1080px; margin: 0 auto; }
@@ -480,6 +505,17 @@
       </div>
     </div>
     <div class="cards" id="liste-avis" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));"></div>
+  </section>
+
+  <!-- AGENCES PARTENAIRES -->
+  <section class="temoignages-section" id="section-partenaires" style="display:none;">
+    <div class="section-header">
+      <div>
+        <h2>🤝 Nos agences partenaires</h2>
+        <p class="section-sub">Des agences de confiance qui accompagnent chaque transaction</p>
+      </div>
+    </div>
+    <div class="cards" id="liste-partenaires" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));"></div>
   </section>
 
   <!-- CTA PARTENAIRE -->

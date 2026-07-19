@@ -3,18 +3,14 @@ const router = express.Router()
 const jwt = require('jsonwebtoken')
 const { createClient } = require('@supabase/supabase-js')
 const { hashPassword, verifyPassword, isHashed } = require('../utils/password')
-const Joi = require('joi') // À installer : npm install joi
+const Joi = require('joi')
+const logger = require('../utils/logger')
+const { verifierToken, JWT_SECRET } = require('../middleware/auth')
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_KEY
 )
-
-const JWT_SECRET = process.env.JWT_SECRET
-if (!JWT_SECRET) {
-  process.stderr.write('ERREUR DEMARRAGE: variable JWT_SECRET manquante\n')
-  process.exit(1)
-}
 
 const { envoyerEmailActivation, envoyerEmailRefus, buildWhatsAppUrl } = require('./email')
 
@@ -123,7 +119,7 @@ router.post('/login', async (req, res) => {
       },
     })
   } catch (err) {
-    console.error('Erreur login:', err)
+    logger.error('Erreur login', { error: err.message })
     res.status(500).json({ success: false, message: 'Erreur interne du serveur' })
   }
 })
@@ -169,7 +165,7 @@ router.post('/register', async (req, res) => {
       }])
 
     if (insertError) {
-      console.error('Erreur insertion:', insertError)
+      logger.error('Erreur insertion utilisateur', { error: insertError.message })
       return res.status(500).json({ success: false, message: 'Erreur lors de la création du compte' })
     }
 
@@ -178,25 +174,10 @@ router.post('/register', async (req, res) => {
       message: 'Compte créé ! En attente de validation par ImmoCG.',
     })
   } catch (err) {
-    console.error('Erreur register:', err)
+    logger.error('Erreur register', { error: err.message })
     res.status(500).json({ success: false, message: 'Erreur interne du serveur' })
   }
 })
-
-// Middleware de vérification token
-function verifierToken(req, res, next) {
-  const token = req.cookies?.immocg_token || req.headers.authorization?.split(' ')[1]
-  if (!token) {
-    return res.status(401).json({ success: false, message: 'Non connecté — veuillez vous reconnecter' })
-  }
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET)
-    req.user = decoded
-    next()
-  } catch (err) {
-    return res.status(401).json({ success: false, message: 'Session expirée — veuillez vous reconnecter' })
-  }
-}
 
 // GET /auth/me
 router.get('/me', verifierToken, async (req, res) => {
@@ -213,7 +194,7 @@ router.get('/me', verifierToken, async (req, res) => {
 
     res.json({ success: true, user })
   } catch (err) {
-    console.error('Erreur me:', err)
+    logger.error('Erreur récupération profil', { error: err.message })
     res.status(500).json({ success: false, message: 'Erreur interne' })
   }
 })
@@ -233,7 +214,7 @@ router.get('/users', verifierToken, async (req, res) => {
     if (error) throw error
     res.json({ success: true, users: data })
   } catch (err) {
-    console.error('Erreur users:', err)
+    logger.error('Erreur récupération utilisateurs', { error: err.message })
     res.status(500).json({ success: false, message: 'Erreur lors de la récupération' })
   }
 })
@@ -288,13 +269,13 @@ router.patch('/users/:id', verifierToken, async (req, res) => {
     let whatsapp_url = null
     if (agence) {
       if (actif) {
-        await envoyerEmailActivation(agence).catch(err => console.error('Email activation échoué:', err))
+        await envoyerEmailActivation(agence).catch(err => logger.error('Email activation échoué', { error: err.message }))
         whatsapp_url = buildWhatsAppUrl(
           agence.telephone,
           `Bonjour ${agence.nom_agence}, votre compte partenaire ImmoCG a ete active ! Connectez-vous sur ${(process.env.SITE_URL || 'https://immocg.onrender.com').replace(/\/$/, '')}/login.html pour publier vos annonces.`
         )
       } else {
-        await envoyerEmailRefus(agence).catch(err => console.error('Email refus échoué:', err))
+        await envoyerEmailRefus(agence).catch(err => logger.error('Email refus échoué', { error: err.message }))
       }
     }
 
@@ -304,7 +285,7 @@ router.patch('/users/:id', verifierToken, async (req, res) => {
       whatsapp_url,
     })
   } catch (err) {
-    console.error('Erreur update user:', err)
+    logger.error('Erreur mise à jour utilisateur', { error: err.message })
     res.status(500).json({ success: false, message: 'Erreur lors de la mise à jour' })
   }
 })
@@ -325,8 +306,36 @@ router.get('/stats', async (req, res) => {
       actives: data.filter(u => u.actif).length,
     })
   } catch (err) {
-    console.error('Erreur stats:', err)
+    logger.error('Erreur récupération stats', { error: err.message })
     res.status(500).json({ success: false, message: 'Erreur lors de la récupération des statistiques' })
+  }
+})
+
+// GET /auth/partenaires — agences actives (publiques)
+router.get('/partenaires', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select('id, nom_agence, email, telephone, created_at')
+      .eq('role', 'agence')
+      .eq('actif', true)
+      .order('nom_agence', { ascending: true })
+
+    if (error) throw error
+
+    res.json({
+      success: true,
+      partenaires: data.map(u => ({
+        id: u.id,
+        nom: u.nom_agence,
+        email: u.email,
+        telephone: u.telephone,
+        depuis: u.created_at ? new Date(u.created_at).getFullYear() : new Date().getFullYear(),
+      })),
+    })
+  } catch (err) {
+    logger.error('Erreur récupération partenaires', { error: err.message })
+    res.status(500).json({ success: false, message: 'Erreur lors de la récupération des agences' })
   }
 })
 
@@ -340,4 +349,4 @@ router.post('/logout', (req, res) => {
   res.json({ success: true, message: 'Déconnecté' })
 })
 
-module.exports = { router, verifierToken }
+module.exports = { router }
