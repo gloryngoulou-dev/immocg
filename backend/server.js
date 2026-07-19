@@ -2,6 +2,7 @@ const express = require('express')
 const cors = require('cors')
 const path = require('path')
 const cookieParser = require('cookie-parser')
+const rateLimit = require('express-rate-limit')
 const { createClient } = require('@supabase/supabase-js')
 require('dotenv').config()
 const logger = require('./utils/logger')
@@ -42,6 +43,38 @@ app.use((req, res, next) => {
 app.use((req, res, next) => {
   logger.info(`${req.method} ${req.originalUrl}`, { ip: req.ip })
   next()
+})
+
+// ============================================
+// ⏱️ RATE LIMITING — Protection anti brute-force & spam
+// ============================================
+
+// Login/Register : max 20 tentatives par IP, par heure
+const authLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 heure
+  max: 20,
+  skipSuccessfulRequests: true, // Ne compte pas les logins réussis
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: 'Trop de tentatives. Réessayez dans 1 heure.' },
+})
+
+// Contact : max 5 messages par IP, par heure (anti-spam)
+const contactLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 heure
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: 'Limite de messages atteinte. Réessayez plus tard.' },
+})
+
+// API générale : max 300 requêtes par IP, par 15 minutes
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: 'Trop de requêtes, réessayez dans quelques minutes.' },
 })
 
 const supabase = createClient(
@@ -107,15 +140,16 @@ const signalementsRoutes = require('./routes/signalements')
 const avisRoutes = require('./routes/avis')
 const transactionsRoutes = require('./routes/transactions')
 
-app.use('/biens', biensRoutes)
-app.use('/upload', uploadRoutes)
-app.use('/upload-video', uploadVideoRoutes)
-app.use('/auth', authRoutes)
-app.use('/contact', contactRoutes)
-app.use('/reservations', reservationsRoutes)
-app.use('/signalements', signalementsRoutes)
-app.use('/avis', avisRoutes)
-app.use('/transactions', transactionsRoutes)
+// Montage des routes avec rate-limiting
+app.use('/auth', authLimiter, authRoutes)
+app.use('/contact', contactLimiter, contactRoutes)
+app.use('/biens', apiLimiter, biensRoutes)
+app.use('/upload', apiLimiter, uploadRoutes)
+app.use('/upload-video', apiLimiter, uploadVideoRoutes)
+app.use('/reservations', apiLimiter, reservationsRoutes)
+app.use('/signalements', apiLimiter, signalementsRoutes)
+app.use('/avis', apiLimiter, avisRoutes)
+app.use('/transactions', apiLimiter, transactionsRoutes)
 
 app.get('/og-image.jpg', (req, res) => {
   res.type('image/svg+xml')
