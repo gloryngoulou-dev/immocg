@@ -10,9 +10,19 @@ const logger = require('./utils/logger')
 const app = express()
 app.use(cookieParser())
 
-const SITE_URL = (process.env.SITE_URL || '').replace(/\/$/, '')
+// ============================================
+// 🌐 GESTION DES DOMAINES (prêt pour migration)
+// ============================================
+
+const SITE_URL = (process.env.SITE_URL || 'http://localhost:3000').replace(/\/$/, '')
+const CUSTOM_DOMAIN = (process.env.CUSTOM_DOMAIN || '').replace(/\/$/, '')
+const CANONICAL_URL = process.env.CANONICAL_URL || CUSTOM_DOMAIN || SITE_URL
+const FORCE_HTTPS = process.env.FORCE_HTTPS === 'true'
+
+// Domaines autorisés pour CORS
 const allowedOrigins = [
   SITE_URL,
+  CUSTOM_DOMAIN,
   'http://localhost:3000',
   ...(process.env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean),
 ].filter(Boolean)
@@ -26,7 +36,51 @@ app.use(cors({
   },
   credentials: true,
 }))
+
 app.use(express.json({ limit: '10kb' }))
+
+// ============================================
+// 🔄 REDIRECTION 301 (Migration domaine)
+// ============================================
+
+// Si custom domain est configuré, rediriger l'ancien domaine
+if (CUSTOM_DOMAIN) {
+  app.use((req, res, next) => {
+    const currentHost = req.get('host')
+    const oldDomains = ['immocg-production.up.railway.app', 'immocg.onrender.com']
+    
+    // Si la requête vient d'une ancienne URL
+    if (oldDomains.some(domain => currentHost.includes(domain))) {
+      // Redirection 301 permanente
+      return res.redirect(301, `${CANONICAL_URL}${req.originalUrl}`)
+    }
+    
+    // Forcer www → sans www (ou vice versa)
+    if (CUSTOM_DOMAIN.includes('www.')) {
+      const noWww = CUSTOM_DOMAIN.replace('www.', '')
+      if (currentHost === CUSTOM_DOMAIN.replace('https://', '')) {
+        return res.redirect(301, `${noWww}${req.originalUrl}`)
+      }
+    }
+    
+    next()
+  })
+}
+
+// Forcer HTTPS en production
+if (FORCE_HTTPS && process.env.NODE_ENV === 'production') {
+  app.use((req, res, next) => {
+    if (req.header('x-forwarded-proto') !== 'https') {
+      res.redirect(301, `https://${req.get('host')}${req.originalUrl}`)
+    } else {
+      next()
+    }
+  })
+}
+
+// ============================================
+// 🔒 SECURITY HEADERS
+// ============================================
 
 app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff')
@@ -41,36 +95,33 @@ app.use((req, res, next) => {
 })
 
 app.use((req, res, next) => {
-  logger.info(`${req.method} ${req.originalUrl}`, { ip: req.ip })
+  logger.info(`${req.method} ${req.originalUrl}`, { ip: req.ip, host: req.get('host') })
   next()
 })
 
 // ============================================
-// ⏱️ RATE LIMITING — Protection anti brute-force & spam
+// ⏱️ RATE LIMITING
 // ============================================
 
-// Login/Register : max 20 tentatives par IP, par heure
 const authLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 heure
+  windowMs: 60 * 60 * 1000,
   max: 20,
-  skipSuccessfulRequests: true, // Ne compte pas les logins réussis
+  skipSuccessfulRequests: true,
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, message: 'Trop de tentatives. Réessayez dans 1 heure.' },
 })
 
-// Contact : max 5 messages par IP, par heure (anti-spam)
 const contactLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 heure
+  windowMs: 60 * 60 * 1000,
   max: 5,
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, message: 'Limite de messages atteinte. Réessayez plus tard.' },
 })
 
-// API générale : max 300 requêtes par IP, par 15 minutes
 const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: 15 * 60 * 1000,
   max: 300,
   standardHeaders: true,
   legacyHeaders: false,
@@ -82,17 +133,38 @@ const supabase = createClient(
   process.env.SUPABASE_KEY
 )
 
+// ============================================
+// 🤖 ROBOTS.TXT
+// ============================================
+
+app.get('/robots.txt', (req, res) => {
+  const robotsTxt = `User-agent: *
+Allow: /
+
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /login
+Disallow: /register
+
+Sitemap: ${CANONICAL_URL}/sitemap.xml
+`
+  res.type('text/plain').send(robotsTxt)
+})
+
+// ============================================
+// 📍 SITEMAP.XML
+// ============================================
+
 app.get('/sitemap.xml', async (req, res) => {
   try {
-    const base = SITE_URL || `${req.protocol}://${req.get('host')}`
     const staticPages = [
-      { loc: `${base}/`, priority: '1.0', changefreq: 'daily' },
-      { loc: `${base}/index.html`, priority: '1.0', changefreq: 'daily' },
-      { loc: `${base}/apropos.html`, priority: '0.7', changefreq: 'monthly' },
-      { loc: `${base}/contact.html`, priority: '0.7', changefreq: 'monthly' },
-      { loc: `${base}/conditions.html`, priority: '0.8', changefreq: 'monthly' },
-      { loc: `${base}/register.html`, priority: '0.8', changefreq: 'monthly' },
-      { loc: `${base}/blog.html`, priority: '0.6', changefreq: 'weekly' },
+      { loc: `${CANONICAL_URL}/`, priority: '1.0', changefreq: 'daily' },
+      { loc: `${CANONICAL_URL}/index.html`, priority: '1.0', changefreq: 'daily' },
+      { loc: `${CANONICAL_URL}/apropos.html`, priority: '0.7', changefreq: 'monthly' },
+      { loc: `${CANONICAL_URL}/contact.html`, priority: '0.7', changefreq: 'monthly' },
+      { loc: `${CANONICAL_URL}/conditions.html`, priority: '0.8', changefreq: 'monthly' },
+      { loc: `${CANONICAL_URL}/register.html`, priority: '0.8', changefreq: 'monthly' },
+      { loc: `${CANONICAL_URL}/blog.html`, priority: '0.6', changefreq: 'weekly' },
     ]
 
     const { data: biens } = await supabase
@@ -101,7 +173,7 @@ app.get('/sitemap.xml', async (req, res) => {
       .eq('statut', 'disponible')
 
     const bienPages = (biens || []).map(b => ({
-      loc: `${base}/bien.html?id=${b.id}`,
+      loc: `${CANONICAL_URL}/bien.html?id=${b.id}`,
       priority: '0.9',
       changefreq: 'weekly',
       lastmod: b.created_at ? new Date(b.created_at).toISOString().split('T')[0] : undefined,
@@ -140,7 +212,6 @@ const signalementsRoutes = require('./routes/signalements')
 const avisRoutes = require('./routes/avis')
 const transactionsRoutes = require('./routes/transactions')
 
-// Montage des routes avec rate-limiting
 app.use('/auth', authLimiter, authRoutes)
 app.use('/contact', contactLimiter, contactRoutes)
 app.use('/biens', apiLimiter, biensRoutes)
@@ -177,7 +248,13 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 3000
 app.listen(PORT, () => {
-  logger.info(`Serveur démarré sur http://localhost:${PORT}`, { port: PORT, env: process.env.NODE_ENV || 'development' })
+  logger.info(`Serveur démarré`, {
+    port: PORT,
+    env: process.env.NODE_ENV || 'development',
+    site_url: SITE_URL,
+    custom_domain: CUSTOM_DOMAIN || '(pas configuré)',
+    canonical_url: CANONICAL_URL,
+  })
 
   reservationsRoutes.expirerReservationsDepassees()
   setInterval(() => {
