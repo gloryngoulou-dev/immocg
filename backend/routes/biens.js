@@ -106,7 +106,7 @@ router.get('/', async (req, res) => {
     const biens = isAdmin ? data : sanitizeBiensPublic(data)
     res.json({ success: true, total: biens.length, biens })
   } catch (err) {
-    logger.error('Erreur chargement biens', { error: err.message })
+    logger.error('Erreur chargement biens', { error: err.message, cause: err.cause?.message, path: req.originalUrl })
     res.status(500).json({ success: false, message: 'Erreur interne' })
   }
 })
@@ -245,6 +245,117 @@ router.patch('/:id/verifier', verifierToken, async (req, res) => {
     res.json({ success: true, message: 'Disponibilité confirmée ✅' })
   } catch {
     res.status(500).json({ success: false, message: 'Erreur interne' })
+  }
+})
+
+router.get('/stats/dashboard', verifierToken, async (req, res) => {
+  try {
+    // Vérifier que c'est une agence
+    if (req.user.role !== 'agence') {
+      return res.status(403).json({ success: false, message: 'Accès réservé aux agences' })
+    }
+
+    const agenceId = req.user.id
+
+    // Stats globales de l'agence
+    const { data: biens, error: biensError } = await supabase
+      .from('biens')
+      .select('id, statut, prix, type, chambres')
+      .eq('agence_id', agenceId)
+
+    if (biensError) throw biensError
+
+    const totalBiens = biens?.length || 0
+    const biensActifs = biens?.filter(b => b.statut === 'disponible')?.length || 0
+    const biensLoues = biens?.filter(b => b.statut === 'loue')?.length || 0
+
+    // Réservations en attente
+    const { data: reservations, error: resError } = await supabase
+      .from('reservations')
+      .select('id, statut, bien_id, created_at')
+      .eq('agence_id', agenceId)
+
+    if (resError) throw resError
+
+    const totalReservations = reservations?.length || 0
+    const reservationsEnAttente = reservations?.filter(r => r.statut === 'en_attente')?.length || 0
+
+    // Avis reçus
+    const { data: avis, error: avisError } = await supabase
+      .from('avis')
+      .select('id, note')
+      .eq('agence_id', agenceId)
+
+    if (avisError) throw avisError
+
+    const totalAvis = avis?.length || 0
+    const moyenneNote = avis && avis.length > 0
+      ? (avis.reduce((sum, a) => sum + a.note, 0) / avis.length).toFixed(1)
+      : 0
+
+    res.json({
+      success: true,
+      stats: {
+        biens: {
+          total: totalBiens,
+          actifs: biensActifs,
+          loues: biensLoues,
+          inactifs: totalBiens - biensActifs - biensLoues,
+        },
+        reservations: {
+          total: totalReservations,
+          enAttente: reservationsEnAttente,
+        },
+        avis: {
+          total: totalAvis,
+          moyenne: moyenneNote,
+        },
+      },
+    })
+  } catch (err) {
+    logger.error('Erreur stats dashboard', { error: err.message })
+    res.status(500).json({ success: false, message: 'Erreur récupération stats' })
+  }
+})
+
+// ========== DÉTAILS BIENS + CLICS ==========
+// GET /stats/biens-details — Détails de chaque bien (clics, demandes)
+router.get('/stats/biens-details', verifierToken, async (req, res) => {
+  try {
+    if (req.user.role !== 'agence') {
+      return res.status(403).json({ success: false, message: 'Accès réservé aux agences' })
+    }
+
+    const agenceId = req.user.id
+
+    const { data: biens, error } = await supabase
+      .from('biens')
+      .select('id, titre, statut, prix, type, clics_total, demandes_total')
+      .eq('agence_id', agenceId)
+      .order('created_at', { ascending: false })
+
+    if (error) throw error
+
+    const biensAvecStats = biens?.map(b => ({
+      id: b.id,
+      titre: b.titre,
+      statut: b.statut,
+      prix: b.prix,
+      type: b.type,
+      clics: b.clics_total || 0,
+      demandes: b.demandes_total || 0,
+      tauxConversion: b.clics_total > 0
+        ? ((b.demandes_total || 0) / b.clics_total * 100).toFixed(1) + '%'
+        : '0%',
+    })) || []
+
+    res.json({
+      success: true,
+      biens: biensAvecStats,
+    })
+  } catch (err) {
+    logger.error('Erreur stats biens', { error: err.message })
+    res.status(500).json({ success: false, message: 'Erreur récupération stats biens' })
   }
 })
 
